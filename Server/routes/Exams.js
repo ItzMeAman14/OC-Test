@@ -61,7 +61,7 @@ ExamRouter.post('/createExam',async (req,res) => {
     }
 })
 
-ExamRouter.put("/updateExam/:id", async(req,res) => {
+ExamRouter.put("/updateExamName/:id", async(req,res) => {
     try{
         const objectId = new mongoose.Types.ObjectId(req.params.id);
         const exam = await collection.updateOne(
