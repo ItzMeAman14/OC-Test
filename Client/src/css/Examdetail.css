@@ -1,0 +1,72 @@
+/* Sidebar Styles */
+.sidebar {
+  position: fixed; /* Keeps sidebar fixed on the left */
+  top: 89px;
+  left: 0;
+  height: 100vh; /* Full height of the screen */
+  width: 200px; /* Sidebar width */
+  background-color: #808080; /* Grey background color */
+  display: flex;
+  justify-content: center; /* Center content horizontally */
+  padding-top: 20px; /* Add some space at the top */
+  box-sizing: border-box; /* Ensure padding is included in width and height */
+}
+
+/* Container for the grid layout */
+.container {
+  width: 100%; /* Full width of the sidebar */
+  max-width: none; /* Disable max-width so it can expand fully */
+  padding: 0 10px; /* Add some space inside the container */
+}
+
+/* Grid Layout */
+.row {
+  display: flex;
+  flex-wrap: wrap; /* Allow items to wrap to the next row */
+}
+
+.row-cols-3 .col {
+  padding: 20px; /* Space between buttons */
+  display: flex;
+  margin: 10px;
+  justify-content: center; /* Center buttons inside the columns */
+}
+
+/* Button Styles (Circular) */
+.sidebar-button {
+  width: 40px;  /* Button width */
+  height: 40px; /* Button height */
+  border-radius: 50%; /* Circular button */
+  background-color: #fff; /* White background */
+  border: 2px solid #ccc; /* Light grey border */
+  font-size: 20px; /* Font size */
+  color: #333; /* Dark text color */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition for hover effects */
+}
+
+/* Button Hover Effects */
+.sidebar-button:hover {
+  background-color: #ccc; /* Light grey background on hover */
+  transform: scale(1.1); /* Slightly increase button size */
+}
+
+.sidebar-button:focus {
+  outline: none; /* Remove focus outline */
+}
+
+/* Optional: Adjust Sidebar for Smaller Screens (Responsive) */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 200px; /* Smaller sidebar width on smaller screens */
+  }
+
+  .sidebar-button {
+    width: 50px; /* Smaller button size on smaller screens */
+    height: 50px;
+    font-size: 16px; /* Smaller font size */
+  }
+}

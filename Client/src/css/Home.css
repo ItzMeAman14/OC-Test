@@ -1,0 +1,139 @@
+
+.main-container {
+    display: flex;
+    height: 86vh;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 20px auto;
+}
+
+.left-container {
+    flex: 1; 
+    margin-right: 70px; 
+}
+
+.right-container {
+    flex: 0 0 300px;
+    background: white; 
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s;
+}
+
+.dark-mode .right-container {
+    background: #2a2a2a; /* Dark mode background */
+}
+
+.editor-container {
+    margin-bottom: 20px;
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: white; /* Light mode */
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+}
+
+.dark-mode select {
+    background-color: #3c3c3c; /* Dark mode */
+    color: #f5f5f5;
+    border: 1px solid #555;
+}
+
+textarea {
+    width: 100%;
+    height: 300px; /* Adjust height as needed */
+    padding: 10px;
+    border: 1px solid #ccc; /* Light mode border */
+    border-radius: 5px;
+    font-family: monospace;
+    font-size: 14px;
+    resize: none; /* Prevent resizing */
+    transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+}
+
+.dark-mode textarea {
+    background-color: #2a2a2a; /* Dark mode background */
+    color: #f5f5f5; /* Dark mode text color */
+    border: 1px solid #555;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff; /* Light mode */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px; /* Space above button */
+}
+
+.dark-mode button {
+    background-color: #0056b3; /* Dark mode */
+}
+
+button:hover {
+    background-color: #0056b3; /* Light mode hover */
+}
+
+.dark-mode button:hover {
+    background-color: #004080; /* Dark mode hover */
+}
+
+#output-con {
+    height: calc(100% - 200px);
+    width: 400px;
+    overflow-y: auto;
+}
+
+pre {
+    background-color: #eee; /* Light mode output background */
+    padding: 10px;
+    border-radius: 5px;
+    overflow-x: auto;
+    min-height: 100%; /* Minimum height for output */
+    width: 100%;
+    transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+}
+
+.dark-mode pre {
+    background-color: #2a2a2a; /* Dark mode output background */
+    color: #f5f5f5; /* Dark mode output text */
+}
+
+
+
+@media (max-width: 600px) {
+    .main-container {
+        flex-direction: column;
+    }
+    
+    .left-container {
+        margin-right: 0; /* Remove margin on small screens */
+    }
+
+    .right-container {
+        width: auto; /* Allow full width */
+    }
+
+    textarea {
+        height: 200px; /* Decrease height on smaller screens */
+    }
+
+    .message-container {
+        flex-direction: column; /* Stack input and button */
+    }
+
+    #message-input {
+        width: 100%; /* Full width on small screens */
+        margin-bottom: 10px; /* Space below input */
+    }
+}
