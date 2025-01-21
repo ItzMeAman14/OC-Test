@@ -8,6 +8,8 @@ import { useEffect, useState } from 'react';
 import Alert from './components/Alert';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import React from 'react';
+import Dashboard from "./components/admin/Dashboard"
+import Login from "./components/Login"
 
 function App() {
   const [mode, setMode] = useState('');
@@ -44,11 +46,11 @@ function App() {
 
       <Router>
 
-        <Navbar setMode={setMode} Modelogo={Modelogo} setModelogo={setModelogo} mode={mode} />
         <Routes>
 
         <Route exact path='/' element={
           <>
+          <Navbar setMode={setMode} Modelogo={Modelogo} setModelogo={setModelogo} mode={mode} />
           <Home showAlert={showAlert} alert={alert} />
           </>
         }/>
@@ -69,6 +71,15 @@ function App() {
           <ExamDetail />} 
         />
 
+        <Route exact path="/admin" element={
+          <Dashboard />
+        }
+        />
+
+        <Route exact path="/login" element={
+          <Login />
+        }
+        />
 
         </Routes>
       </Router>

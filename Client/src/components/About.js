@@ -184,7 +184,7 @@ function About() {
 
         {/* Question Box */}
         <div className="question-box">
-          <h2 className='question-heading'>Question No. {            getIndexByStatement(question.statement) + 1}</h2>
+          <h2 className='question-heading'>Question No. { getIndexByStatement(question.statement) + 1}</h2>
           <p className='question-desc'>{question.statement}</p>
         </div>
 
