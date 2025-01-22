@@ -1,53 +1,49 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Container } from '@mui/material';
 import Modal1 from './Modal1';
+import Toast from './Toast';
 
 const Form = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    phone: '',
-    address: '',
-  });
+  const [questions, setquestions] = useState([]);
+  const [name, setName] = useState('');
+  const [toast, setToast] = useState({status:false,msg:'',type:''});
 
-  const [error, setError] = useState('');
-  const [formSubmitted, setFormSubmitted] = useState(false);
-
-  // Handle form data changes
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setName(e.target.value);
   };
 
-  // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Simple validation
-    if (
-      !formData.name ||
-      !formData.email ||
-      !formData.password ||
-      !formData.phone ||
-      !formData.address
-    ) {
-      setError('Please fill in all fields.');
-      return;
-    }
-
-    setError('');
-    setFormSubmitted(true);
+    const response = await fetch("http://localhost:7123/createExam",{
+      "method":"POST",
+      "headers":{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        name,
+        questions
+      })
+    })
+    
+    const parsedRes = await response.json();
+    setToast({
+      status:true,
+      msg:parsedRes[Object.keys(parsedRes)[0]],
+      type:Object.keys(parsedRes)[0]
+    })
+    
   };
+
+  const sendDataToParent = (data) => {
+    setquestions((previousData) => [...previousData,data]);
+  }
 
   return (
     <Container maxWidth="xs">
       <Typography variant="h4" gutterBottom>
-        Registration Form
+        Create New Exam
       </Typography>
-      {!formSubmitted ? (
+  
         <Box
           component="form"
           onSubmit={handleSubmit}
@@ -58,36 +54,48 @@ const Form = () => {
             label="Name"
             variant="outlined"
             name="name"
-            value={formData.name}
+            value={name}
             onChange={handleChange}
             required
             fullWidth
           />
 
           <div>
+            { toast.status && <Toast message={toast.msg} type={toast.type} /> }
+            {
+              questions.map(i => {
+                return (
+                  <ol key={i.question}>
+                  <li>Question = {i.question}</li>
+                  <li>Description = {i.description}</li>
+                  <ul>
+                    {
+                      i.testCases.map(testCase => {
+                        return (
+                          <>
+                          <li>Input = {testCase.input}</li>
+                          <li>Output = {testCase.output}</li>
+                          </>
+                        )
+                      })
+                    }
+                  </ul>
+                  </ol>
+                )
+              })
+            }
             <span>
               Add questions
             </span>
-            <Modal1/>
+            <Modal1 sendDataToParent={sendDataToParent}/>
           </div>
-          
-          {/* Error Message */}
-          {error && (
-            <Typography color="error" variant="body2" sx={{ marginTop: 2 }}>
-              {error}
-            </Typography>
-          )}
 
           {/* Submit Button */}
           <Button type="submit" variant="contained" sx={{ marginTop: 2 }}>
             Submit
           </Button>
         </Box>
-      ) : (
-        <Typography variant="body1" sx={{ marginTop: 2 }}>
-          Thank you for submitting your information, {formData.name}!
-        </Typography>
-      )}
+
     </Container>
   );
 };

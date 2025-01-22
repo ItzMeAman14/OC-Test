@@ -2,28 +2,25 @@ import React, { useState } from 'react';
 import { Modal, Box, TextField, Button, IconButton, Typography, Stack } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 
-function Modal1() {
-  const [open, setOpen] = useState(false); // Modal open/close state
-  const [question, setQuestion] = useState(''); // Question input state
-  const [description, setDescription] = useState(''); // Description input state
-  const [testCases, setTestCases] = useState([{ input: '', output: '' }]); // Array of test cases
+function Modal1(props) {
+  const [open, setOpen] = useState(false); 
+  const [question, setQuestion] = useState(''); 
+  const [statement, setStatement] = useState(''); 
+  const [testCases, setTestCases] = useState([{ input: '', output: '' }]); 
 
-  // Handle input changes
+
   const handleInputChange = (index, field, value) => {
     const newTestCases = [...testCases];
     newTestCases[index][field] = value;
     setTestCases(newTestCases);
   };
 
-  // Add a new test case
   const handleAddTestCase = () => {
     setTestCases([...testCases, { input: '', output: '' }]);
   };
 
-  // Handle form submission (could be an API call or saving the data)
   const handleSubmit = () => {
-    // Handle form submission logic
-    console.log('Form submitted with:', { question, description, testCases });
+    props.sendDataToParent({question,statement,testCases})
     handleClose();
   };
 
@@ -32,37 +29,45 @@ function Modal1() {
   const handleClose = () => {
     setOpen(false);
     setQuestion('');
-    setDescription('');
+    setStatement('');
     setTestCases([{ input: '', output: '' }]);
   };
 
   return (
     <div>
-
-      <IconButton color="primary" onClick={handleOpen} sx={{
-        width: 36,
-        height: 36,
-        borderRadius: 1,
-        padding: 0,
-      }}
-        aria-label="add-test-case">
+      <IconButton
+        color="primary"
+        onClick={handleOpen}
+        sx={{
+          width: 36,
+          height: 36,
+          borderRadius: 1,
+          padding: 0,
+        }}
+        aria-label="add-test-case"
+      >
         <AddIcon />
       </IconButton>
 
       {/* Modal */}
-      <Modal open={open} onClose={handleClose}>
+      <Modal open={open} sx={{ overflow: 'auto' }} onClose={handleClose}>
         <Box
           sx={{
             position: 'absolute',
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            width: 500,
+            width: {
+              xs: '90%', // 90% width on extra small screens
+              sm: 500,   // 500px width on small screens and above
+            },
             bgcolor: 'background.paper',
             border: '2px solid #000',
             boxShadow: 24,
             p: 4,
             borderRadius: 2,
+            maxHeight: '80vh', // Limit the height of the modal to 80% of the viewport height
+            overflowY: 'auto', // Enable vertical scrolling if content overflows
           }}
         >
           {/* Modal Header */}
@@ -86,8 +91,8 @@ function Modal1() {
             fullWidth
             multiline
             rows={4}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            value={statement}
+            onChange={(e) => setStatement(e.target.value)}
             sx={{ mb: 2 }}
           />
 
@@ -128,7 +133,7 @@ function Modal1() {
           </Button>
 
           {/* Action buttons */}
-          <Stack direction="row" justifyContent="space-between">
+          <Stack direction="row" justifyContent="space-between" spacing={2}>
             <Button variant="outlined" color="secondary" onClick={handleClose}>
               Cancel
             </Button>

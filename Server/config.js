@@ -10,7 +10,7 @@ connect.then(() => {
     console.log(err);
 })
 
-const LoginSchema = new mongoose.Schema({
+const ExamSchema = new mongoose.Schema({
     name:{
         type:String
     },
@@ -19,6 +19,6 @@ const LoginSchema = new mongoose.Schema({
     }   
 });
 
-const collection = new mongoose.model("exams",LoginSchema);
+const collection = new mongoose.model("exams",ExamSchema);
 
 module.exports = collection

@@ -12,9 +12,11 @@ import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { Home } from '@mui/icons-material';
+import AddTaskIcon from '@mui/icons-material/AddTask';
+import AddToQueueIcon from '@mui/icons-material/AddToQueue';
 import Form from '../Form';
-import Login from '../Login';
-import Modal1  from '../Modal1';
+import EditExam from './EditExam';
+
 
 const drawerWidth = 240;
 
@@ -40,7 +42,6 @@ function Dashboard(props) {
   };
 
   const handleNavButtons = (active) => {
-        console.log(active);
         setactiveComponent(active);
   }
 
@@ -51,14 +52,14 @@ function Dashboard(props) {
       <List>
         <ListItem button onClick={ () => { handleNavButtons('dashboard') } }>
           <ListItemIcon>
-            <Home/>
+            <AddToQueueIcon/>
           </ListItemIcon> 
           <ListItemText primary="Create New Exam" />
         </ListItem>
 
         <ListItem button onClick={ () => { handleNavButtons('questions') } }>
           <ListItemIcon>
-            <Home/>
+            <AddTaskIcon/>
           </ListItemIcon> 
           <ListItemText primary="Add Questions to Existing Exam" />
         </ListItem>
@@ -67,7 +68,7 @@ function Dashboard(props) {
           <ListItemIcon>
             <Home/>
           </ListItemIcon> 
-          <ListItemText primary="Dashboard" />
+          <ListItemText primary="Others" />
         </ListItem>
 
       </List>
@@ -137,7 +138,7 @@ function Dashboard(props) {
       >
         <Toolbar />
           { activeComponent === 'dashboard' && <Form /> }
-          { activeComponent === 'questions' && <Login /> }
+          { activeComponent === 'questions' && <EditExam /> }
       </Box>
     </Box>
   );

@@ -83,6 +83,17 @@ app.post('/getExam', async (req,res) => {
     res.json(data);
 })
 
+app.post('/createExam',async (req,res) => {
+    try{
+        const exam = new collection(req.body);
+        exam.save();
+        res.json({"success":"Exam created Successfully"})
+    }
+    catch(err){
+        res.json({"error":"Some Error Occured"})
+    }
+})
+
 app.listen(7123, () => {
     console.log("Listening on http://localhost:7123/");
 })
