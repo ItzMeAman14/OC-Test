@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Container } from '@mui/material';
-import Modal1 from './Modal1';
-import Toast from './Toast';
+import Modal1 from '../Modal1';
+import Toast from '../Toast';
 
 const Form = () => {
   const [questions, setquestions] = useState([]);
   const [name, setName] = useState('');
   const [toast, setToast] = useState({status:false,msg:'',type:''});
+  const [modal, setModal] = useState(false);
 
   const handleChange = (e) => {
     setName(e.target.value);
@@ -14,6 +15,7 @@ const Form = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
     const response = await fetch("http://localhost:7123/createExam",{
       "method":"POST",
       "headers":{
@@ -37,7 +39,7 @@ const Form = () => {
   const sendDataToParent = (data) => {
     setquestions((previousData) => [...previousData,data]);
   }
-
+  
   return (
     <Container maxWidth="xs">
       <Typography variant="h4" gutterBottom>
@@ -66,28 +68,33 @@ const Form = () => {
               questions.map(i => {
                 return (
                   <ol key={i.question}>
-                  <li>Question = {i.question}</li>
-                  <li>Description = {i.description}</li>
+                    <li>Heading = {i.heading} </li>
+                    <li>Description = {i.statement}</li>
                   <ul>
+                    <ol>
                     {
-                      i.testCases.map(testCase => {
+                      i.testcases.map((testCase,index) => {
                         return (
                           <>
-                          <li>Input = {testCase.input}</li>
-                          <li>Output = {testCase.output}</li>
+                            <li>Testcase {index+1}</li>
+                            <ul>
+                              <li>Input = {testCase.input}</li>
+                              <li>Output = {testCase.output}</li>
+                            </ul>
                           </>
                         )
                       })
                     }
+                    </ol>
                   </ul>
                   </ol>
                 )
               })
             }
-            <span>
+            <Button variant="contained" onClick={() => {setModal(true) }}>
               Add questions
-            </span>
-            <Modal1 sendDataToParent={sendDataToParent}/>
+            </Button>
+            { modal && <Modal1 sendDataToParent={sendDataToParent} enableModal={setModal}/> }
           </div>
 
           {/* Submit Button */}

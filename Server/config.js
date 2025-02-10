@@ -10,13 +10,22 @@ connect.then(() => {
     console.log(err);
 })
 
+const TestCaseSchema = new mongoose.Schema({
+    input: mongoose.Schema.Types.Mixed,
+    output: mongoose.Schema.Types.Mixed,
+})
+
+
+const QuestionSchema = new mongoose.Schema({
+    heading:String,
+    statement: String,
+    id: mongoose.Schema.Types.ObjectId,
+    testcases: [TestCaseSchema],
+})
+
 const ExamSchema = new mongoose.Schema({
-    name:{
-        type:String
-    },
-    questions:{
-        type:Array
-    }   
+    name:String,
+    questions:[QuestionSchema],  
 });
 
 const collection = new mongoose.model("exams",ExamSchema);

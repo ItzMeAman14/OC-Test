@@ -15,12 +15,10 @@ function Exam() {
     try{
 
       setloading(true);
-      const res = await fetch('http://localhost:7123/getAllExams',{
-        method:"POST"
-      })
-    const data = await res.json();
-    setloading(false);
-    setData(data);
+      const res = await fetch('http://localhost:7123/getAllExams')
+      const data = await res.json();
+      setloading(false);
+      setData(data);
     }
     catch(err){
       console.error(err);

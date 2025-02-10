@@ -3,7 +3,7 @@ const app = express()
 const cors = require('cors');
 const mongoose = require("mongoose");
 require('dotenv').config();
-const collection = require('./config')
+const collection = require('./config');
 app.use(cors());
 app.use(express.json());
 
@@ -74,47 +74,104 @@ app.post('/execute', async (req, res) => {
 
 
 // Exams CRUD
-app.post('/getAllExams',async (req,res) => {
-    const data = await collection.find({});
-    res.json(data);
+app.get('/getAllExams',async (req,res) => {
+    try{
+        const data = await collection.find({});
+        res.json(data);
+    }
+    catch(err){
+        console.error(err);
+        res.json({"message":"Some Error Occured"})
+    }
 })
 
-app.post('/getExam', async (req,res) => {
-    const data = await collection.find({_id:req.body.id});
-    res.json(data);
+app.get('/getExam/:id', async (req,res) => {
+    try{
+        const data = await collection.find({_id:req.params.id});
+        res.json(data);
+    }
+    catch(err){
+        console.error(err);
+        res.json({"message":"Some Error Occured"})
+    }
 })
 
 
 app.post('/createExam',async (req,res) => {
     try{
-        const exam = new collection(req.body);
-        exam.save();
+        const exam = new collection(req.body)
+        await exam.save();
         res.json({"success":"Exam created Successfully"})
     }
     catch(err){
-        res.json({"error":"Some Error Occured"})
+        console.error(err);
+        res.json({"message":"Some Error Occured"})
     }
 })
 
 
-// Questions CRUD
-app.post("/getQuestion", async(req,res) => {
-    const objectId = new mongoose.Types.ObjectId(req.body.id);
-    const data = await collection.find({ 
-        "questions.id": objectId },
-        { "questions.$": 1 })
-
-    res.json(data)
+app.delete("/deleteExam/:id",async(req,res) => {
+    try{
+        const exam = await collection.deleteOne({_id:req.params.id});
+        res.json({"message":"Exam Deleted Successfully"});
+    }
+    catch(err){
+        console.error(err);
+        res.json({"message":"Some Error Occured"})
+    }
 })
 
-app.post("/deleteQuestion", async(req,res) => {
-    const objectId = new mongoose.Types.ObjectId(req.body.id);
-    const data =  await collection.updateOne(
-        { "questions.id": objectId }, 
-        { $pull: { questions: { id: objectId } } } 
-      );
+// Questions CRUD
+app.get("/getQuestion/:id", async(req,res) => {
+    try{
+        const objectId = new mongoose.Types.ObjectId(req.params.id);
+        const data = await collection.find({ 
+            "questions._id": objectId },
+            { "questions.$": 1 })
+            
+            res.json(data)
+    }
+    catch(err){
+        console.error(err);
+        res.json({"message":"Some Error Occured"})
+    }
+})
 
-    res.json({message:"Question Deleted Successfully"})
+app.post("/createQuestion/:id",async(req,res) => {
+    try{
+        const objectId = new mongoose.Types.ObjectId(req.params.id);
+        const data = await collection.updateOne(
+            { _id:objectId },
+        {
+            $push:{
+                "questions": req.body.question
+            }
+        }
+    )
+    
+    res.json({"message":"Question Added Successfully"})
+    }
+    catch(err){
+        console.error(err);
+        res.json({"message":"Some Error Occured"})
+    }
+})
+
+app.delete("/deleteQuestion/:id", async(req,res) => {
+    try{
+
+        const objectId = new mongoose.Types.ObjectId(req.params.id);
+        const data =  await collection.updateOne(
+            { "questions._id": objectId }, 
+            { $pull: { questions: { _id: objectId } } } 
+        );
+        
+        res.json({message:"Question Deleted Successfully"})
+    }
+    catch(err){
+        console.error(err);
+        res.json({"message":"Some Error Occured"})
+    }
 })
 
 

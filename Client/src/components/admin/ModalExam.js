@@ -31,15 +31,7 @@ function ModalExam(props) {
 
   const getQuestion = async () => {
     try{
-        const res = await fetch("http://localhost:7123/getQuestion",{
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify({
-                id:props.question_id
-            })
-        })
+        const res = await fetch(`http://localhost:7123/getQuestion/${props.question_id}`)
 
         const data = await res.json();
         setQuestion(data[0].questions[0]);

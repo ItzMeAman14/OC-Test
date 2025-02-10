@@ -1,89 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import '../css/test.css';
 
 function About() {
-
+  const [data,setData] = useState([]);
   const [lang, setLang] = useState('python3');
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [userInputs, setUserInputs] = useState('');
   const [allOutput, setAllOutput] = useState([]);
-
-  const data = [
-    {
-      "_id": {
-        "$oid": "672dd5fbe4595b9610477549"
-      },
-      "name": "Allenhouse Y1 AIML",
-      "questions": [
-        {
-          "statement": "Write a program to find factorial of a given integer n.",
-          "id": {
-            "$oid": "672de9edf3263a7854d1387b"
-          },
-          "testcases": [
-            {
-              "input": "5",
-              "output": "120"
-            },
-            {
-              "input":"0",
-              "output": "1"
-            },
-            {
-              "input": "-1",
-              "output": "-1"
-            }
-          ]
-        },
-        {
-          "statement": "This is the question 2.",
-          "id": {
-            "$oid": "672dea38f3263a7854d1387c"
-          },
-          "testcases": [
-            "To be done"
-          ]
-        },
-        {
-          "statement": "This is the question 3.",
-          "id": {
-            "$oid": "672e0849f3263a7854d13880"
-          },
-          "testcases": [
-            "To be done"
-          ]
-        },
-        {
-          "statement": "This is the question 4.",
-          "id": {
-            "$oid": "672e0851f3263a7854d13882"
-          },
-          "testcases": [
-            "To be done"
-          ]
-        },
-        {
-          "statement": "This is the question 5.",
-          "id": {
-            "$oid": "672e0859f3263a7854d13884"
-          },
-          "testcases": [
-            "To be done"
-          ]
-        },
-        {
-          "statement": "This is the question 6.",
-          "id": {
-            "$oid": "672e085ff3263a7854d13886"
-          },
-          "testcases": [
-            "To be done"
-          ]
-        }
-      ]
-    }
-  ]
+  const [question, setQuestion] = useState([]);
 
   const executeCode = async () => {
     try {
@@ -154,16 +79,35 @@ function About() {
   }
 
 
-  const [question, setquestion] = useState(data[0].questions[0]);
-  const filterData = (idtoFilter) => {
+  // const filterData = (idtoFilter) => {
+  //   console.log(data);
+    
+  //   const ques = data[0].questions.filter(ques => ques.id === idtoFilter);
+  //   setQuestion(ques[0]);
+  // }
 
-    const ques = data[0].questions.filter(ques => ques.id === idtoFilter);
-    setquestion(ques[0]);
+  // const getIndexByStatement = (statement) => {
+  //   return data[0].questions.findIndex((question) => question.statement === statement);
+  // }
+
+
+  const getAllQuestions = async () => {
+    try{
+      const res = await fetch(`http://localhost:7123/getExam/67a9ce7c6c958f28fd84373d`)
+      const parsed = await res.json();
+      setData(parsed);
+      setQuestion(parsed[0].questions[0]);
+      console.log(parsed[0].questions);
+      
+    }
+    catch(err){
+      console.error(err);
+    }
   }
 
-  const getIndexByStatement = (statement) => {
-    return data[0].questions.findIndex((question) => question.statement === statement);
-  }
+  useEffect(() => {
+    getAllQuestions();
+  }, []);
 
   return (
     <>
@@ -171,8 +115,8 @@ function About() {
         {
           data[0].questions.map((i, j) => {
             return (
-              <li key={i.id.$oid} className="nav-item">
-                <button className="nav-link bg-transparent" onClick={() => { filterData(i.id) }}>{j + 1}</button>
+              <li key={i._id} className="nav-item">
+                <button className="nav-link bg-transparent" onClick={() => { filterData(i._id) }}>{j + 1}</button>
               </li>
             )
           })
@@ -183,10 +127,10 @@ function About() {
 
 
         {/* Question Box */}
-        <div className="question-box">
+        {/* <div className="question-box">
           <h2 className='question-heading'>Question No. { getIndexByStatement(question.statement) + 1}</h2>
           <p className='question-desc'>{question.statement}</p>
-        </div>
+        </div> */}
 
         {/* Input Box */}
         <textarea className="input-box" placeholder='Write your code here' onInput={(e) => { setInput(e.target.value) }} />

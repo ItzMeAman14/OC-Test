@@ -3,54 +3,38 @@ import { Modal, Box, TextField, Button, IconButton, Typography, Stack } from '@m
 import AddIcon from '@mui/icons-material/Add';
 
 function Modal1(props) {
-  const [open, setOpen] = useState(false); 
-  const [question, setQuestion] = useState(''); 
+  const [heading, setHeading] = useState('');
   const [statement, setStatement] = useState(''); 
-  const [testCases, setTestCases] = useState([{ input: '', output: '' }]); 
+  const [testcases, settestcases] = useState([{ input: '', output: '' }]); 
 
 
   const handleInputChange = (index, field, value) => {
-    const newTestCases = [...testCases];
-    newTestCases[index][field] = value;
-    setTestCases(newTestCases);
+    const newtestcases = [...testcases];
+    newtestcases[index][field] = value;
+    settestcases(newtestcases);
   };
 
   const handleAddTestCase = () => {
-    setTestCases([...testCases, { input: '', output: '' }]);
+    settestcases([...testcases, { input: '', output: '' }]);
   };
 
+
   const handleSubmit = () => {
-    props.sendDataToParent({question,statement,testCases})
+    const exam_id = props.exam_id ?? null
+    props.sendDataToParent({statement,testcases,heading,exam_id})
     handleClose();
   };
 
-  const handleOpen = () => setOpen(true);
-
   const handleClose = () => {
-    setOpen(false);
-    setQuestion('');
+    props.enableModal(false);
     setStatement('');
-    setTestCases([{ input: '', output: '' }]);
+    settestcases([{ input: '', output: '' }]);
   };
 
   return (
     <div>
-      <IconButton
-        color="primary"
-        onClick={handleOpen}
-        sx={{
-          width: 36,
-          height: 36,
-          borderRadius: 1,
-          padding: 0,
-        }}
-        aria-label="add-test-case"
-      >
-        <AddIcon />
-      </IconButton>
-
       {/* Modal */}
-      <Modal open={open} sx={{ overflow: 'auto' }} onClose={handleClose}>
+      <Modal open={true} sx={{ overflow: 'auto' }} onClose={handleClose}>
         <Box
           sx={{
             position: 'absolute',
@@ -58,30 +42,30 @@ function Modal1(props) {
             left: '50%',
             transform: 'translate(-50%, -50%)',
             width: {
-              xs: '90%', // 90% width on extra small screens
-              sm: 500,   // 500px width on small screens and above
+              xs: '90%', 
+              sm: 500,   
             },
             bgcolor: 'background.paper',
             border: '2px solid #000',
             boxShadow: 24,
             p: 4,
             borderRadius: 2,
-            maxHeight: '80vh', // Limit the height of the modal to 80% of the viewport height
-            overflowY: 'auto', // Enable vertical scrolling if content overflows
+            maxHeight: '80vh',
+            overflowY: 'auto',
           }}
         >
           {/* Modal Header */}
           <Typography variant="h6" component="h2" gutterBottom>
-            Add Test Case
+            Add Question
           </Typography>
 
           {/* Form */}
           <TextField
-            label="Question"
+            label="Question Heading"
             variant="outlined"
             fullWidth
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
+            value={heading}
+            onChange={(e) => setHeading(e.target.value)}
             sx={{ mb: 2 }}
           />
 
@@ -101,7 +85,7 @@ function Modal1(props) {
             Test Cases:
           </Typography>
 
-          {testCases.map((testCase, index) => (
+          {testcases.map((testCase, index) => (
             <Box key={index} sx={{ mb: 2 }}>
               <TextField
                 label={`Input ${index + 1}`}

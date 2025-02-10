@@ -14,7 +14,7 @@ import Typography from '@mui/material/Typography';
 import { Home } from '@mui/icons-material';
 import AddTaskIcon from '@mui/icons-material/AddTask';
 import AddToQueueIcon from '@mui/icons-material/AddToQueue';
-import Form from '../Form';
+import Form from './Form';
 import EditExam from './EditExam';
 
 

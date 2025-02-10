@@ -11,15 +11,7 @@ function ExamDetail() {
   const getInfo = async () => {
     setloading(true);
     try{
-      const res = await fetch('http://localhost:7123/getExam', {
-        method:"POST",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body:JSON.stringify({
-          id:id
-        })
-      });
+      const res = await fetch(`http://localhost:7123/getExam/${id}`);
 
       if (!res.ok) {
         throw new Error('Network response was not ok');
@@ -49,7 +41,7 @@ function ExamDetail() {
 
   return (
     <div>
-      {/* <button onClick={getInfo}>Get Data</button> */}
+      
       {loading && <Loader/>}
       <div className='sidebar'>
         <div className="container text-center">
