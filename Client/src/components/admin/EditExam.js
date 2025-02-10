@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
-import { Card, CardContent, Typography, Grid, Button, Box, TextField } from '@mui/material';
+import { Card, CardContent, Typography, Grid, Button, Box } from '@mui/material';
+import { Edit, Delete } from '@mui/icons-material';
+import ModalExam from './ModalExam';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-// Sample data for exams and questions
+
 const exams = [
   {
     _id: "672dd5fbe4595b9610477549",
@@ -65,10 +69,9 @@ const exams = [
 ];
 
 const EditExams = () => {
-  // State to track which exam's questions are visible
   const [showQuestions, setShowQuestions] = useState({});
+  const [examModal,setExamModal] = useState({status:false,question_id:null});
 
-  // Toggle visibility of questions for a specific exam
   const handleToggleQuestions = (examId) => {
     setShowQuestions((prevState) => ({
       ...prevState,
@@ -76,40 +79,67 @@ const EditExams = () => {
     }));
   };
 
-  const handleQuestionChange = (examId, questionId, newStatement) => {
-    const updatedExams = exams.map((exam) => {
-      if (exam._id === examId) {
-        return {
-          ...exam,
-          questions: exam.questions.map((question) => {
-            if (question.id === questionId) {
-              return {
-                ...question,
-                statement: newStatement
-              };
-            }
-            return question;
-          })
-        };
+  const deleteQuestion = async (id) => {
+    try{
+      const res = await fetch("http://localhost:7123/deleteQuestion",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          id
+        })
+      })
+
+      const data = await res.json();
+      if(res.ok){
+        toast.success(data.message, {
+          autoClose: 5000, 
+          hideProgressBar: false, 
+          pauseOnHover: true,
+          closeButton: false,
+        });
       }
-      return exam;
-    });
-    console.log(updatedExams);
-  };
+      else{
+        toast.error("Some Error Occured", {
+          autoClose: 5000, 
+          hideProgressBar: false, 
+          pauseOnHover: true,
+          closeButton: false,
+        });
+      }
+    }
+    catch(err){
+      console.error(err);
+    }
+    
+  }
 
   return (
     <div>
-      {/* Map through each exam */}
+  
       {exams.map((exam) => (
         <Box key={exam._id} sx={{ marginBottom: '30px' }}>
-          {/* Card for the exam */}
+
+
+          <ToastContainer />
+          {/* Exam Update Modal */}
+          { examModal.status && <ModalExam enableModal={setExamModal} question_id={examModal.question_id}/> }
+
           <Card sx={{ maxWidth: "100vw", boxShadow: 3 }}>
             <CardContent>
+              
+            <Box display="flex" justifyContent="space-between" alignItems="center">
               <Typography variant="h5" component="div" gutterBottom>
                 {exam.name}
               </Typography>
 
-              {/* Button to toggle questions visibility */}
+              <Button variant="contained" startIcon={<Delete />} style={{ backgroundColor: "#FF2626",width:"200px" }}>
+                DELETE EXAM
+              </Button>
+            </Box>
+
+              
               <Button
                 variant="contained"
                 color="primary"
@@ -126,7 +156,9 @@ const EditExams = () => {
                       <Card sx={{ maxWidth: 1000, boxShadow: 2 }}>
                         <CardContent>
                           <Typography variant="h6" component="div" gutterBottom>
-                            Question: {question.statement}
+                            Question: {question.statement.split("").filter((char,index) => {
+                              return index<50
+                            }).join("")}.....
                           </Typography>
 
                          
@@ -134,18 +166,16 @@ const EditExams = () => {
                             Number of Test Cases: {question.testcases.length}
                           </Typography>
 
+                          <Box display="flex" gap={2}>
+                          <Button variant="contained" startIcon={<Edit />} onClick={() => {setExamModal({status:true,question_id:question.id})}}>
+                            Edit
+                          </Button>
+
+                          <Button variant="contained" style={{backgroundColor:"#FF2626"}} startIcon={<Delete />} onClick={() => { deleteQuestion(question.id) }}>
+                            Delete
+                          </Button>
+                        </Box>
                           
-                          <TextField
-                            fullWidth
-                            multiline
-                            variant="outlined"
-                            label="Edit Question"
-                            value={question.statement}
-                            onChange={(e) =>
-                              handleQuestionChange(exam._id, question.id, e.target.value)
-                            }
-                            sx={{ marginBottom: '10px' }}
-                          />
                         </CardContent>
                       </Card>
                     </Grid>

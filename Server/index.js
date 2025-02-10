@@ -1,13 +1,13 @@
 const express = require('express')
 const app = express()
 const cors = require('cors');
-const { parse } = require('dotenv');
+const mongoose = require("mongoose");
 require('dotenv').config();
 const collection = require('./config')
 app.use(cors());
 app.use(express.json());
 
-
+// API JDOODLE
 app.get("/credit", async(req,res) => {
     try{
         const response = await fetch('https://api.jdoodle.com/v1/credit-spent',{
@@ -73,6 +73,7 @@ app.post('/execute', async (req, res) => {
 });
 
 
+// Exams CRUD
 app.post('/getAllExams',async (req,res) => {
     const data = await collection.find({});
     res.json(data);
@@ -82,6 +83,7 @@ app.post('/getExam', async (req,res) => {
     const data = await collection.find({_id:req.body.id});
     res.json(data);
 })
+
 
 app.post('/createExam',async (req,res) => {
     try{
@@ -93,6 +95,28 @@ app.post('/createExam',async (req,res) => {
         res.json({"error":"Some Error Occured"})
     }
 })
+
+
+// Questions CRUD
+app.post("/getQuestion", async(req,res) => {
+    const objectId = new mongoose.Types.ObjectId(req.body.id);
+    const data = await collection.find({ 
+        "questions.id": objectId },
+        { "questions.$": 1 })
+
+    res.json(data)
+})
+
+app.post("/deleteQuestion", async(req,res) => {
+    const objectId = new mongoose.Types.ObjectId(req.body.id);
+    const data =  await collection.updateOne(
+        { "questions.id": objectId }, 
+        { $pull: { questions: { id: objectId } } } 
+      );
+
+    res.json({message:"Question Deleted Successfully"})
+})
+
 
 app.listen(7123, () => {
     console.log("Listening on http://localhost:7123/");
