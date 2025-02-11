@@ -1,72 +1,117 @@
-/* Sidebar Styles */
-.sidebar {
-  position: fixed; /* Keeps sidebar fixed on the left */
-  top: 89px;
-  left: 0;
-  height: 100vh; /* Full height of the screen */
-  width: 200px; /* Sidebar width */
-  background-color: #808080; /* Grey background color */
+/* General Wrapper */
+.wrapper {
   display: flex;
-  justify-content: center; /* Center content horizontally */
-  padding-top: 20px; /* Add some space at the top */
-  box-sizing: border-box; /* Ensure padding is included in width and height */
+  height: calc(100vh - 89px);
+  transition: padding-left 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  flex-direction: row; /* Maintain horizontal alignment */
 }
 
-/* Container for the grid layout */
-.container {
-  width: 100%; /* Full width of the sidebar */
-  max-width: none; /* Disable max-width so it can expand fully */
-  padding: 0 10px; /* Add some space inside the container */
+/* Question Box */
+.question-box {
+  flex: 1.5;
+  background-color: #f0f0f0;
+  padding: 20px;
+  color: black;
+  display: flex;
+  flex-direction: column; 
+  box-sizing: border-box;
+  min-width: 0;
 }
 
-/* Grid Layout */
-.row {
+/* Input Box */
+.input-box {
+  flex: 2;
+  background-color: #fff;
+  padding: 20px;
+  z-index: 1;
+  position: relative;
+  border-radius: 0%;
   display: flex;
-  flex-wrap: wrap; /* Allow items to wrap to the next row */
-}
-
-.row-cols-3 .col {
-  padding: 20px; /* Space between buttons */
-  display: flex;
-  margin: 10px;
-  justify-content: center; /* Center buttons inside the columns */
-}
-
-/* Button Styles (Circular) */
-.sidebar-button {
-  width: 40px;  /* Button width */
-  height: 40px; /* Button height */
-  border-radius: 50%; /* Circular button */
-  background-color: #fff; /* White background */
-  border: 2px solid #ccc; /* Light grey border */
-  font-size: 20px; /* Font size */
-  color: #333; /* Dark text color */
-  display: flex;
-  align-items: center;
   justify-content: center;
-  cursor: pointer; /* Pointer cursor on hover */
-  transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition for hover effects */
+  align-items: center;
+  box-sizing: border-box;
+  margin: 0;
+  font-size: 26px;
+  height: 100%;
 }
 
-/* Button Hover Effects */
-.sidebar-button:hover {
-  background-color: #ccc; /* Light grey background on hover */
-  transform: scale(1.1); /* Slightly increase button size */
+/* Lang Select */
+.lang-select {
+  position: absolute;
+  left: 1000px;
+  width: 200px;
+  top: 10px;
+  z-index: 2;
 }
 
-.sidebar-button:focus {
-  outline: none; /* Remove focus outline */
+/* Fourth Box */
+.fourth-box {
+  flex: 1;
+  background-color: #cfcfcf;
+  padding: 20px;
+  color: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
 }
 
-/* Optional: Adjust Sidebar for Smaller Screens (Responsive) */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 200px; /* Smaller sidebar width on smaller screens */
-  }
+/* Button to toggle between sidebar and fourth box */
+.toggle-button {
+  display: flex;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 20;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  width: 300px;
+}
 
-  .sidebar-button {
-    width: 50px; /* Smaller button size on smaller screens */
-    height: 50px;
-    font-size: 16px; /* Smaller font size */
-  }
+.run-buttons {
+  margin: 0px 20px;
+}
+
+.output-heading {
+  position: absolute;
+  top: 100px;
+}
+
+.dividing-line {
+  position: absolute;
+  top: 250px;
+  width: 310px;
+  margin: 0px;
+  padding: 0px;
+}
+
+.custom-output {
+  position: absolute;
+  top: 220px;
+  width: 310px;
+  word-wrap: break-word;
+  word-break: break-all;
+}
+
+
+/* Question Heading */
+.question-heading {
+  font-size: 35px;
+  font-weight: bold;
+  margin: 0;
+}
+
+/* Question Description */
+.question-desc {
+  font-size: 28px;
+  color: #333;
+  width: 500px;
+  margin: 0;
+}
+
+.toggle-button:focus {
+  outline: none;
 }

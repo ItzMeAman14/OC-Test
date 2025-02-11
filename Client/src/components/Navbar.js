@@ -21,7 +21,6 @@ function Navbar(props) {
                 <h3 className='mx-2'>AlComp</h3>
                 <ul>
                     <li><Link to="/">Home</Link></li>
-                    <li><Link to="/chat">Chat</Link></li>
                     <li><Link to="/exams">Exams</Link></li>
                     <li><Link to="/about">About</Link></li>
                     <li><Link to="/contact">Contact</Link></li>

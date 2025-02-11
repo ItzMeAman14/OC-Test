@@ -2,7 +2,7 @@ import React from 'react';
 import { useState } from 'react';
 import '../css/Home.css';
 import Loader from './Loader';
-import Alert from './Alert';
+import { toast } from "react-toastify";
 
 function Home(props) {
 
@@ -109,16 +109,28 @@ function Home(props) {
         
         const data = await response.json();
         if(data.error === "Daily limit reached"){
-            props.showAlert("Daily Limit Reached.Come Back Tomorrow.","danger")
+            toast.error("Daily Limit Reached.Come Back Tomorrow.",{
+                autoClose:5000,
+                closeOnClick:false,
+                pauseOnHover:true,
+                hideProgressBar: false,
+                closeButton:false
+            })
         }
         else{
-            props.showAlert("Code Compiled Successfully","success")
+            toast.success("Code Compiled Successfully",{
+                autoClose:5000,
+                closeButton:false,
+                closeOnClick:false,
+                pauseOnHover:true,
+                hideProgressBar: false
+            })
         }
         setLoad({loading:false})
         setOutput(data.output || data.error);
     } 
     catch(error){   
-        props.showAlert("No internet Connection","danger")
+        
         setOutput('Error Executing Code:'+ error.message);
         console.error(error);
         }
@@ -144,8 +156,6 @@ function Home(props) {
   return (
       <div className="main-container">
         <div className="left-container">
-        {!props.alert && <Alert/>}
-        {props.alert && <Alert alert={props.alert} />}
             <div className="editor-container">
                 <select value={lang} onChange={(e) => setLang(e.target.value)} id="language-select">
                     <option value="python3">Python 3</option>

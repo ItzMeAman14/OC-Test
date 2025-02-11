@@ -1,47 +1,76 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
-import Loader from './Loader';
+import { Box, Card, CardContent, Typography, CircularProgress, Grid, Button } from '@mui/material';
 
 function Exam() {
-  const [Data, setData] = useState(null);
-  const [loading, setloading] = useState(false);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     getExams();
   }, []);
 
-  async function getExams(){
-    try{
-
-      setloading(true);
-      const res = await fetch('http://localhost:7123/getAllExams')
+  async function getExams() {
+    try {
+      setLoading(true);
+      const res = await fetch('http://localhost:7123/getAllExams');
       const data = await res.json();
-      setloading(false);
+      setLoading(false);
       setData(data);
-    }
-    catch(err){
+    } catch (err) {
       console.error(err);
+      setLoading(false);
     }
   }
+
   return (
-    <div>
-      <h1>Exams Page</h1>
-      <div className="row">
-        { loading && <Loader/>}
-        {Data && Data.map(exam => (
-          <div className="col-md-3 mb-4" key={exam._id} style={{"marginLeft":"100px"}}>
-            <div className="card" style={{ "width": "18rem" }}>
-              <div className="card-body">
-                <h5 className="card-title">{exam.name}</h5>
-                <p className="card-text">Time to attempt the exam is 2 hours and if open any extra tab or try to cheat then the test will automatically submit.</p>
-                <Link to={`/exams/${exam._id}`} className="card-link">Attempt</Link>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+    <Box sx={{ padding: 4, backgroundColor: '#f4f6f8' }}>
+      <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: 'bold', color: '#333' }}>
+        Exams Page
+      </Typography>
+
+      <Grid container spacing={4} justifyContent="center">
+        {loading ? (
+          <Box display="flex" justifyContent="center" alignItems="center" height="80vh">
+            <CircularProgress size={60} color="primary" />
+          </Box>
+        ) : (
+          data &&
+          data.map((exam) => (
+            <Grid item key={exam._id} xs={12} sm={6} md={4} lg={3}>
+              <Card
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%',
+                  boxShadow: 3, 
+                  borderRadius: 2,
+                  '&:hover': {
+                    boxShadow: 6, 
+                    transform: 'scale(1.05)',
+                    transition: 'transform 0.3s, box-shadow 0.3s',
+                  },
+                }}
+              >
+                <CardContent sx={{ flex: 1 }}>
+                  <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+                    {exam.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" paragraph sx={{ marginBottom: 2 }}>
+                    Time to attempt the exam is 2 hours. If you open any extra tabs or try to cheat, the test will automatically submit.
+                  </Typography>
+                  <Link to={`/exams/${exam._id}`} style={{ textDecoration: 'none' }}>
+                    <Button variant="contained" color="primary" fullWidth>
+                      Attempt
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))
+        )}
+      </Grid>
+    </Box>
   );
 }
 

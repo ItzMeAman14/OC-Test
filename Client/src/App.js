@@ -1,15 +1,15 @@
+import React,{ useEffect, useState } from 'react';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
-import Chat from './components/Chat';
 import Exam from './components/Exam';
 import About from './components/About';
 import ExamDetail from './components/ExamDetail';
-import { useEffect, useState } from 'react';
-import Alert from './components/Alert';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import React from 'react';
 import Dashboard from "./components/admin/Dashboard"
 import Login from "./components/Login"
+import Messages from './components/admin/Messages';
+import { ToastContainer } from 'react-toastify';
+import Contact from './components/Contact';
 
 function App() {
   const [mode, setMode] = useState('');
@@ -45,18 +45,15 @@ function App() {
     <div className={`App ${mode}`}>
 
       <Router>
-
+        <Navbar setMode={setMode} Modelogo={Modelogo} setModelogo={setModelogo} mode={mode} />
+        <Messages />
+        <ToastContainer />
         <Routes>
 
         <Route exact path='/' element={
           <>
-          <Navbar setMode={setMode} Modelogo={Modelogo} setModelogo={setModelogo} mode={mode} />
           <Home showAlert={showAlert} alert={alert} />
           </>
-        }/>
-
-        <Route exact path='/chat' element={
-          <Chat/>
         }/>
           
         <Route exact path='/exams' element={
@@ -67,7 +64,7 @@ function App() {
           <About/>} 
         />
 
-        <Route exact path="/exams/:id" element={
+        <Route exact path="/exams/:exam_id" element={
           <ExamDetail />} 
         />
 
@@ -78,6 +75,11 @@ function App() {
 
         <Route exact path="/login" element={
           <Login />
+        }
+        />
+
+        <Route exact path="/contact" element={
+          <Contact />
         }
         />
 

@@ -1,67 +1,176 @@
 import React, { useState,useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import Loader from './Loader';
+import { useParams } from "react-router-dom";
 import '../css/Examdetail.css';
 
 function ExamDetail() {
-  const [data, setdata] = useState(null);
-  const [loading,setloading] = useState(false);
-  const [ques, setques] = useState(null);
-  const { id } = useParams();
-  const getInfo = async () => {
-    setloading(true);
-    try{
-      const res = await fetch(`http://localhost:7123/getExam/${id}`);
+  const { exam_id } = useParams();
+  const [data,setData] = useState([]);
+  const [lang, setLang] = useState('python3');
+  const [input, setInput] = useState('');
+  const [output, setOutput] = useState('');
+  const [userInputs, setUserInputs] = useState('');
+  const [allOutput, setAllOutput] = useState([]);
+  const [question, setQuestion] = useState([]);
+  const [questions, setQuestions] = useState([]);
 
-      if (!res.ok) {
-        throw new Error('Network response was not ok');
+  const executeCode = async () => {
+    try {
+      const response = await fetch('http://localhost:7123/execute', {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          input,
+          lang,
+          userInputs
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not OK');
       }
 
-      const parseData = await res.json();
-      setdata(parseData);
+      const data = await response.json();
+      setOutput(data.output || data.error);
+    }
+    catch (error) {
+      console.error(error);
+    }
+
+  }
+
+  const runAll = async () => {
+      const out = [];
+      
+      for (let i of question.testcases) {
+        let userInputEach = i.input;
+        
+        try{
+
+          let response = await fetch('http://localhost:7123/execute', {
+            method: "POST",
+            headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            input,
+            lang,
+            "userInputs":userInputEach
+          }),
+        });
+        let outputResponse = await response.json();
+
+        if(!outputResponse.ok){
+          console.log(outputResponse.error);
+          
+          console.log("Some error Occured");
+        }
+        
+        if(i.output !== outputResponse.output){
+          out.push({"icon":"fa-solid fa-hand-middle-finger","color":"red"})
+        }
+        else{
+          out.push({"icon":"fa-solid fa-face-smile","color":"green"})
+        }
+      }
+      catch(err){
+        console.error(err);
+      }
+    }
+    setAllOutput(out)
+  }
+
+
+  const getAllQuestions = async () => {
+    try{
+      const res = await fetch(`http://localhost:7123/getExam/${exam_id}`)
+      const parsed = await res.json();
+      setData(parsed[0]);
+      setQuestions(parsed[0].questions);
+      setQuestion(parsed[0].questions[0]);
     }
     catch(err){
-      console.log("Error fetching data: "+err);
-    }
-    finally{
-      setloading(false);
+      console.error(err);
     }
   }
-  
-  const filterQues = (idtoFilter) => {
-    let question = data[0].questions.filter(ques => ques.id===idtoFilter);
-    setques(question);
-    console.log(ques);
+
+
+  const filterData = (idtoFilter) => {
+    const ques = questions.filter(ques => ques._id === idtoFilter);
+    setQuestion(ques[0]);
   }
 
 
   useEffect(() => {
-    getInfo();
-  }, [id]);
+    getAllQuestions();
+  }, []);
 
   return (
-    <div>
-      
-      {loading && <Loader/>}
-      <div className='sidebar'>
-        <div className="container text-center">
-          <div className='row row-cols-3'>
-          {data && data[0].questions.map((ques,index) => {
-             return (
-                  <button className='col sidebar-button' key={ques.id} onClick={() => {filterQues(ques.id)}}>{index+1}</button>
-             )
-            })}
-            </div>
-        </div>
-      </div>
-
-          
-      <div>
-        {ques && 
-        <p key={ques.id}>{JSON.stringify(ques)}</p>
+    <>
+      <ul className="nav nav-tabs">
+        {
+          questions.map((i, j) => {
+            return (
+              <li key={i._id} className="nav-item">
+                <button className="nav-link bg-transparent" onClick={() => { filterData(i._id) }}>{j + 1}</button>
+              </li>
+            )
+          })
         }
+
+      </ul>
+      <div className={`wrapper`}>
+
+
+        {/* Question Box */}
+        <div className="question-box">
+          <h2 className='question-heading'>{question.heading}</h2>
+          <p className='question-desc'>{question.statement}</p>
+        </div>
+
+        {/* Input Box */}
+        <textarea className="input-box" placeholder='Write your code here' onInput={(e) => { setInput(e.target.value) }} />
+
+        <select className="lang-select" defaultValue="Python 3" onInput={(e) => { setLang(e.target.value) }}>
+          <option value="python3">Python 3</option>
+          <option value="java">Java</option>
+          <option value="cpp">C++</option>
+        </select>
+
+
+        <div className="fourth-box">
+        <div className="toggle-button">
+          <button onClick={executeCode} className='btn btn-sm run-buttons'><i className='fa-solid fa-play'></i></button>
+          <button onClick={runAll} className='run-buttons'>Submit</button>
+        </div>
+          <h2 className='output-heading'>Output</h2>
+          <p className='custom-output'>{output}</p>
+          <hr className='dividing-line'/> 
+          
+          <div className="container-fluid">
+            <div className="row row-cols-1 row-cols-md-3 g-4">
+              {allOutput && allOutput.map((item, index) => (
+                <div key={index} className="col">
+                  <i 
+                    className={`${item.icon}`} 
+                    style={{
+                      color: item.color,
+                      fontSize: 40,
+                      padding: 20,
+                      display: 'block',
+                      textAlign: 'center'
+                    }}
+                  ></i>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+
       </div>
-    </div>
+    </>
   );
 }
 
