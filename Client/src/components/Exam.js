@@ -59,11 +59,38 @@ function Exam() {
                   <Typography variant="body2" color="text.secondary" paragraph sx={{ marginBottom: 2 }}>
                     Time to attempt the exam is 2 hours. If you open any extra tabs or try to cheat, the test will automatically submit.
                   </Typography>
-                  <Link to={`/exams/${exam._id}`} style={{ textDecoration: 'none' }}>
-                    <Button variant="contained" color="primary" fullWidth>
-                      Attempt
-                    </Button>
-                  </Link>
+
+                    {/* Buttons */}
+                        
+                        {
+                          exam.attempted &&
+
+                          <Box display="flex" justifyContent="space-between">
+
+                            <Link>
+                              <Button variant="contained" color="primary" fullWidth disabled>
+                                Attempted
+                              </Button>
+                            </Link>
+
+                          <Link to={`/score?${exam._id}`}>
+                            <Button variant="contained" color="primary" fullWidth>
+                              View Score
+                            </Button>
+                          </Link>
+
+                          </Box>
+                        }
+                      
+                      {  
+                        !exam.attempted &&
+                        <Link to={`/exams/${exam._id}`} style={{ textDecoration: 'none' }}>
+                          <Button variant="contained" color="primary" fullWidth>
+                            Attempt
+                          </Button>
+                        </Link>
+                      }
+                    
                 </CardContent>
               </Card>
             </Grid>

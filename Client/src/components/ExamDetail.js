@@ -1,14 +1,12 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState,useEffect,useCallback } from 'react';
 import { useParams } from "react-router-dom";
 import '../css/Examdetail.css';
 
 function ExamDetail() {
   const { exam_id } = useParams();
-  const [data,setData] = useState([]);
   const [lang, setLang] = useState('python3');
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
-  const [userInputs, setUserInputs] = useState('');
   const [allOutput, setAllOutput] = useState([]);
   const [question, setQuestion] = useState([]);
   const [questions, setQuestions] = useState([]);
@@ -23,7 +21,7 @@ function ExamDetail() {
         body: JSON.stringify({
           input,
           lang,
-          userInputs
+          userInputs:""
         }),
       });
 
@@ -82,18 +80,16 @@ function ExamDetail() {
   }
 
 
-  const getAllQuestions = async () => {
-    try{
-      const res = await fetch(`http://localhost:7123/getExam/${exam_id}`)
+  const getAllQuestions = useCallback(async () => {
+    try {
+      const res = await fetch(`http://localhost:7123/getExam/${exam_id}`);
       const parsed = await res.json();
-      setData(parsed[0]);
       setQuestions(parsed[0].questions);
       setQuestion(parsed[0].questions[0]);
-    }
-    catch(err){
+    } catch (err) {
       console.error(err);
     }
-  }
+  }, [exam_id]);
 
 
   const filterData = (idtoFilter) => {
@@ -104,7 +100,7 @@ function ExamDetail() {
 
   useEffect(() => {
     getAllQuestions();
-  }, []);
+  }, [getAllQuestions]);
 
   return (
     <>

@@ -7,9 +7,10 @@ import ExamDetail from './components/ExamDetail';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Dashboard from "./components/admin/Dashboard"
 import Login from "./components/Login"
-import Messages from './components/admin/Messages';
+import Messages from './components/Messages';
 import { ToastContainer } from 'react-toastify';
 import Contact from './components/Contact';
+import Analytics from './components/admin/Analytics';
 
 function App() {
   const [mode, setMode] = useState('');
@@ -45,28 +46,36 @@ function App() {
     <div className={`App ${mode}`}>
 
       <Router>
-        <Navbar setMode={setMode} Modelogo={Modelogo} setModelogo={setModelogo} mode={mode} />
         <Messages />
         <ToastContainer />
         <Routes>
 
         <Route exact path='/' element={
           <>
+          <Navbar setMode={setMode} Modelogo={Modelogo} setModelogo={setModelogo} mode={mode} />
           <Home showAlert={showAlert} alert={alert} />
           </>
         }/>
           
         <Route exact path='/exams' element={
+          <>
+          <Navbar setMode={setMode} Modelogo={Modelogo} setModelogo={setModelogo} mode={mode} />
           <Exam/>
+          </>
         }/>
 
         <Route exact path="/about" element={
-          <About/>} 
-        />
+          <>
+          <Navbar setMode={setMode} Modelogo={Modelogo} setModelogo={setModelogo} mode={mode} />
+          <About/>
+          </>
+        }/>
 
         <Route exact path="/exams/:exam_id" element={
-          <ExamDetail />} 
+          <ExamDetail />
+          } 
         />
+
 
         <Route exact path="/admin" element={
           <Dashboard />
@@ -79,7 +88,18 @@ function App() {
         />
 
         <Route exact path="/contact" element={
+          <>
+          <Navbar setMode={setMode} Modelogo={Modelogo} setModelogo={setModelogo} mode={mode} />
           <Contact />
+          </>
+        }
+        />
+
+        <Route exact path="/score" element={
+          <>
+          <Navbar setMode={setMode} Modelogo={Modelogo} setModelogo={setModelogo} mode={mode} />
+          <Analytics />
+          </>
         }
         />
 

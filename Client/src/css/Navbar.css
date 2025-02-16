@@ -64,23 +64,23 @@ body {
     }
     
     .left-container {
-        margin-right: 0; /* Remove margin on small screens */
+        margin-right: 0; 
     }
 
     .right-container {
-        width: auto; /* Allow full width */
+        width: auto;
     }
 
     textarea {
-        height: 200px; /* Decrease height on smaller screens */
+        height: 200px; 
     }
 
     .message-container {
-        flex-direction: column; /* Stack input and button */
+        flex-direction: column; 
     }
 
     #message-input {
-        width: 100%; /* Full width on small screens */
-        margin-bottom: 10px; /* Space below input */
+        width: 100%; 
+        margin-bottom: 10px; 
     }
 }

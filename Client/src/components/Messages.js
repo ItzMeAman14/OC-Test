@@ -7,11 +7,8 @@ function MessageModal() {
 
   // Sample messages
   const messages = [
-    'Hello, how are you?',
-    'I am doing well, thanks!',
-    'What about you?',
-    'I am good too, thanks for asking!',
-    'Let’s meet tomorrow for coffee.'
+    'Welcome to AICOMP!',
+    'This feature is coming soon.'
   ];
 
   // Toggle the modal open or closed

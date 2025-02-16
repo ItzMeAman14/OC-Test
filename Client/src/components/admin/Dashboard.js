@@ -11,12 +11,16 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import { Home } from '@mui/icons-material';
-import AddTaskIcon from '@mui/icons-material/AddTask';
-import AddToQueueIcon from '@mui/icons-material/AddToQueue';
+
+// Icons
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import EditIcon from '@mui/icons-material/Edit';
+import SendIcon from '@mui/icons-material/Send';
+
+// Custom Component for Sidebar
 import Form from './Form';
 import EditExam from './EditExam';
-
+import AdminMsg from "./AdminMsg";
 
 const drawerWidth = 240;
 
@@ -52,23 +56,23 @@ function Dashboard(props) {
       <List>
         <ListItem button onClick={ () => { handleNavButtons('dashboard') } }>
           <ListItemIcon>
-            <AddToQueueIcon/>
+            <AddCircleIcon />
           </ListItemIcon> 
           <ListItemText primary="Create New Exam" />
         </ListItem>
 
         <ListItem button onClick={ () => { handleNavButtons('questions') } }>
           <ListItemIcon>
-            <AddTaskIcon/>
+            <EditIcon />
           </ListItemIcon> 
           <ListItemText primary="Add Questions to Existing Exam" />
         </ListItem>
 
-        <ListItem button>
+        <ListItem button onClick={ () => { handleNavButtons('message') } }>
           <ListItemIcon>
-            <Home/>
+            <SendIcon />
           </ListItemIcon> 
-          <ListItemText primary="Others" />
+          <ListItemText primary="Send Message" />
         </ListItem>
 
       </List>
@@ -96,7 +100,7 @@ function Dashboard(props) {
           >
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-            Dashboard
+            Admin Dashboard
           </Typography>
         </Toolbar>
       </AppBar>
@@ -139,6 +143,7 @@ function Dashboard(props) {
         <Toolbar />
           { activeComponent === 'dashboard' && <Form /> }
           { activeComponent === 'questions' && <EditExam /> }
+          { activeComponent === 'message' && <AdminMsg /> }
       </Box>
     </Box>
   );

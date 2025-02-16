@@ -1,5 +1,6 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState,useEffect,useCallback } from 'react';
 import { Modal, Box, TextField, Button, Typography, Stack } from '@mui/material';
+import { toast } from "react-toastify";
 
 function ModalExam(props) {
   const [question, setQuestion] = useState([]); 
@@ -29,22 +30,60 @@ function ModalExam(props) {
     }
   }
 
-  const getQuestion = async () => {
-    try{
-        const res = await fetch(`http://localhost:7123/getQuestion/${props.question_id}`)
+  const getQuestion = useCallback(async () => {
+    try {
+      const res = await fetch(`http://localhost:7123/getQuestion/${props.question_id}`);
+      const data = await res.json();
+      setQuestion(data[0].questions[0]);
+      setTestCases(data[0].questions[0].testcases);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [props.question_id])
 
-        const data = await res.json();
-        setQuestion(data[0].questions[0]);
-        setTestCases(data[0].questions[0].testcases)
+
+  const updateQuestion = async () => {
+    try{
+      
+      const res = await fetch(`http://localhost:7123/updateQuestion/${props.question_id}`,{
+        method:"PUT",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          question,
+          testCases
+        })
+      })
+
+      const parsed = await res.json();
+      if(res.ok){
+        toast.success(parsed.message,{
+          autoClose: 5000,
+          hideProgressBar: false,
+          pauseOnHover: true,
+          closeButton: false
+        })
+        props.enableModal({status:false})
+      }
+      else{
+        toast.error("Some Error Occured", {
+          autoClose: 5000,
+          hideProgressBar: false,
+          pauseOnHover: true,
+          closeButton: false,
+        })
+      }
+
     }
     catch(err){
-        console.error(err);
+      console.error(err);
     }
   }
 
   useEffect(() => {
     getQuestion();
-  }, []);
+  }, [getQuestion]);
 
   return (
     <div>
@@ -75,6 +114,15 @@ function ModalExam(props) {
           </Typography>
 
           {/* Form */}
+
+          <TextField
+            label="Heading"
+            variant="outlined"
+            fullWidth
+            value={question.heading}
+            onChange={(e) => { setQuestion({...question,heading:e.target.value}) }}
+            sx={{ mb: 2 }}
+          />
 
           <TextField
             label="Description"
@@ -121,7 +169,7 @@ function ModalExam(props) {
             <Button variant="outlined" color="secondary" onClick={handleClose}>
               Cancel
             </Button>
-            <Button variant="contained" color="primary">
+            <Button variant="contained" color="primary" onClick={updateQuestion}>
               Update
             </Button>
           </Stack>

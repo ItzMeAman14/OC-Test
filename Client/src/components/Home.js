@@ -1,5 +1,4 @@
-import React from 'react';
-import { useState } from 'react';
+import React,{ useState } from 'react';
 import '../css/Home.css';
 import Loader from './Loader';
 import { toast } from "react-toastify";

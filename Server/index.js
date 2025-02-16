@@ -157,6 +157,28 @@ app.post("/createQuestion/:id",async(req,res) => {
     }
 })
 
+app.put("/updateQuestion/:id",async(req,res) => {
+    try{
+        const objectId = new mongoose.Types.ObjectId(req.params.id);
+        const data =  await collection.updateOne(
+            { "questions._id": objectId }, 
+            { "$set": { 
+                "questions.$" : {
+                    heading: req.body.question.heading,
+                    statement: req.body.question.statement,
+                    testcases: req.body.testCases,
+                }
+            } } 
+        );
+        
+        res.json({message:"Question Updated Successfully"})
+    }
+    catch(err){
+        console.error(err);
+        res.json({"message":"Some Error Occured"})
+    }
+})
+
 app.delete("/deleteQuestion/:id", async(req,res) => {
     try{
 
@@ -173,7 +195,6 @@ app.delete("/deleteQuestion/:id", async(req,res) => {
         res.json({"message":"Some Error Occured"})
     }
 })
-
 
 app.listen(7123, () => {
     console.log("Listening on http://localhost:7123/");

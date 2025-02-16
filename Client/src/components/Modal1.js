@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Modal, Box, TextField, Button, IconButton, Typography, Stack } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-
+import { Modal, Box, TextField, Button, Typography, Stack } from '@mui/material';
+  
 function Modal1(props) {
   const [heading, setHeading] = useState('');
   const [statement, setStatement] = useState(''); 
