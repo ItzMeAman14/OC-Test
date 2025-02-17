@@ -13,7 +13,6 @@ const EditExams = () => {
   const [exams, setExams] = useState([]);
   const [modal, setModal] = useState({status:false,exam_id:null});
   const [toggleUpdateButton, setToggleUpdateButton] = useState([]);
-  const [examname, setExamName] = useState('');
 
 
   const handleToggleQuestions = (examId) => {
@@ -99,14 +98,13 @@ const EditExams = () => {
       const res = await fetch("http://localhost:7123/getAllExams");
       const data = await res.json();      
       setExams(data);
-      setExamName(data[0].name)
       
       // Setting the exam data for changing name
       let temp_data = [];
       data.map((element) => {
         let exam_object = {
           id:element._id,
-          status:false,
+          status:null,
           name:element.name
         }
         temp_data.push(exam_object);
@@ -149,28 +147,75 @@ const EditExams = () => {
     }
   }
 
-  const updateExamName = async(id) => {
+
+  const updateExamDataToTrue = (index) => {
+      let updated_data = {...toggleUpdateButton[index],status:true}
+      
+      let new_data = [
+        ...toggleUpdateButton.slice(0,index),
+        updated_data,
+        ...toggleUpdateButton.slice(index+1)
+      ]
+
+      setToggleUpdateButton(new_data);
+      
+  }
+
+  const updateExamDataToFalse = (index) => {
+      let updated_data = {...toggleUpdateButton[index],status:false}
+      
+      let new_data = [
+        ...toggleUpdateButton.slice(0,index),
+        updated_data,
+        ...toggleUpdateButton.slice(index+1)
+      ]
+
+      updateExamName(new_data,index);
+      setToggleUpdateButton(new_data);
+    }
+
+
+    const updateExamData = (index,event) => {
+      let updated_data = {...toggleUpdateButton[index],name:event.target.value}
+        
+        let new_data = [
+          ...toggleUpdateButton.slice(0,index),
+          updated_data,
+          ...toggleUpdateButton.slice(index+1)
+        ]
+
+        setToggleUpdateButton(new_data);
+    }
+
+  const updateExamName = async(exam_object,index) => {
      try{
-        // const res = await fetch(`http://localhost:7123/updateExam/${id}`)
-        // const data = await res.json();
-        // if(res.ok){
-        //   toast.success(data.message, {
-        //     autoClose: 5000, 
-        //     hideProgressBar: false, 
-        //     pauseOnHover: true,
-        //     closeButton: false,
-        //   })
-        //   getAllExams();
-        // }
-        // else{
-        //   toast.error(data.message,{
-        //     autoClose: 5000, 
-        //     hideProgressBar: false, 
-        //     pauseOnHover: true,
-        //     closeButton: false
-        //   })
-        // }
-        setToggleUpdateButton(false);
+        const res = await fetch(`http://localhost:7123/updateExam/${exam_object[index].id}`,{
+          method:"PUT",
+          headers:{
+            "Content-Type":"application/json"
+          },
+          body:JSON.stringify({
+            name:exam_object[index].name
+          })
+        })
+        const data = await res.json();
+        if(res.ok){
+          toast.success(data.message, {
+            autoClose: 5000, 
+            hideProgressBar: false, 
+            pauseOnHover: true,
+            closeButton: false,
+          })
+          getAllExams();
+        }
+        else{
+          toast.error(data.message,{
+            autoClose: 5000, 
+            hideProgressBar: false, 
+            pauseOnHover: true,
+            closeButton: false
+          })
+        }
      }
      catch(err){
       console.error(err);
@@ -179,8 +224,6 @@ const EditExams = () => {
 
   useEffect(() => {
     getAllExams();
-    console.log(toggleUpdateButton);
-    
   }, [examModal.status]);
 
   return (
@@ -212,8 +255,8 @@ const EditExams = () => {
                 label="Name"
                 variant="outlined"
                 fullWidth
-                value={examname}
-                onChange={ (e) => { setExamName(e.target.value) }}
+                value={toggleUpdateButton[index].name}
+                onChange={ (e) => { updateExamData(index,e) }}
               />
             }
 
@@ -223,7 +266,7 @@ const EditExams = () => {
                   !toggleUpdateButton[index].status ?
                   <Button 
                       variant="contained" 
-                      onClick={() => { setToggleUpdateButton([...toggleUpdateButton]) }} 
+                      onClick={() => { updateExamDataToTrue(index) }} 
                       startIcon={<Edit />} 
                       style={{ backgroundColor: "#0566dc", width: "200px" }}
                     >
@@ -232,7 +275,7 @@ const EditExams = () => {
                       :
                   <Button 
                       variant="contained" 
-                      onClick={ () => { updateExamName(exam._id) }} 
+                      onClick={ () => { updateExamDataToFalse(index) }} 
                       startIcon={<ChangeCircle />} 
                       style={{ backgroundColor: "#0566dc", width: "200px" }}
                     >

@@ -12,6 +12,9 @@ import { ToastContainer } from 'react-toastify';
 import Contact from './components/Contact';
 import Analytics from './components/admin/Analytics';
 
+// Context
+import { MessageProvider } from './components/context/MessageContext';
+
 function App() {
   const [mode, setMode] = useState('');
   const [Modelogo, setModelogo] = useState('moon');
@@ -43,6 +46,8 @@ function App() {
   }
   
   return (
+    <MessageProvider>
+
     <div className={`App ${mode}`}>
 
       <Router>
@@ -106,6 +111,7 @@ function App() {
         </Routes>
       </Router>
     </div>
+    </MessageProvider>
   );
 }
 

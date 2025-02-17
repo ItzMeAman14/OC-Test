@@ -10,6 +10,7 @@ connect.then(() => {
     console.log(err);
 })
 
+// Exam Schema
 const TestCaseSchema = new mongoose.Schema({
     input: mongoose.Schema.Types.Mixed,
     output: mongoose.Schema.Types.Mixed,
@@ -25,9 +26,28 @@ const QuestionSchema = new mongoose.Schema({
 
 const ExamSchema = new mongoose.Schema({
     name:String,
+    attempted: {
+        type:Boolean,
+        default:false
+    },
     questions:[QuestionSchema],  
 });
 
+
+// Messages Schema
+
+const MessageSchema = mongoose.Schema({
+    msg: {
+        type: String,
+        required: true
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now
+      }
+})
+
+const messaging = new mongoose.model("messages",MessageSchema);
 const collection = new mongoose.model("exams",ExamSchema);
 
-module.exports = collection
+module.exports = { collection,messaging }

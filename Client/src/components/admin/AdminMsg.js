@@ -1,12 +1,49 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Container, Typography } from '@mui/material';
+import { toast } from "react-toastify";
+import { useMessages } from "../context/MessageContext";
 
 function AdminMsg() {
+  const { getAllMessages } = useMessages();
   const [message, setMessage] = useState('');
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    alert('Message submitted: ' + message);
+  const handleSubmit = async(e) => {
+    e.preventDefault();
+    try{
+      const res = await fetch("http://localhost:7123/msg/new",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          msg:message
+        })
+      })
+      
+      const data = await res.json();
+      if(res.ok){
+        toast.success(data.message, {
+          autoClose: 5000, 
+          hideProgressBar: false, 
+          pauseOnHover: true,
+          closeButton: false,
+        });
+        setMessage('');
+        getAllMessages();
+      }
+      else{
+        toast.error(data.message, {
+          autoClose: 5000, 
+          hideProgressBar: false, 
+          pauseOnHover: true,
+          closeButton: false,
+        });
+      }
+
+    }
+    catch(err){
+      console.error(err); 
+    }
   };
 
   return (

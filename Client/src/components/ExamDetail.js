@@ -1,4 +1,5 @@
 import React, { useState,useEffect,useCallback } from 'react';
+import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import { useParams } from "react-router-dom";
 import '../css/Examdetail.css';
 
@@ -66,7 +67,7 @@ function ExamDetail() {
         }
         
         if(i.output !== outputResponse.output){
-          out.push({"icon":"fa-solid fa-hand-middle-finger","color":"red"})
+          out.push({"icon":"fa-solid fa-face-sad-tear","color":"red"})
         }
         else{
           out.push({"icon":"fa-solid fa-face-smile","color":"green"})
@@ -104,6 +105,24 @@ function ExamDetail() {
 
   return (
     <>
+
+<AppBar position="sticky" sx={{ backgroundColor: 'black' }}>
+      <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+
+        {/* Timer in the middle */}
+        <Box sx={{ display: 'flex', justifyContent: 'center', flexGrow: 1 }}>
+          <Typography variant="h6" sx={{ color: '#FF2626', fontSize: '1.2rem' }}>
+            Timer: 1
+          </Typography>
+        </Box>
+
+        {/* Right Side Button */}
+        <Button variant='contained' style={{ backgroundColor: "#FF2626", width: "200px" }}>
+          Submit Exam
+        </Button>
+      </Toolbar>
+    </AppBar>
+
       <ul className="nav nav-tabs">
         {
           questions.map((i, j) => {
@@ -142,6 +161,7 @@ function ExamDetail() {
         </div>
           <h2 className='output-heading'>Output</h2>
           <p className='custom-output'>{output}</p>
+
           <hr className='dividing-line'/> 
           
           <div className="container-fluid">

@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, Typography, Box, List, ListItem, ListItemText, Divider, IconButton } from '@mui/material';
 import MessageIcon from '@mui/icons-material/Message';
+import { useMessages } from "./context/MessageContext";
 
 function MessageModal() {
+  const { messages } = useMessages();
   const [open, setOpen] = useState(false);
-
-  // Sample messages
-  const messages = [
-    'Welcome to AICOMP!',
-    'This feature is coming soon.'
-  ];
 
   // Toggle the modal open or closed
   const handleClickOpen = () => {
@@ -19,6 +15,8 @@ function MessageModal() {
   const handleClose = () => {
     setOpen(false);
   };
+
+  
 
   return (
     <div>
@@ -50,8 +48,8 @@ function MessageModal() {
             position: 'fixed',
             bottom: 20,
             right: 20,
-            width: 300,
-            height: 400,
+            width: 500,
+            height: 600,
             borderRadius: 3,
             padding: 2,
             boxShadow: 3
@@ -66,8 +64,29 @@ function MessageModal() {
             <List>
               {messages.map((message, index) => (
                 <React.Fragment key={index}>
-                  <ListItem>
-                    <ListItemText primary={message} />
+                  <ListItem
+                    sx={{
+                      display: 'flex',              
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',     
+                      paddingBottom: '10px',
+                    }}
+                  >
+                    
+                    {/* Time */}
+                    <Typography 
+                      variant="body2" 
+                      color="textSecondary"
+                      sx={{ 
+                        fontSize: '0.75rem', 
+                      }} 
+                    >
+                      {new Date(message.createdAt).toLocaleTimeString()} 
+                    </Typography>
+
+                    {/* Message   */}
+                    <ListItemText primary={message.msg} sx={{textAlign:"justify"}}/>
+
                   </ListItem>
                   <Divider />
                 </React.Fragment>
