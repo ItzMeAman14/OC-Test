@@ -37,16 +37,7 @@ function AdminMsg() {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             required
-            sx={{
-              backgroundColor: 'white', 
-              color: 'black', 
-              '& .MuiInputBase-root': {
-                border: 0, 
-              },
-              '& .MuiInputLabel-root': {
-                color: 'black', 
-              },
-            }}
+            style={{backgroundColor:"white"}}
           />
           <Button
             type="submit"

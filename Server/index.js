@@ -109,6 +109,22 @@ app.post('/createExam',async (req,res) => {
     }
 })
 
+app.put("/updateExam/:id", async(req,res) => {
+    try{
+        const objectId = new mongoose.Types.ObjectId(req.params.id);
+        const exam = collection.updateOne(
+            { _id: objectId },
+            { "$set": {
+                name:req.body.name
+            } })
+        res.json({"message":"Name Updated Successfully"})
+    }
+    catch(err){
+        console.error(err);
+        res.json({"message":"Some Error Occured"})
+    }
+})
+
 
 app.delete("/deleteExam/:id",async(req,res) => {
     try{

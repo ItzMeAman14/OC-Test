@@ -1,20 +1,33 @@
-import React, { useState,useEffect,useCallback } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Modal, Box, TextField, Button, Typography, Stack } from '@mui/material';
 import { toast } from "react-toastify";
+import { InfinitySpin } from "react-loader-spinner";
 
 function ModalExam(props) {
   const [question, setQuestion] = useState([]); 
   const [testCases, setTestCases] = useState([]);
+  const [load, setLoad] = useState(false);
 
   const handleClose = () => {
     props.enableModal({status:false});
   }
 
-  
+  const handleAddTestCase = () => {
+    setTestCases([...testCases, { input: '', output: '' }]);
+  };
+
+
+  const deleteTestCase = (index) => {
+    const newtestcase = testCases.filter((e,i) => {
+      return i !== index
+    })
+    setTestCases(newtestcase);
+  }
+
   const updateTestCases = (e,index,type) => {
     if(type === "input"){
         const updatedTestCases = [...testCases]; 
-        updatedTestCases[index] = {  
+        updatedTestCases[index] = { 
             ...testCases[index],  
             input: e.target.value,  
         };
@@ -30,16 +43,18 @@ function ModalExam(props) {
     }
   }
 
-  const getQuestion = useCallback(async () => {
+  const getQuestion = async() => {
     try {
+      setLoad(true)
       const res = await fetch(`http://localhost:7123/getQuestion/${props.question_id}`);
-      const data = await res.json();
+      const data = await res.json();      
       setQuestion(data[0].questions[0]);
       setTestCases(data[0].questions[0].testcases);
+      setLoad(false);
     } catch (err) {
       console.error(err);
     }
-  }, [props.question_id])
+  }
 
 
   const updateQuestion = async () => {
@@ -82,13 +97,15 @@ function ModalExam(props) {
   }
 
   useEffect(() => {
-    getQuestion();
-  }, [getQuestion]);
+      getQuestion();
+  }, []);
 
   return (
     <div>
       {/* Modal */}
       <Modal open={true} sx={{ overflow: 'auto' }}>
+        
+
         <Box
           sx={{
             position: 'absolute',
@@ -107,14 +124,25 @@ function ModalExam(props) {
             maxHeight: '80vh', 
             overflowY: 'auto', 
           }}
-        >
+          >
           {/* Modal Header */}
           <Typography variant="h6" component="h2" gutterBottom>
             Edit Question
           </Typography>
 
-          {/* Form */}
+          {/* Loader */}
+          {
+            load && <InfinitySpin
+            visible={true}
+            width="200"
+            color="#4fa94d"
+            ariaLabel="infinity-spin-loading"
+            />
+          }
 
+          {/* Form */}
+          {
+            !load &&
           <TextField
             label="Heading"
             variant="outlined"
@@ -123,9 +151,12 @@ function ModalExam(props) {
             onChange={(e) => { setQuestion({...question,heading:e.target.value}) }}
             sx={{ mb: 2 }}
           />
+          }
 
+          {
+            !load &&
           <TextField
-            label="Description"
+          label="Description"
             variant="outlined"
             fullWidth
             multiline
@@ -133,15 +164,22 @@ function ModalExam(props) {
             value={question.statement}
             onChange={(e) => { setQuestion({...question,statement:e.target.value}) }}
             sx={{ mb: 2 }}
-          />
+            />
+          }
 
           {/* Render the Test Cases */}
+          {
+            !load &&
+          
           <Typography variant="subtitle1" gutterBottom>
             Test Cases:
           </Typography>
-
+          }  
           
-          {testCases.map((testCase, index) => (
+          {
+            !load &&
+          
+          testCases.map((testCase, index) => (
             <Box key={index} sx={{ mb: 2 }}>
               <TextField
                 label={`Input ${index + 1}`}
@@ -159,12 +197,27 @@ function ModalExam(props) {
                 onChange={(e) => {updateTestCases(e,index,"output") }}
                 sx={{ mb: 2 }}
                 />
-                <Button variant='contained' color="error" sx={{"&:hover":{backgroundColor:"red"}}}>Delete TestCase {index+1}</Button>
+                <Button variant='contained' color="error" onClick={ () => { deleteTestCase(index) }} sx={{"&:hover":{backgroundColor:"red"}}}>Delete TestCase {index+1}</Button>
             </Box> 
-          ))}
+          ))
+        }
 
+        {
+          !load &&
+          <Button
+          variant="outlined"
+          color="primary"
+          onClick={handleAddTestCase}
+            sx={{ mb: 2 }}
+          >
+            Add Test Case
+          </Button>
+        }
+        
 
           {/* Action buttons */}
+          {
+            !load &&
           <Stack direction="row" justifyContent="space-between" spacing={2}>
             <Button variant="outlined" color="secondary" onClick={handleClose}>
               Cancel
@@ -173,6 +226,7 @@ function ModalExam(props) {
               Update
             </Button>
           </Stack>
+          }
         </Box>
       </Modal>
     </div>
