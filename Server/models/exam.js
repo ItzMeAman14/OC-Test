@@ -26,7 +26,7 @@ const ExamSchema = new mongoose.Schema({
         default:false
     },
     questions:[QuestionSchema], 
-    score: [scoreSchema] 
+    score: scoreSchema 
 });
 
 module.exports = ExamSchema;

@@ -53,7 +53,6 @@ function App() {
           } 
         />
 
-
         <Route exact path="/admin" element={
           <Dashboard />
         }
@@ -72,7 +71,7 @@ function App() {
         }
         />
 
-        <Route exact path="/score" element={
+        <Route exact path="/score/:id" element={
           <>
           <Navbar />
           <Analytics />

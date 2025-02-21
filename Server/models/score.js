@@ -15,7 +15,7 @@ const scoreSchema = new mongoose.Schema({
     type: Number, 
     required: true, 
   },
-  avgTime: {
+  givenTime: {
     type: Number,
     required: true, 
   },
@@ -23,7 +23,11 @@ const scoreSchema = new mongoose.Schema({
     type: Number,
     required: true, 
   },
-}, { timestamps: true });
+  submissionTime:{
+    type: Date,
+    default: Date.now
+  }
+});
 
 
 module.exports = scoreSchema

@@ -1,31 +1,67 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Box, Typography, Card, CardContent, LinearProgress, Grid } from '@mui/material';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { useParams } from 'react-router-dom';
+import NoScoresFound from "./NoScoresFound";
 
-// Register necessary components for Chart.js
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const Analytics = () => {
-    const testCasesPassed = 8;
-    const totalTestCases = 10; // Total of 10 test cases
-    const timeTaken = 15; // Time taken in minutes
-    const avgTime = 12; // Expected average time in minutes
-    const numOfSubmissions = 3; // Number of submissions made
+    const { id } = useParams();
+    const [testCasesPassed, setTestCasesPassed] = useState(0);
+    const [totalTestCases, setTotalTestCases] = useState(0);
+    const [timeTaken, setTimeTaken] = useState(0);
+    const [givenTime, setGivenTime] = useState(0); 
+    const [numOfSubmissions, setNumOfSubmissions] = useState(0);
+    const [noScores,setNoScores] = useState(false);
 
+    const getScores = useCallback( async() => {
+        try {
+            const res = await fetch(`http://localhost:7123/getScores/${id}`);
+            const parsed = await res.json();
+            
+            if(parsed !== "No Scores Found"){
+                setTestCasesPassed(parsed.testCasesPassed);
+                setTotalTestCases(parsed.totalTestCases);
+                setTimeTaken(parsed.timeTaken);
+                setGivenTime(parsed.givenTime);
+                setNumOfSubmissions(parsed.numOfSubmissions);
+            }
+            else{
+                setNoScores(true);
+            }
+        }
+        catch(err){
+            console.error(err);
+        }
+    }, [id]);
+
+    useEffect(() => {
+        getScores();
+    }, [getScores]);
+
+    // Calculate pass rate
     const passRate = ((testCasesPassed / totalTestCases) * 100).toFixed(2);
-    const efficiency = timeTaken <= avgTime ? 'Efficient' : timeTaken <= avgTime * 1.5 ? 'Average' : 'Slow';
-    const submissionEfficiency = numOfSubmissions <= 2 ? 'Efficient' : 'Inefficient';
 
+    // Use givenTime for efficiency analysis
+    const efficiency = timeTaken <= givenTime * 0.5
+        ? 'Efficient' 
+        : timeTaken <= givenTime * 0.7
+        ? 'Average' 
+        : 'Slow';
+
+    const submissionEfficiency = numOfSubmissions <= 2 ? 'Efficient' : 'Inefficient';
+    
+    // Pass rate message
     const getPassRateMessage = () => {
-        if (passRate === 100) return 'Perfect! All test cases passed.';
+        if (passRate == 100) return 'Perfect! All test cases passed.';
         if (passRate >= 75) return 'Great job! You passed most test cases.';
         if (passRate >= 50) return 'Decent, but review your solution to pass more test cases.';
         return 'You need to revisit your solution. Most test cases failed.';
     };
 
-    // Dummy data for the pie chart
+    // Pie chart data
     const pieChartData = {
         labels: ['Passed', 'Failed'],
         datasets: [
@@ -39,22 +75,23 @@ const Analytics = () => {
     };
 
     return (
-        <Box sx={{ padding: 2, height:"89vh" }}>
+        <Box sx={{ padding: 2, height: "89vh" }}>
             <Typography variant="h4" align="center" sx={{ marginBottom: 2 }}>
                 Coding Exam Analytics
             </Typography>
 
-            {/* Grid Layout: Left for Analysis, Right for Pie Chart */}
-            <Grid container spacing={4}>
-                {/* Left Column for Analysis */}
+            {
+                !noScores ?
+                
+                <Grid container spacing={4}>
                 <Grid item xs={12} sm={8}>
-                    {/* Test Case Results */}
+                    {/* Test Cases Results */}
                     <Card sx={{ marginBottom: 2 }}>
                         <CardContent>
                             <Typography variant="h6">Test Case Results</Typography>
                             <Typography variant="body1">{`Test Cases Passed: ${testCasesPassed} / ${totalTestCases}`}</Typography>
                             <Typography variant="body1">{`Pass Rate: ${passRate}%`}</Typography>
-                            <LinearProgress variant="determinate" value={passRate} sx={{ marginTop: 1 }} />
+                            <LinearProgress variant="determinate" value={Math.floor(passRate)} sx={{ marginTop: 1 }} />
                             <Typography variant="body2" color="text.secondary" sx={{ marginTop: 1 }}>
                                 {getPassRateMessage()}
                             </Typography>
@@ -66,11 +103,11 @@ const Analytics = () => {
                         <CardContent>
                             <Typography variant="h6">Time Efficiency</Typography>
                             <Typography variant="body1">{`Time Taken: ${timeTaken} minutes`}</Typography>
-                            <Typography variant="body1">{`Expected Time: ${avgTime} minutes`}</Typography>
+                            <Typography variant="body1">{`Given Time: ${givenTime} minutes`}</Typography>
                             <Typography
                                 variant="body1"
                                 color={efficiency === 'Efficient' ? 'success.main' : efficiency === 'Average' ? 'warning.main' : 'error.main'}
-                            >
+                                >
                                 {`Efficiency: ${efficiency}`}
                             </Typography>
                         </CardContent>
@@ -98,16 +135,12 @@ const Analytics = () => {
                     </Card>
                 </Grid>
             </Grid>
+            
+            :
+            <NoScoresFound />
+        }
         </Box>
     );
-};
-
-Analytics.propTypes = {
-    testCasesPassed: PropTypes.number.isRequired,
-    totalTestCases: PropTypes.number.isRequired,
-    timeTaken: PropTypes.number.isRequired,
-    avgTime: PropTypes.number.isRequired,
-    numOfSubmissions: PropTypes.number.isRequired,
 };
 
 export default Analytics;

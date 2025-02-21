@@ -2,10 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { AppBar, Toolbar, Typography, Button, Box, TextField, Select, MenuItem, Divider } from '@mui/material';
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import ExamCompletion from "./ExamCompletion";
 
 function ExamDetail() {
   const navigate = useNavigate();
   const { exam_id } = useParams();
+
+  // States
   const [lang, setLang] = useState('python3');
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
@@ -13,7 +16,15 @@ function ExamDetail() {
   const [userInput, setUserInput] = useState('');
   const [question, setQuestion] = useState([]);
   const [questions, setQuestions] = useState([]);
+  const [completed, setCompleted] = useState(false);
+
+  // Timer
   const [time, setTime] = useState(3600);
+
+  // For Scores
+  const [numOfSubmissions, setNumOfSubmissions] = useState(0);
+
+  const [scoreUpdates,setScoreUpdates] = useState({1:2,2:1,3:3});
 
   const executeCode = async () => {
     try {
@@ -44,8 +55,9 @@ function ExamDetail() {
   const runAll = async () => {
     const out = [];
     setOutput("");
-
+    setNumOfSubmissions(numOfSubmissions + 1);
     let passed = 0;
+    
     for (let i of question.testcases) {
       let userInputEach = i.input;
 
@@ -79,9 +91,15 @@ function ExamDetail() {
         console.error(err);
       }
     } 
+
+    // Setting TestCases Passed
+    setScoreUpdates(prevState => ({
+      ...prevState,
+      [question._id]: passed
+    }));
+
     if(question.testcases.length === passed){
         passQuestion(question._id);
-        getAllQuestions();
     }
     setAllOutput(out);
   };
@@ -94,6 +112,13 @@ function ExamDetail() {
 
         const parsed = await res.json();
         if(res.ok){
+          setTimeout(() => {
+            getAllQuestions();
+            setInput('');
+            setOutput('')
+            setAllOutput([]);
+            setUserInput('')
+          },3000);
           toast.success(parsed.message, {
             autoClose: 5000,
             hideProgressBar: false,
@@ -119,8 +144,28 @@ function ExamDetail() {
     try {
       const res = await fetch(`http://localhost:7123/getExam/${exam_id}`);
       const parsed = await res.json();
+
+      let passedQuestion = 0;
+      parsed[0].questions.forEach(ques => {
+          if(ques.passed){
+            passedQuestion++;
+          }
+      });
+
+      if(passedQuestion === parsed[0].questions.length){
+        setTimeout(() => {
+          setCompleted(true);
+        },3000)
+      }
       setQuestions(parsed[0].questions);
-      setQuestion(parsed[0].questions[0]);
+      
+      for(let i=0;i<parsed[0].questions.length;i++){
+        if(!parsed[0].questions[i].passed){
+          setQuestion(parsed[0].questions[i]);
+          break;
+        }
+      }
+      
     } catch (err) {
       console.error(err);
     }
@@ -141,11 +186,79 @@ function ExamDetail() {
   };
   
 
+  const updateTotalTestCases = () => {
+    let testCases = 0;
+    questions.forEach(ques => {
+        testCases += ques.testcases.length;
+    });
+    return testCases;
+  }
 
-  const submitExam = () => {
-    console.log(3600 - time);
-    
-    navigate(`/score?${exam_id}`)
+  const setScores = async() => {
+    try{
+      let sumOfPassedTestCases = Object.values(scoreUpdates).reduce((acc,currentVal) => acc + currentVal, 0);
+      let givenTime = Math.floor(3600/60); // in minutes
+      let timeTaken = Math.floor((3600 - time)/60);  // in minutes
+      let totalTestCases = updateTotalTestCases();
+      const res = await fetch(`http://localhost:7123/setScores/${exam_id}`,{
+        method:"PUT",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          testCasesPassed:sumOfPassedTestCases,
+          totalTestCases,
+          timeTaken,
+          givenTime,
+          numOfSubmissions
+        })
+      })
+
+      const parsed = await res.json();
+      if(res.ok){
+        console.log("Scores Updated Successfully :",parsed.message);
+      }
+      else{
+        console.log("Some Error Occured in Updating Scores");
+        
+      }
+    }
+    catch(err){
+      console.error(err);
+    }
+  }
+
+
+  const submitExam = async() => {
+    try{
+      const res = await fetch(`http://localhost:7123/completeExam/${exam_id}`,{
+        method:"PUT"
+      });
+
+      const parsed = await res.json();
+      if(res.ok){
+        getAllQuestions();
+        setScores();
+        toast.success(parsed.message, {
+          autoClose: 5000,
+          hideProgressBar: false,
+          pauseOnHover: true,
+          closeButton: false,
+        });
+      }
+      else{
+        toast.error(parsed.message, {
+          autoClose: 5000,
+          hideProgressBar: false,
+          pauseOnHover: true,
+          closeButton: false,
+        });
+      }
+      navigate(`/score/${exam_id}`);
+    }
+    catch(err){
+      console.error(err);
+    }
   }
 
   useEffect(() => {
@@ -186,6 +299,9 @@ function ExamDetail() {
       </AppBar>
 
 
+      {
+        !completed &&
+
       <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 2 }}>
         {
           questions.map((question, index) => (
@@ -219,6 +335,14 @@ function ExamDetail() {
         }
       </Box>
 
+      }
+
+      {
+        completed ?
+        
+        <ExamCompletion />
+
+        :
 
       <div className="wrapper" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', height: '85vh' }}>
         {/* Question Box */}
@@ -309,6 +433,7 @@ function ExamDetail() {
           </Box>
         </Box>
       </div>
+      }
     </>
   );
 }

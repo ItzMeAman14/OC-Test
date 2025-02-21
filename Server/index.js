@@ -6,6 +6,7 @@ require('dotenv').config();
 const msgRoute = require('./routes/messages');
 const ExamRouter = require("./routes/Exams");
 const QuestionRouter = require("./routes/Questions");
+const ScoreRouter = require("./routes/Scores");
 app.use(cors());
 app.use(express.json());
 
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use("/msg",msgRoute);
 app.use("/",ExamRouter);
 app.use("/",QuestionRouter);
+app.use("/",ScoreRouter);
 
 
 // API JDOODLE

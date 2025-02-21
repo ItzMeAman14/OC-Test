@@ -94,5 +94,20 @@ ExamRouter.get("/noOfTestcases/:id",async(req,res) => {
     }
 })
 
+ExamRouter.put("/completeExam/:id",async(req,res) => {
+    try{
+        const objectId = new mongoose.Types.ObjectId(req.params.id);
+        const exam = await collection.updateOne(
+            { _id: objectId },
+            { "$set": {
+                attempted:true
+            } })
+        res.json({"message":"Exam Completed Successfully"})
+    }
+    catch(err){
+        console.error(err);
+        res.json({"message":"Some Error Occured"})
+    }  
+})
 
 module.exports = ExamRouter

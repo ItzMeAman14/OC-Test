@@ -75,7 +75,7 @@ function Exam() {
                         <Button variant="contained" color="primary" disabled>
                           Attempted
                         </Button>
-                        <Link to={`/score?${exam._id}`}>
+                        <Link to={`/score/${exam._id}`}>
                           <Button variant="contained" color="primary">
                             View Score
                           </Button>
