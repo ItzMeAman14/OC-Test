@@ -12,7 +12,6 @@ export const useMessages = () => {
 export const MessageProvider = ({ children }) => {
     const [messages, setMessages] = useState([]);
 
-
     const getAllMessages = async () => {
         try {
             const res = await fetch("http://localhost:7123/msg/messages");

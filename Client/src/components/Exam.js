@@ -43,7 +43,7 @@ function Exam() {
                   display: 'flex',
                   flexDirection: 'column',
                   height: '100%',
-                  boxShadow: 3, 
+                  boxShadow: 3,
                   borderRadius: 2,
                   '&:hover': {
                     boxShadow: 6, 
@@ -52,7 +52,14 @@ function Exam() {
                   },
                 }}
               >
-                <CardContent sx={{ flex: 1 }}>
+                <CardContent
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flex: 1,
+                    paddingBottom: '16px', // Ensures space at the bottom of the card
+                  }}
+                >
                   <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
                     {exam.name}
                   </Typography>
@@ -60,37 +67,28 @@ function Exam() {
                     Time to attempt the exam is 2 hours. If you open any extra tabs or try to cheat, the test will automatically submit.
                   </Typography>
 
+                  {/* Aligning the Button to the Bottom */}
+                  <Box sx={{ marginTop: 'auto' }}>
                     {/* Buttons */}
-                        
-                        {
-                          exam.attempted &&
-
-                          <Box display="flex" justifyContent="space-between">
-
-                            <Link>
-                              <Button variant="contained" color="primary" fullWidth disabled>
-                                Attempted
-                              </Button>
-                            </Link>
-
-                          <Link to={`/score?${exam._id}`}>
-                            <Button variant="contained" color="primary" fullWidth>
-                              View Score
-                            </Button>
-                          </Link>
-
-                          </Box>
-                        }
-                      
-                      {  
-                        !exam.attempted &&
-                        <Link to={`/exams/${exam._id}`} style={{ textDecoration: 'none' }}>
-                          <Button variant="contained" color="primary" fullWidth>
-                            Attempt
+                    {exam.attempted ? (
+                      <Box display="flex" justifyContent="space-between">
+                        <Button variant="contained" color="primary" disabled>
+                          Attempted
+                        </Button>
+                        <Link to={`/score?${exam._id}`}>
+                          <Button variant="contained" color="primary">
+                            View Score
                           </Button>
                         </Link>
-                      }
-                    
+                      </Box>
+                    ) : (
+                      <Link to={`/exams/${exam._id}`} style={{ textDecoration: 'none' }}>
+                        <Button variant="contained" color="primary" fullWidth>
+                          Attempt
+                        </Button>
+                      </Link>
+                    )}
+                  </Box>
                 </CardContent>
               </Card>
             </Grid>

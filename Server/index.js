@@ -38,7 +38,6 @@ app.get("/credit", async(req,res) => {
         catch(err){
             res.status(500).json({error:'Error parsing response from API'})
         }
-        console.log(parseData);
         res.json(parseData);
     }
     catch(err){

@@ -1,4 +1,4 @@
-import React,{ useEffect, useState } from 'react';
+import React from 'react';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import Exam from './components/Exam';
@@ -16,39 +16,11 @@ import Analytics from './components/admin/Analytics';
 import { MessageProvider } from './components/context/MessageContext';
 
 function App() {
-  const [mode, setMode] = useState('');
-  const [Modelogo, setModelogo] = useState('moon');
-  const [alert, setAlert] = useState(null);
 
-  useEffect(() => {
-    const storedMode = localStorage.getItem("mode");
-    const storedModeLogo = localStorage.getItem("logo");
-
-    if(storedMode){
-      setMode(storedMode);
-      setModelogo(storedModeLogo);
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('mode', mode);
-    localStorage.setItem('logo', Modelogo);
-  }, [mode,Modelogo]);
-
-  const showAlert = (message,type) => {
-    setAlert({
-      msg:message,
-      type:type
-    })
-    setTimeout(() => {
-      setAlert(null);
-    },3000);
-  }
-  
   return (
     <MessageProvider>
 
-    <div className={`App ${mode}`}>
+    <div className="App">
 
       <Router>
         <Messages />
@@ -57,21 +29,21 @@ function App() {
 
         <Route exact path='/' element={
           <>
-          <Navbar setMode={setMode} Modelogo={Modelogo} setModelogo={setModelogo} mode={mode} />
-          <Home showAlert={showAlert} alert={alert} />
+          <Navbar />
+          <Home />
           </>
         }/>
           
         <Route exact path='/exams' element={
           <>
-          <Navbar setMode={setMode} Modelogo={Modelogo} setModelogo={setModelogo} mode={mode} />
+          <Navbar />
           <Exam/>
           </>
         }/>
 
         <Route exact path="/about" element={
           <>
-          <Navbar setMode={setMode} Modelogo={Modelogo} setModelogo={setModelogo} mode={mode} />
+          <Navbar />
           <About/>
           </>
         }/>
@@ -94,7 +66,7 @@ function App() {
 
         <Route exact path="/contact" element={
           <>
-          <Navbar setMode={setMode} Modelogo={Modelogo} setModelogo={setModelogo} mode={mode} />
+          <Navbar />
           <Contact />
           </>
         }
@@ -102,7 +74,7 @@ function App() {
 
         <Route exact path="/score" element={
           <>
-          <Navbar setMode={setMode} Modelogo={Modelogo} setModelogo={setModelogo} mode={mode} />
+          <Navbar />
           <Analytics />
           </>
         }

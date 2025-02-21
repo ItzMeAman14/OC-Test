@@ -78,5 +78,23 @@ QuestionRouter.delete("/deleteQuestion/:id", async(req,res) => {
     }
 })
 
+QuestionRouter.put("/passQuestion/:id", async(req,res) => {
+    try{
+        const objectId = new mongoose.Types.ObjectId(req.params.id);
+        const data =  await collection.updateOne(
+            { "questions._id": objectId }, 
+            { "$set": { 
+                "questions.$.passed" : true
+            } } 
+        );
+        
+        res.json({message:"Question Submitted Successfully"})
+    }
+    catch(err){
+        console.error(err);
+        res.json({"message":"Some Error Occured"})
+    }
+})
+
 
 module.exports = QuestionRouter

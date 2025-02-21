@@ -67,4 +67,32 @@ ExamRouter.delete("/deleteExam/:id",async(req,res) => {
     }
 })
 
+
+ExamRouter.get("/noOfTestcases/:id",async(req,res) => {
+    try{
+        const objectId = new mongoose.Types.ObjectId(req.params.id);
+        const data =  await collection.aggregate([
+            {
+                $match: { _id: objectId } 
+            },
+            {
+              $unwind: "$questions" 
+            },
+            {
+              $project: {
+                "questionHeading": "$questions.heading",  
+                "testcasesCount": { $size: "$questions.testcases" } 
+              }
+            }
+          ]);
+        
+        res.json(data);
+    }
+    catch(err){
+        console.error(err);
+        res.json({"message":"Some Error Occured"})
+    }
+})
+
+
 module.exports = ExamRouter

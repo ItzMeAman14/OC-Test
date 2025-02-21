@@ -301,6 +301,7 @@ const EditExams = () => {
                 color="primary"
                 onClick={() => handleToggleQuestions(exam._id)}
                 sx={{ marginBottom: '20px' }}
+                fullWidth
               >
                 {showQuestions[exam._id] ? 'Hide Questions' : 'Show Questions'}
               </Button>
