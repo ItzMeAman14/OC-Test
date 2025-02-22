@@ -46,7 +46,7 @@ function ModalExam(props) {
   const getQuestion = async() => {
     try {
       setLoad(true)
-      const res = await fetch(`http://localhost:7123/getQuestion/${props.question_id}`);
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getQuestion/${props.question_id}`);
       const data = await res.json();      
       setQuestion(data[0].questions[0]);
       setTestCases(data[0].questions[0].testcases);
@@ -60,7 +60,7 @@ function ModalExam(props) {
   const updateQuestion = async () => {
     try{
       
-      const res = await fetch(`http://localhost:7123/updateQuestion/${props.question_id}`,{
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/updateQuestion/${props.question_id}`,{
         method:"PUT",
         headers:{
           "Content-Type":"application/json"

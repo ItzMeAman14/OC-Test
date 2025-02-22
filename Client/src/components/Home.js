@@ -86,7 +86,7 @@ function Home() {
   const executeCode = async () => { 
     try { 
       setLoad({ loading: true }); 
-      const response = await fetch('http://localhost:7123/execute', { 
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/execute`, { 
         method: 'POST', 
         headers: { 
           'Content-Type': 'application/json', 

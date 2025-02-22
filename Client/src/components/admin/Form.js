@@ -16,7 +16,7 @@ const Form = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    const response = await fetch("http://localhost:7123/createExam",{
+    const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/createExam`,{
       "method":"POST",
       "headers":{
         "Content-Type":"application/json"

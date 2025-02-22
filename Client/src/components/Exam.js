@@ -13,7 +13,7 @@ function Exam() {
   async function getExams() {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:7123/getAllExams');
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getAllExams`);
       const data = await res.json();
       setLoading(false);
       setData(data);

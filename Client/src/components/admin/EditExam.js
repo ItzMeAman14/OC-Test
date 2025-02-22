@@ -25,7 +25,7 @@ const EditExams = () => {
 
   const addQuestion = async (question) => {
     try{
-      const res = await fetch(`http://localhost:7123/createQuestion/${question.exam_id}`,{
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/createQuestion/${question.exam_id}`,{
         method:"POST",
         headers:{
           "Content-Type":"application/json"
@@ -61,7 +61,7 @@ const EditExams = () => {
 
   const deleteQuestion = async (id) => {
     try{
-      const res = await fetch(`http://localhost:7123/deleteQuestion/${id}`,{
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/deleteQuestion/${id}`,{
         method:"DELETE",
         headers:{
           "Content-Type":"application/json"
@@ -95,7 +95,7 @@ const EditExams = () => {
 
   const getAllExams = async() => {
     try{
-      const res = await fetch("http://localhost:7123/getAllExams");
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getAllExams`);
       const data = await res.json();      
       setExams(data);
       
@@ -120,7 +120,7 @@ const EditExams = () => {
 
   const deleteExam = async(id) => {
     try{
-      const res = await fetch(`http://localhost:7123/deleteExam/${id}`,{
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/deleteExam/${id}`,{
         method:"DELETE"
       })
       const data = await res.json();
@@ -189,7 +189,7 @@ const EditExams = () => {
 
   const updateExamName = async(exam_object,index) => {
      try{
-        const res = await fetch(`http://localhost:7123/updateExam/${exam_object[index].id}`,{
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/updateExam/${exam_object[index].id}`,{
           method:"PUT",
           headers:{
             "Content-Type":"application/json"

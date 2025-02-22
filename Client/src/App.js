@@ -23,13 +23,13 @@ function App() {
     <div className="App">
 
       <Router>
-        <Messages />
         <ToastContainer />
         <Routes>
 
         <Route exact path='/' element={
           <>
           <Navbar />
+          <Messages />
           <Home />
           </>
         }/>
@@ -37,6 +37,7 @@ function App() {
         <Route exact path='/exams' element={
           <>
           <Navbar />
+          <Messages />
           <Exam/>
           </>
         }/>
@@ -44,6 +45,7 @@ function App() {
         <Route exact path="/about" element={
           <>
           <Navbar />
+          <Messages />
           <About/>
           </>
         }/>
@@ -54,7 +56,10 @@ function App() {
         />
 
         <Route exact path="/admin" element={
+          <>
           <Dashboard />
+          <Messages />
+          </>
         }
         />
 
@@ -67,6 +72,7 @@ function App() {
           <>
           <Navbar />
           <Contact />
+          <Messages />
           </>
         }
         />
@@ -75,6 +81,7 @@ function App() {
           <>
           <Navbar />
           <Analytics />
+          <Messages />
           </>
         }
         />

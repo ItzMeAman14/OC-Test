@@ -1,16 +1,25 @@
 const express = require("express")
 const ScoreRouter = express.Router()
 const mongoose = require("mongoose")
-const { collection } = require("../config");
+const { collection,User } = require("../config");
 
 
 // Scores Router
-ScoreRouter.get("/getScores/:id",async(req,res) => {
+ScoreRouter.get("/getuserScores/:id",async(req,res) => {
     try{
-        const objectId = new mongoose.Types.ObjectId(req.params.id);
-        const scores = await collection.find({ _id: objectId },{ score:1,_id:0});
+        const examId = new mongoose.Types.ObjectId(req.params.id);
+        const userId = new mongoose.Types.ObjectId(req.query.user_id);
+
+        const scores = await User.find(
+            { _id:userId, "examScore.exam_id": examId },
+            { "examScore.score":1,_id:0});
         
-        res.json(scores[0].score ? scores[0].score : "No Scores Found");
+        if(scores){
+            res.json(scores[0].examScore[0].score);
+        }
+        else{
+            res.json({"message":"User not Found"});
+        }
     }
     catch(err){
         console.error(err);
@@ -18,30 +27,44 @@ ScoreRouter.get("/getScores/:id",async(req,res) => {
     }  
 })
 
-
-ScoreRouter.put("/setScores/:id",async(req,res) => {
+ScoreRouter.put("/setuserScores/:id",async(req,res) => {
     try{
-        const objectId = new mongoose.Types.ObjectId(req.params.id);
-        const exam = await collection.findByIdAndUpdate(
-            { _id: objectId },
+        const examId = new mongoose.Types.ObjectId(req.params.id);
+        const userId = new mongoose.Types.ObjectId(req.query.user_id);
+        
+        const newScore = {
+                testCasesPassed: req.body.testCasesPassed,
+                totalTestCases: req.body.totalTestCases,
+                timeTaken: req.body.timeTaken,
+                givenTime: req.body.givenTime,
+                numOfSubmissions: req.body.numOfSubmissions 
+        }
+        const score = await User.findByIdAndUpdate(
+            { _id: userId },
             { 
-                $set: { 
-                  "score.testCasesPassed": req.body.testCasesPassed,
-                  "score.totalTestCases": req.body.totalTestCases,
-                  "score.timeTaken": req.body.timeTaken,
-                  "score.givenTime": req.body.givenTime,
-                  "score.numOfSubmissions": req.body.numOfSubmissions 
-                }
-              },
-              { new: true }
+                "$push":{
+                    "examScore":{
+                        exam_id:examId,
+                        attempted:true,
+                        score:newScore
+                    }
+                }    
+            },
+            { new: true }
         )
             
-        res.json({"message":"Scores Updated Successfully"})
+        if(score){
+            res.json({"message":"Scores Updated Successfully"})
+        }
+        else{
+            res.json({"message":"User not Found"})
+        }
     }
     catch(err){
         console.error(err);
         res.json({"message":"Some Error Occured"})
     }  
 })
+
 
 module.exports = ScoreRouter

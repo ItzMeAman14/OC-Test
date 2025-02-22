@@ -28,7 +28,7 @@ function ExamDetail() {
 
   const executeCode = async () => {
     try {
-      const response = await fetch('http://localhost:7123/execute', {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/execute`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
@@ -62,7 +62,7 @@ function ExamDetail() {
       let userInputEach = i.input;
 
       try {
-        let response = await fetch('http://localhost:7123/execute', {
+        let response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/execute`, {
           method: "POST",
           headers: {
             'Content-Type': 'application/json',
@@ -106,7 +106,7 @@ function ExamDetail() {
 
   const passQuestion = async(id) => {
       try{
-        const res = await fetch(`http://localhost:7123/passQuestion/${id}`,{
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/passQuestion/${id}`,{
           method:"PUT"
         })
 
@@ -142,7 +142,7 @@ function ExamDetail() {
 
   const getAllQuestions = useCallback(async () => {
     try {
-      const res = await fetch(`http://localhost:7123/getExam/${exam_id}`);
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getExam/${exam_id}`);
       const parsed = await res.json();
 
       let passedQuestion = 0;
@@ -200,7 +200,7 @@ function ExamDetail() {
       let givenTime = Math.floor(3600/60); // in minutes
       let timeTaken = Math.floor((3600 - time)/60);  // in minutes
       let totalTestCases = updateTotalTestCases();
-      const res = await fetch(`http://localhost:7123/setScores/${exam_id}`,{
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/setScores/${exam_id}`,{
         method:"PUT",
         headers:{
           "Content-Type":"application/json"
@@ -229,9 +229,9 @@ function ExamDetail() {
   }
 
 
-  const submitExam = async() => {
+  const submitExam = useCallback(async() => {
     try{
-      const res = await fetch(`http://localhost:7123/completeExam/${exam_id}`,{
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/completeExam/${exam_id}`,{
         method:"PUT"
       });
 
@@ -259,7 +259,7 @@ function ExamDetail() {
     catch(err){
       console.error(err);
     }
-  }
+  },[exam_id])
 
   useEffect(() => {
     let timer;

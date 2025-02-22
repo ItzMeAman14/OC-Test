@@ -18,7 +18,7 @@ const Analytics = () => {
 
     const getScores = useCallback( async() => {
         try {
-            const res = await fetch(`http://localhost:7123/getScores/${id}`);
+            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getScores/${id}`);
             const parsed = await res.json();
             
             if(parsed !== "No Scores Found"){

@@ -1,45 +1,68 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Container, Paper } from '@mui/material';
+import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async(event) => {
     event.preventDefault();
-    
-    // Simple form validation
-    if (!email || !password) {
-      setError('Please fill in both fields.');
-      return;
-    }
-    
-    // Simulate login logic (you can replace this with an actual API call)
-    if (email === 'test@example.com' && password === 'password123') {
-      setError('');
-      alert('Login Successful');
-      // You can redirect the user to the dashboard or home page here
-    } else {
-      setError('Invalid credentials. Please try again.');
-    }
-  };
+    try{
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/auth/login`,{
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json"
+          },
+          body:JSON.stringify({
+            email,
+            password
+          })
+        })
 
+        const parsed = await res.json()
+        if(res.ok){
+          Cookies.set("uid",parsed.uid, { expires: 2 })
+          toast.success(parsed.message, { 
+            autoClose: 5000, 
+            closeButton: false, 
+            closeOnClick: false, 
+            pauseOnHover: true, 
+            hideProgressBar: false, 
+          }); 
+        }
+        else{
+          toast.error(parsed.message, { 
+            autoClose: 5000, 
+            closeOnClick: false, 
+            pauseOnHover: true, 
+            hideProgressBar: false, 
+            closeButton: false, 
+          });
+        }
+    }
+    catch(err){
+      console.error(err);
+    }    
+    
+  };
+  
   return (
     <Container
       component="main"
-      maxWidth={false}  // Set to false so it takes up full width
+      maxWidth={false}
       sx={{
         height: '100vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 0, // Remove default padding
+        padding: 0, 
         backgroundImage: 'url(https://myultrasoundtutor.com/wp-content/uploads/bg-login.jpg)', // Background image URL
-        backgroundSize: 'cover',   // Ensures the image covers the entire container
-        backgroundPosition: 'center', // Centers the image
-        backgroundRepeat: 'no-repeat', // Prevents the image from repeating
-        backgroundAttachment: 'fixed', // Optional for parallax effect
+        backgroundSize: 'cover',  
+        backgroundPosition: 'center', 
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed',
       }}
     >
       <Paper elevation={6} sx={{ padding: 3, backgroundColor: 'rgba(255, 255, 255, 0.3)' }}>
@@ -78,13 +101,6 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-
-            {/* Error Message */}
-            {error && (
-              <Typography color="error" variant="body2" sx={{ mt: 2 }}>
-                {error}
-              </Typography>
-            )}
 
             {/* Submit Button */}
             <Button
