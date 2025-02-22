@@ -1,4 +1,2 @@
 In Edit Question:
 1 - Authentication
-2 - Create User Schema with Exam id Embed
-3 - Create a Backend URL in env
