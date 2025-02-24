@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { AppBar, Toolbar, Typography, Button, Box, TextField, Select, MenuItem, Divider } from '@mui/material';
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 import ExamCompletion from "./ExamCompletion";
 
 function ExamDetail() {
@@ -200,7 +201,10 @@ function ExamDetail() {
       let givenTime = Math.floor(3600/60); // in minutes
       let timeTaken = Math.floor((3600 - time)/60);  // in minutes
       let totalTestCases = updateTotalTestCases();
-      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/setScores/${exam_id}`,{
+
+      const uid = Cookies.get("uid");
+
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/setuserScores/${exam_id}?user_id=${uid}`,{
         method:"PUT",
         headers:{
           "Content-Type":"application/json"

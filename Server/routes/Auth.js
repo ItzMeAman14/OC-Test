@@ -27,7 +27,7 @@ authRouter.post("/login",async(req,res) => {
         }
         else{
             if(user[0].password === req.body.password){
-                res.json({"message":"Logged in Successfully","uid":user[0]._id});
+                res.json({"message":"Logged in Successfully","uid":user[0]._id, "role":user[0].role});
             }
             else{
                 res.status(400).json({"message":"Wrong Password.Try Again"});

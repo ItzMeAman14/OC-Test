@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Container, Paper } from '@mui/material';
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
+  
   const handleSubmit = async(event) => {
     event.preventDefault();
     try{
@@ -23,7 +25,14 @@ const Login = () => {
 
         const parsed = await res.json()
         if(res.ok){
-          Cookies.set("uid",parsed.uid, { expires: 2 })
+          if(parsed.role === "user"){
+            Cookies.set("uid",parsed.uid, { expires: 2 })
+            navigate("/");
+          }
+          else{
+            Cookies.set("adminid",parsed.uid, { expires: 2 })
+            navigate("/admin");
+          }
           toast.success(parsed.message, { 
             autoClose: 5000, 
             closeButton: false, 

@@ -3,6 +3,7 @@ import { Box, Typography, Card, CardContent, LinearProgress, Grid } from '@mui/m
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { useParams } from 'react-router-dom';
+import Cookies from "js-cookie";
 import NoScoresFound from "./NoScoresFound";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -18,7 +19,8 @@ const Analytics = () => {
 
     const getScores = useCallback( async() => {
         try {
-            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getScores/${id}`);
+            const uid = Cookies.get("uid");
+            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getuserScores/${id}?user_id=${uid}`);
             const parsed = await res.json();
             
             if(parsed !== "No Scores Found"){
