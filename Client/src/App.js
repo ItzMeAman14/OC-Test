@@ -11,6 +11,7 @@ import Messages from './components/Messages';
 import { ToastContainer } from 'react-toastify';
 import Contact from './components/Contact';
 import Analytics from './components/admin/Analytics';
+import Signup from './components/Signup';
 
 // Context
 import { MessageProvider } from './components/context/MessageContext';
@@ -66,6 +67,8 @@ function App() {
               } />
 
               <Route exact path="/login" element={<Login />} />
+
+              <Route exact path="/signup" element={<Signup />} />
 
               <Route exact path="/contact" element={
                 <>

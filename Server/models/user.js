@@ -28,6 +28,13 @@ const userSchema = new mongoose.Schema({
         type:String,
         default:"user"
     },
+    blocked:{
+        type:Boolean,
+        default:false
+    },
+    pendingRequest:{
+        type:Array
+    },
     examScore:[userScoreSchema]
 });
 

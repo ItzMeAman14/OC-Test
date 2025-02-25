@@ -2,12 +2,14 @@ const express = require('express')
 const app = express()
 const cors = require('cors');
 const mongoose = require("mongoose");
+const nodemailer = require("nodemailer");
 require('dotenv').config();
 const msgRoute = require('./routes/messages');
 const ExamRouter = require("./routes/Exams");
 const QuestionRouter = require("./routes/Questions");
 const ScoreRouter = require("./routes/Scores");
 const authRouter = require("./routes/Auth");
+const UserRouter = require("./routes/Users");
 app.use(cors());
 app.use(express.json());
 
@@ -18,7 +20,16 @@ app.use("/",ExamRouter);
 app.use("/",QuestionRouter);
 app.use("/",ScoreRouter);
 app.use("/auth",authRouter)
+app.use("/",UserRouter)
 
+// Transporter For Sending Mail
+const transporter = nodemailer.createTransport({
+    service: 'gmail', 
+    auth: {
+      user: process.env.EMAIL,  
+      pass: process.env.TEMP_PASSWORD
+    }
+  });
 
 // API JDOODLE
 app.get("/credit", async(req,res) => {
@@ -85,6 +96,26 @@ app.post('/execute', async (req, res) => {
 });
 
 
+// Contact 
+app.post('/contact-us', (req, res) => {
+    const { name, email, message } = req.body;
+  
+    const mailOptions = {
+      from: email,
+      to: 'amanrehman2020@gmail.com',
+      subject: 'Contact Us From AIComp',
+      text: `You have a new message from ${name} (${email}):\n\n${message}`
+    };
+  
+    // Send email
+    transporter.sendMail(mailOptions, (error) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).json({"message":'Internal Server Error'});
+      }
+      res.status(200).json({"message":'Message sent successfully!'});
+    });
+});
 
 app.listen(7123, () => {
     console.log("Listening on http://localhost:7123/");

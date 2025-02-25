@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Typography } from '@mui/material';
+import { toast } from "react-toastify";
 
 function Contact() {
   const [formData, setFormData] = useState({
@@ -29,16 +30,49 @@ function Contact() {
     if (!formData.email) formErrors.email = 'Email is required';
     if (!formData.description) formErrors.description = 'Description is required';
     setErrors(formErrors);
-    return Object.keys(formErrors).length === 0; // Return true if no errors
+    return Object.keys(formErrors).length === 0;
   };
 
-  // Handle form submission
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async(e) => {
     e.preventDefault();
 
     if (validateForm()) {
-      alert('Form submitted successfully!');
-      console.log(formData); // Here you can send formData to your API
+      try{
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/contact-us`,{
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json"
+          },
+          body:JSON.stringify({
+            name:formData.name,
+            email:formData.email,
+            message:formData.description
+          })
+        })
+        const parsed = await res.json();
+        if(res.ok){
+          toast.success(parsed.message, {
+            autoClose: 5000,
+            hideProgressBar: false,
+            pauseOnHover: true,
+            closeButton: false,
+          });
+        }
+        else{
+          toast.error(parsed.message, {
+            autoClose: 5000,
+            hideProgressBar: false,
+            pauseOnHover: true,
+            closeButton: false,
+          });
+        }
+      }
+      catch(err){
+        console.error(err);
+      }
+      
+      
       setFormData({
         name: '',
         email: '',

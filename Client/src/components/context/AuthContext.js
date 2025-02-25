@@ -12,7 +12,7 @@ export const useAuth = () => {
 // For Users
 export const ProtectedRouteUser = ({ children }) => {
     const { isAuthenticatedUser } = useAuth();
-
+    
     if(!isAuthenticatedUser){
       return <Navigate to="/login" />
     }
@@ -23,7 +23,7 @@ export const ProtectedRouteUser = ({ children }) => {
 // For Admins
 export const ProtectedRouteAdmin = ({ children }) => {
   const { isAuthenticatedAdmin } = useAuth();
-
+  
   if(!isAuthenticatedAdmin){
     return <Navigate to="/login" />
   }
@@ -34,14 +34,14 @@ export const ProtectedRouteAdmin = ({ children }) => {
 export const AuthProvider = ({ children }) => {
   const [isAuthenticatedUser, setIsAuthenticatedUser] = useState(true);
   const [isAuthenticatedAdmin, setIsAuthenticatedAdmin] = useState(true);
-
+  
   useEffect(() => {
     const tokenUser = Cookies.get('uid');  
     const tokenAdmin = Cookies.get('adminid'); 
-
+    
     setIsAuthenticatedUser(!!tokenUser);
     setIsAuthenticatedAdmin(!!tokenAdmin);
-  }, []);  
+  }, []); 
 
   return (
     <AuthContext.Provider value={{ isAuthenticatedAdmin, isAuthenticatedUser }}>

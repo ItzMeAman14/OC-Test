@@ -25,7 +25,7 @@ function ExamDetail() {
   // For Scores
   const [numOfSubmissions, setNumOfSubmissions] = useState(0);
 
-  const [scoreUpdates,setScoreUpdates] = useState({1:2,2:1,3:3});
+  const [scoreUpdates,setScoreUpdates] = useState();
 
   const executeCode = async () => {
     try {
@@ -77,7 +77,7 @@ function ExamDetail() {
         let outputResponse = await response.json();
 
         if (!outputResponse.ok) {
-          console.log(outputResponse.error);
+          console.error(outputResponse.error);
           console.log("Some error occurred");
         }
 

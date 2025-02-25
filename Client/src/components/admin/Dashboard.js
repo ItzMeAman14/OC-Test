@@ -11,8 +11,10 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import Button from "@mui/material/Button";
 
 // Icons
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import EditIcon from '@mui/icons-material/Edit';
 import SendIcon from '@mui/icons-material/Send';
@@ -21,10 +23,15 @@ import SendIcon from '@mui/icons-material/Send';
 import Form from './Form';
 import EditExam from './EditExam';
 import AdminMsg from "./AdminMsg";
+import { useNavigate } from 'react-router-dom';
+import Cookies from "js-cookie";
+import UserManagement from './UserManagement';
+import { toast } from "react-toastify";
 
 const drawerWidth = 240;
 
 function Dashboard(props) {
+  const navigate = useNavigate();
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [isClosing, setIsClosing] = React.useState(false);
@@ -47,6 +54,17 @@ function Dashboard(props) {
 
   const handleNavButtons = (active) => {
         setactiveComponent(active);
+  }
+
+  const logout = () => {
+    Cookies.remove("adminid");
+    toast.success("Logged Out Successfully", {
+      autoClose: 5000,
+      hideProgressBar: false,
+      pauseOnHover: true,
+      closeButton: false,
+    });
+    navigate("/login");
   }
 
   const drawer = (
@@ -75,6 +93,13 @@ function Dashboard(props) {
           <ListItemText primary="Send Message" />
         </ListItem>
 
+        <ListItem button onClick={ () => { handleNavButtons('handleUsers') } }>
+          <ListItemIcon>
+            <ManageAccountsIcon />
+          </ListItemIcon> 
+          <ListItemText primary="Manage Users" />
+        </ListItem>
+
       </List>
     </div>
   );
@@ -98,10 +123,16 @@ function Dashboard(props) {
             onClick={handleDrawerToggle}
             sx={{ mr: 2, display: { sm: 'none' } }}
           >
+            {/* Drawer Icon */}
           </IconButton>
+          
           <Typography variant="h6" noWrap component="div">
             Admin Dashboard
           </Typography>
+          
+          <Box sx={{ flexGrow: 1 }} /> 
+          
+          <Button color="inherit" onClick={logout}>Logout</Button>
         </Toolbar>
       </AppBar>
       <Box
@@ -144,6 +175,7 @@ function Dashboard(props) {
           { activeComponent === 'dashboard' && <Form /> }
           { activeComponent === 'questions' && <EditExam /> }
           { activeComponent === 'message' && <AdminMsg /> }
+          { activeComponent === 'handleUsers' && <UserManagement /> }
       </Box>
     </Box>
   );
