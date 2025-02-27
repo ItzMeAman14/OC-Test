@@ -2,6 +2,7 @@ import React, { useState,useEffect } from 'react';
 import { Modal, Box, TextField, Button, Typography, Stack } from '@mui/material';
 import { toast } from "react-toastify";
 import { InfinitySpin } from "react-loader-spinner";
+import Cookies from "js-cookie";
 
 function ModalExam(props) {
   const [question, setQuestion] = useState([]); 
@@ -46,7 +47,14 @@ function ModalExam(props) {
   const getQuestion = async() => {
     try {
       setLoad(true)
-      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getQuestion/${props.question_id}`);
+      const token = Cookies.get("tokenAdmin");
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getQuestion/${props.question_id}`,{
+        method:"GET",
+        headers:{
+          "Content-Type":"application/json",
+          "userAPIKEY":token
+        },
+      });
       const data = await res.json();      
       setQuestion(data[0].questions[0]);
       setTestCases(data[0].questions[0].testcases);
@@ -59,11 +67,12 @@ function ModalExam(props) {
 
   const updateQuestion = async () => {
     try{
-      
+      const token = Cookies.get("tokenAdmin");
       const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/updateQuestion/${props.question_id}`,{
         method:"PUT",
         headers:{
-          "Content-Type":"application/json"
+          "Content-Type":"application/json",
+          "userAPIKEY":token
         },
         body:JSON.stringify({
           question,

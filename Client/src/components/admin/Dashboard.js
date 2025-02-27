@@ -60,6 +60,7 @@ function Dashboard(props) {
 
   const logout = () => {
     Cookies.remove("adminid");
+    Cookies.remove("tokenAdmin");
     toast.success("Logged Out Successfully", {
       autoClose: 5000,
       hideProgressBar: false,

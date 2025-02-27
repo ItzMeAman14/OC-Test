@@ -10,7 +10,21 @@ const ScoreRouter = require("./routes/Scores");
 const authRouter = require("./routes/Auth");
 const UserRouter = require("./routes/Users");
 const RequestRouter = require("./routes/Requests");
-app.use(cors());
+
+// Protecting Routes using CORS
+const allowedOrigins = ['http://localhost:3000'];
+const options = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+};
+
+
+app.use(cors(options));
 app.use(express.json());
 
 
@@ -66,7 +80,7 @@ app.get("/credit", async(req,res) => {
 app.post('/execute', async (req, res) => {
     const { input, lang, userInputs } = req.body;
     let modifiedInput = userInputs.trim().split(",").join('\n');
-
+    
     try {
         const response = await fetch('https://api.jdoodle.com/v1/execute', {
             method: 'POST',

@@ -5,33 +5,27 @@ import Cookies from "js-cookie";
 
 function Exam() {
   const [data, setData] = useState(null);
-  // const [userExam, setUserExam] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => { 
-    // getExams();
+  useEffect(() => {
     getUserExams();
   }, []);
 
-  // async function getExams() {
-  //   try {
-  //     setLoading(true);
-  //     const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getAllExams`);
-  //     const data = await res.json();
-  //     setLoading(false);
-  //     setData(data);
-  //   } catch (err) {
-  //     console.error(err);
-  //     setLoading(false);
-  //   }
-  // }
 
   async function getUserExams() {
     try {
       const id = Cookies.get("uid");
+      const token = Cookies.get("tokenUser");
       setLoading(true);
-      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/userExams/${id}`);
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/userExams/${id}`,{
+        method:"GET",
+        headers: {
+          'Content-Type': 'application/json',
+          'userAPIKEY': token,
+        }
+      });
       const data = await res.json();
+      
       setLoading(false);
       setData(data);
     } catch (err) {

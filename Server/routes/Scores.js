@@ -2,7 +2,9 @@ const express = require("express")
 const ScoreRouter = express.Router()
 const mongoose = require("mongoose")
 const { collection,User } = require("../config");
+const authenticateToken = require("../middleware/auth")
 
+ScoreRouter.use(authenticateToken);
 
 // Scores Router
 ScoreRouter.get("/getuserScores/:id",async(req,res) => {

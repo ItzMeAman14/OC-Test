@@ -3,6 +3,7 @@ const authRouter = express.Router();
 const nodemailer = require("nodemailer");
 const { User } = require("../config");
 const { generateOTP } = require("../Authentication/otp");
+const jwt = require("jsonwebtoken");
 
 // Transporter For Sending Mail
 const transporter = nodemailer.createTransport({
@@ -49,8 +50,7 @@ authRouter.post("/signup",async(req,res) => {
 
 authRouter.post("/login",async(req,res) => {
     try{
-        const user = await User.find({ email:req.body.email })
-        
+        const user = await User.find({ email:req.body.email })        
         
         if(user.length === 0){
             const requests = await User.find(
@@ -67,7 +67,15 @@ authRouter.post("/login",async(req,res) => {
                 return res.status(401).json({"message":"You are Blocked by the Admin."})
             }
             if(user[0].password === req.body.password){
-                res.json({"message":"Logged in Successfully","uid":user[0]._id, "role":user[0].role});
+
+                // JWT Token
+                const token = jwt.sign(
+                    { userId: user._id },
+                    process.env.JWT_SECRET,
+                    { expiresIn: '1h' }
+                  );
+                  
+                res.json({"message":"Logged in Successfully","uid":user[0]._id,"token":token, "role":user[0].role});
             }
             else{
                 res.status(400).json({"message":"Wrong Password.Try Again"});

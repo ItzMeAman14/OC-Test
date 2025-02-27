@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, List, ListItem, ListItemText, Button, Paper, Divider } from '@mui/material';
 import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 
 function RequestHandle() {
     const [users, setUsers] = useState([]);
@@ -9,10 +10,12 @@ function RequestHandle() {
 
     const acceptRequest = async(id) => {
         try{
+            const token = Cookies.get("tokenAdmin");
             const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/acceptRequest/${id}`,{
                 method:"GET",
                 headers:{
-                    "Content-Type":"application/json"
+                    "Content-Type":"application/json",
+                    "userAPIKEY":token
                 }
             })
 
@@ -44,7 +47,14 @@ function RequestHandle() {
     const getUsers = async () => {
         try {
             setLoading(true);
-            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getRequestedUsers`)
+            const token = Cookies.get("tokenAdmin");
+            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getRequestedUsers`,{
+                method:"GET",
+                headers:{
+                    "Content-Type":"application/json",
+                    "userAPIKEY":token
+                },
+            })
 
             const parsed = await res.json();
 

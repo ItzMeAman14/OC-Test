@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TextField, Button, Box, Container, Typography } from '@mui/material';
 import { toast } from "react-toastify";
 import { useMessages } from "../context/MessageContext";
+import Cookies from "js-cookie";
 
 function AdminMsg() {
   const { getAllMessages } = useMessages();
@@ -10,10 +11,13 @@ function AdminMsg() {
   const handleSubmit = async(e) => {
     e.preventDefault();
     try{
+
+      const token = Cookies.get("tokenAdmin");
       const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/msg/new`,{
         method:"POST",
         headers:{
-          "Content-Type":"application/json"
+          "Content-Type":"application/json",
+          "userAPIKEY":token
         },
         body:JSON.stringify({
           msg:message

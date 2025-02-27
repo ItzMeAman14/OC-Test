@@ -11,6 +11,7 @@ function Navbar() {
 
   const logout = () => {
     Cookies.remove("uid");
+    Cookies.remove("tokenUser");
     navigate("/login")
     toast.success("Logged Out Successfully", {
       autoClose: 5000,

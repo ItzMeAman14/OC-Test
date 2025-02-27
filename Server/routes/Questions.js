@@ -2,6 +2,9 @@ const express = require("express")
 const QuestionRouter = express.Router()
 const mongoose = require("mongoose")
 const { collection } = require("../config");
+const authenticateToken = require("../middleware/auth")
+
+QuestionRouter.use(authenticateToken);
 
 // Questions CRUD
 QuestionRouter.get("/getQuestion/:id", async(req,res) => {

@@ -2,6 +2,9 @@ const express = require("express")
 const UserRouter = express.Router();
 const mongoose = require("mongoose");
 const { User } = require("../config");
+const authenticateToken = require("../middleware/auth");
+
+UserRouter.use(authenticateToken)
 
 // Routes
 UserRouter.get("/users",async(req,res) => {

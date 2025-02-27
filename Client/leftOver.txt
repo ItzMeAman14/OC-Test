@@ -1,3 +1,2 @@
 In Edit Question:
-1 - Authentication
-2 - User Score Analytics Management
+1: Exam Detail Component

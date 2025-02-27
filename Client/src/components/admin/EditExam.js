@@ -5,6 +5,7 @@ import ModalExam from './ModalExam';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Modal1 from '../Modal1';
+import Cookies from "js-cookie";
 
 
 const EditExams = () => {
@@ -25,10 +26,12 @@ const EditExams = () => {
 
   const addQuestion = async (question) => {
     try{
+      const token = Cookies.get("tokenAdmin");
       const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/createQuestion/${question.exam_id}`,{
         method:"POST",
         headers:{
-          "Content-Type":"application/json"
+          "Content-Type":"application/json",
+          "userAPIKEY":token
         },
         body:JSON.stringify({
           question
@@ -61,11 +64,13 @@ const EditExams = () => {
 
   const deleteQuestion = async (id) => {
     try{
+      const token = Cookies.get("tokenAdmin");
       const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/deleteQuestion/${id}`,{
         method:"DELETE",
         headers:{
-          "Content-Type":"application/json"
-        }
+          "Content-Type":"application/json",
+          "userAPIKEY":token
+        },
       })
 
       const data = await res.json();
@@ -95,7 +100,14 @@ const EditExams = () => {
 
   const getAllExams = async() => {
     try{
-      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getAllExams`);
+      const token = Cookies.get("tokenAdmin");
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getAllExams`,{
+        method:"GET",
+        headers:{
+          "Content-Type":"application/json",
+          "userAPIKEY":token
+        },
+      });
       const data = await res.json();      
       setExams(data);
       
@@ -120,8 +132,13 @@ const EditExams = () => {
 
   const deleteExam = async(id) => {
     try{
+      const token = Cookies.get("tokenAdmin");
       const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/deleteExam/${id}`,{
-        method:"DELETE"
+        method:"DELETE",
+        headers:{
+          "Content-Type":"application/json",
+          "userAPIKEY":token
+        },
       })
       const data = await res.json();
       if(res.ok){
@@ -189,10 +206,12 @@ const EditExams = () => {
 
   const updateExamName = async(exam_object,index) => {
      try{
+        const token = Cookies.get("tokenAdmin");
         const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/updateExam/${exam_object[index].id}`,{
           method:"PUT",
           headers:{
-            "Content-Type":"application/json"
+            "Content-Type":"application/json",
+            "userAPIKEY":token
           },
           body:JSON.stringify({
             name:exam_object[index].name

@@ -20,7 +20,14 @@ const Analytics = () => {
     const getScores = useCallback( async() => {
         try {
             const uid = Cookies.get("uid");
-            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getuserScores/${id}?user_id=${uid}`);
+            const token = Cookies.get("tokenAdmin");
+            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getuserScores/${id}?user_id=${uid}`,{
+                method:"GET",
+                headers:{
+                    "Content-Type":"application/json",
+                    "userAPIKEY":token
+                  },
+            });
             const parsed = await res.json();
             
             if(parsed !== "No Scores Found"){

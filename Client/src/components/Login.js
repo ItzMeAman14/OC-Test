@@ -27,10 +27,12 @@ const Login = () => {
         if(res.ok){
           if(parsed.role === "user"){
             Cookies.set("uid",parsed.uid, { expires: 2 })
+            Cookies.set("tokenUser",parsed.token,{ expires: 1 })
             navigate("/");
           }
           else{
             Cookies.set("adminid",parsed.uid, { expires: 2 })
+            Cookies.set("tokenAdmin",parsed.token,{ expires: 1 })
             navigate("/admin");
           }
           toast.success(parsed.message, { 

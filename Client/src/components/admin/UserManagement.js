@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, List, ListItem, ListItemText, Switch, FormControlLabel, Paper, Divider } from '@mui/material';
 import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 
 function UserManagement() {
     const [users, setUsers] = useState([]);
@@ -8,11 +9,13 @@ function UserManagement() {
 
     const changeAccess = async (id) => {
         try{
+            const token = Cookies.get("tokenAdmin");
             const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/blockUser/${id}`,{
                 method:"PUT",
                 headers:{
-                    "Content-Type":"application/json"
-                }
+                    "Content-Type":"application/json",
+                    "userAPIKEY":token
+                  },
             });
 
             const parsed = await res.json();
@@ -43,7 +46,14 @@ function UserManagement() {
     const getUsers = async () => {
         try{
             setLoading(true);
-            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/users`)
+            const token = Cookies.get("tokenAdmin");
+            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/users`,{
+                method:"GET",
+                headers:{
+                    "Content-Type":"application/json",
+                    "userAPIKEY":token
+                  },
+            })
             
             const parsed = await res.json();
             

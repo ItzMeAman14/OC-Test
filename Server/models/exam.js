@@ -21,10 +21,6 @@ const QuestionSchema = new mongoose.Schema({
 
 const ExamSchema = new mongoose.Schema({
     name:String,
-    attempted: {
-        type:Boolean,
-        default:false
-    },
     questions:[QuestionSchema], 
     score: scoreSchema 
 });

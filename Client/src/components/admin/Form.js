@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Container } from '@mui/material';
 import Modal1 from '../Modal1';
 import Toast from '../Toast';
+import Cookies from "js-cookie";
 
 const Form = () => {
   const [questions, setquestions] = useState([]);
@@ -15,11 +16,12 @@ const Form = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+    const token = Cookies.get("tokenAdmin");
     const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/createExam`,{
       "method":"POST",
-      "headers":{
-        "Content-Type":"application/json"
+      headers:{
+        "Content-Type":"application/json",
+        "userAPIKEY":token
       },
       body:JSON.stringify({
         name,

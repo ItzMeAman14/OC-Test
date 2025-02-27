@@ -31,8 +31,8 @@ function ExamDetail() {
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/execute`, {
         method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
+        headers:{
+          "Content-Type":"application/json",
         },
         body: JSON.stringify({
           input,
@@ -65,8 +65,8 @@ function ExamDetail() {
       try {
         let response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/execute`, {
           method: "POST",
-          headers: {
-            'Content-Type': 'application/json',
+          headers:{
+            "Content-Type":"application/json",
           },
           body: JSON.stringify({
             input,
@@ -107,8 +107,13 @@ function ExamDetail() {
 
   const passQuestion = async(id) => {
       try{
+        const token = Cookies.get("tokenUser");
         const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/passQuestion/${id}`,{
-          method:"PUT"
+          method:"PUT",
+          headers:{
+            "Content-Type":"application/json",
+            "userAPIKEY":token
+          },
         })
 
         const parsed = await res.json();
@@ -143,9 +148,16 @@ function ExamDetail() {
 
   const getAllQuestions = useCallback(async () => {
     try {
-      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getExam/${exam_id}`);
+      const token = Cookies.get("tokenUser");
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getExam/${exam_id}`,{
+        method:"GET",
+        headers:{
+          "Content-Type":"application/json",
+          "userAPIKEY":token
+        }
+      });
       const parsed = await res.json();
-
+      console.log(parsed);
       let passedQuestion = 0;
       parsed[0].questions.forEach(ques => {
           if(ques.passed){
@@ -203,11 +215,12 @@ function ExamDetail() {
       let totalTestCases = updateTotalTestCases();
 
       const uid = Cookies.get("uid");
-
+      const token = Cookies.get("tokenUser");
       const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/setuserScores/${exam_id}?user_id=${uid}`,{
         method:"PUT",
         headers:{
-          "Content-Type":"application/json"
+          "Content-Type":"application/json",
+          "userAPIKEY":token
         },
         body:JSON.stringify({
           testCasesPassed:sumOfPassedTestCases,
@@ -235,8 +248,13 @@ function ExamDetail() {
 
   const submitExam = useCallback(async() => {
     try{
+      const token = Cookies.get("tokenUser");
       const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/completeExam/${exam_id}`,{
-        method:"PUT"
+        method:"PUT",
+        headers:{
+          "Content-Type":"application/json",
+          "userAPIKEY":token
+        },
       });
 
       const parsed = await res.json();

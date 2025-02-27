@@ -2,6 +2,9 @@ const express = require("express")
 const ExamRouter = express.Router()
 const mongoose = require("mongoose")
 const { collection } = require("../config");
+const authenticateToken = require("../middleware/auth")
+
+ExamRouter.use(authenticateToken);
 
 // Exams CRUD
 ExamRouter.get('/getAllExams',async (req,res) => {
