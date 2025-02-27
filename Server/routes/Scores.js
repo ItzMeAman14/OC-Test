@@ -31,7 +31,8 @@ ScoreRouter.put("/setuserScores/:id",async(req,res) => {
     try{
         const examId = new mongoose.Types.ObjectId(req.params.id);
         const userId = new mongoose.Types.ObjectId(req.query.user_id);
-        
+
+
         const newScore = {
                 testCasesPassed: req.body.testCasesPassed,
                 totalTestCases: req.body.totalTestCases,

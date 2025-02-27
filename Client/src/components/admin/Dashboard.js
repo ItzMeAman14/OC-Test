@@ -18,11 +18,13 @@ import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import EditIcon from '@mui/icons-material/Edit';
 import SendIcon from '@mui/icons-material/Send';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 // Custom Component for Sidebar
 import Form from './Form';
 import EditExam from './EditExam';
 import AdminMsg from "./AdminMsg";
+import RequestHandle from "./RequestHandle";
 import { useNavigate } from 'react-router-dom';
 import Cookies from "js-cookie";
 import UserManagement from './UserManagement';
@@ -98,6 +100,13 @@ function Dashboard(props) {
             <ManageAccountsIcon />
           </ListItemIcon> 
           <ListItemText primary="Manage Users" />
+        </ListItem>
+
+        <ListItem button onClick={ () => { handleNavButtons('requests') } }>
+          <ListItemIcon>
+            <PersonAddIcon />
+          </ListItemIcon> 
+          <ListItemText primary="User Requests" />
         </ListItem>
 
       </List>
@@ -176,6 +185,7 @@ function Dashboard(props) {
           { activeComponent === 'questions' && <EditExam /> }
           { activeComponent === 'message' && <AdminMsg /> }
           { activeComponent === 'handleUsers' && <UserManagement /> }
+          { activeComponent === 'requests' && <RequestHandle /> }
       </Box>
     </Box>
   );

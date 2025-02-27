@@ -1,19 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Box, Card, CardContent, Typography, CircularProgress, Grid, Button } from '@mui/material';
+import Cookies from "js-cookie";
 
 function Exam() {
   const [data, setData] = useState(null);
+  // const [userExam, setUserExam] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    getExams();
+  useEffect(() => { 
+    // getExams();
+    getUserExams();
   }, []);
 
-  async function getExams() {
+  // async function getExams() {
+  //   try {
+  //     setLoading(true);
+  //     const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getAllExams`);
+  //     const data = await res.json();
+  //     setLoading(false);
+  //     setData(data);
+  //   } catch (err) {
+  //     console.error(err);
+  //     setLoading(false);
+  //   }
+  // }
+
+  async function getUserExams() {
     try {
+      const id = Cookies.get("uid");
       setLoading(true);
-      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getAllExams`);
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/userExams/${id}`);
       const data = await res.json();
       setLoading(false);
       setData(data);
@@ -57,7 +74,7 @@ function Exam() {
                     display: 'flex',
                     flexDirection: 'column',
                     flex: 1,
-                    paddingBottom: '16px', // Ensures space at the bottom of the card
+                    paddingBottom: '16px',
                   }}
                 >
                   <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', color: '#1976d2' }}>

@@ -7,6 +7,9 @@ const userScoreSchema = new mongoose.Schema({
   exam_id:{
       type:mongoose.Types.ObjectId
   },
+  name:{
+    type:String
+  },
   attempted:{
       type:Boolean,
       default:false

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Container, Paper } from '@mui/material';
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -42,13 +42,23 @@ const Login = () => {
           }); 
         }
         else{
-          toast.error(parsed.message, { 
-            autoClose: 5000, 
-            closeOnClick: false, 
-            pauseOnHover: true, 
-            hideProgressBar: false, 
-            closeButton: false, 
-          });
+          if(parsed.request){
+            toast.warning("Request Already Sent to Admin", {
+              autoClose: 5000,
+              hideProgressBar: false,
+              pauseOnHover: true,
+              closeButton: false,
+            });
+          }
+          else{
+            toast.error(parsed.message, { 
+              autoClose: 5000, 
+              closeOnClick: false, 
+              pauseOnHover: true, 
+              hideProgressBar: false, 
+              closeButton: false, 
+            });
+          }
         }
     }
     catch(err){
@@ -120,6 +130,11 @@ const Login = () => {
             >
               Login
             </Button>
+
+            <Typography variant="body1" sx={{marginLeft:12,marginTop:2}}>Don't have an account? 
+              <Link to="/signup">Signup</Link>
+            </Typography>
+
           </Box>
         </Box>
       </Paper>
