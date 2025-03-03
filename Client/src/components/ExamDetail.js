@@ -25,7 +25,7 @@ function ExamDetail() {
   // For Scores
   const [numOfSubmissions, setNumOfSubmissions] = useState(0);
 
-  const [scoreUpdates,setScoreUpdates] = useState();
+  const [scoreUpdates,setScoreUpdates] = useState({});
 
   const executeCode = async () => {
     try {
@@ -78,7 +78,6 @@ function ExamDetail() {
 
         if (!outputResponse.ok) {
           console.error(outputResponse.error);
-          console.log("Some error occurred");
         }
 
         if (i.output !== outputResponse.output) {
@@ -157,7 +156,7 @@ function ExamDetail() {
         }
       });
       const parsed = await res.json();
-      console.log(parsed);
+
       let passedQuestion = 0;
       parsed[0].questions.forEach(ques => {
           if(ques.passed){
@@ -170,6 +169,7 @@ function ExamDetail() {
           setCompleted(true);
         },3000)
       }
+      
       setQuestions(parsed[0].questions);
       
       for(let i=0;i<parsed[0].questions.length;i++){
@@ -207,7 +207,7 @@ function ExamDetail() {
     return testCases;
   }
 
-  const setScores = async() => {
+  const setScores = async() => {    
     try{
       let sumOfPassedTestCases = Object.values(scoreUpdates).reduce((acc,currentVal) => acc + currentVal, 0);
       let givenTime = Math.floor(3600/60); // in minutes
@@ -216,6 +216,7 @@ function ExamDetail() {
 
       const uid = Cookies.get("uid");
       const token = Cookies.get("tokenUser");
+      
       const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/setuserScores/${exam_id}?user_id=${uid}`,{
         method:"PUT",
         headers:{
@@ -232,12 +233,8 @@ function ExamDetail() {
       })
 
       const parsed = await res.json();
-      if(res.ok){
-        console.log("Scores Updated Successfully :",parsed.message);
-      }
-      else{
-        console.log("Some Error Occured in Updating Scores");
-        
+      if(!res.ok){
+        console.log(parsed.message);
       }
     }
     catch(err){

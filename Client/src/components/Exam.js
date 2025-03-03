@@ -86,14 +86,14 @@ function Exam() {
                         <Button variant="contained" color="primary" disabled>
                           Attempted
                         </Button>
-                        <Link to={`/score/${exam._id}`}>
+                        <Link to={`/score/${exam.exam_id}`}>
                           <Button variant="contained" color="primary">
                             View Score
                           </Button>
                         </Link>
                       </Box>
                     ) : (
-                      <Link to={`/exams/${exam._id}`} style={{ textDecoration: 'none' }}>
+                      <Link to={`/exams/${exam.exam_id}`} style={{ textDecoration: 'none' }}>
                         <Button variant="contained" color="primary" fullWidth>
                           Attempt
                         </Button>

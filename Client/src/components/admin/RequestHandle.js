@@ -84,9 +84,16 @@ function RequestHandle() {
             }}
         >
             <Paper sx={{ padding: 3, width: '100%', maxWidth: 800, boxShadow: 3 }}>
-                <Typography variant="h4" gutterBottom textAlign="center">
-                    User Requests
-                </Typography>
+                <Box sx={{display:"flex", justifyContent:"space-between"}}>
+                    <Typography variant="h4" gutterBottom textAlign="center" marginLeft={5}>
+                        User Requests
+                    </Typography>
+
+                    <Button sx={{
+                            color: "green",
+                            borderRadius: 2
+                        }}>Accept All</Button>
+                </Box>
 
                 <Divider sx={{ marginBottom: 2 }} />
 
