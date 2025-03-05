@@ -22,7 +22,7 @@ ScoreRouter.get("/getuserScores/:id",async(req,res) => {
             _id: 0
           }
         );
-        
+          
         if(scores){
             res.json(scores[0].exams[0].score);
         }

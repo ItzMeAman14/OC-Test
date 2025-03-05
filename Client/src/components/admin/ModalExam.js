@@ -55,9 +55,10 @@ function ModalExam(props) {
           "userAPIKEY":token
         },
       });
-      const data = await res.json();      
-      setQuestion(data[0].questions[0]);
-      setTestCases(data[0].questions[0].testcases);
+      const data = await res.json();
+            
+      setQuestion(data[0]);
+      setTestCases(data[0].testcases);
       setLoad(false);
     } catch (err) {
       console.error(err);
@@ -206,7 +207,7 @@ function ModalExam(props) {
                 onChange={(e) => {updateTestCases(e,index,"output") }}
                 sx={{ mb: 2 }}
                 />
-                <Button variant='contained' color="error" onClick={ () => { deleteTestCase(index) }} sx={{"&:hover":{backgroundColor:"red"}}}>Delete TestCase {index+1}</Button>
+                <Button fullWidth variant='contained' color="error" onClick={ () => { deleteTestCase(index) }} sx={{"&:hover":{backgroundColor:"red"}}}>Delete TestCase {index+1}</Button>
             </Box> 
           ))
         }
@@ -214,9 +215,10 @@ function ModalExam(props) {
         {
           !load &&
           <Button
-          variant="outlined"
-          color="primary"
-          onClick={handleAddTestCase}
+            fullWidth
+            variant="outlined"
+            color="primary"
+            onClick={handleAddTestCase}
             sx={{ mb: 2 }}
           >
             Add Test Case

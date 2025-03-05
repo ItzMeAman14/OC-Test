@@ -110,7 +110,6 @@ const EditExams = () => {
       });
       const data = await res.json();      
       setExams(data);
-      console.log(data);
       
       // Setting the exam data for changing name
       let temp_data = [];

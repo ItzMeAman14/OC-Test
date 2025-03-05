@@ -43,6 +43,72 @@ UserRouter.get("/getUser",async(req,res) => {
     }
 })
 
+UserRouter.post("/filterRequestUser", async(req,res) => {
+    try{
+        const users = await User.aggregate([
+            {
+              $match: {
+                role: "admin",
+                "pendingRequest.email": { 
+                  "$regex": `${req.body.user}`, 
+                  "$options": 'i'
+                }
+              }
+            },
+            {
+              $project: {
+                pendingRequest: {
+                  $filter: {
+                    input: "$pendingRequest",
+                    as: "item",
+                    cond: { 
+                      $regexMatch: {
+                        input: "$$item.email", 
+                        regex: `${req.body.user}`,
+                        options: "i"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+                $project: {
+                  pendingRequest: {
+                    $map: {
+                      input: "$pendingRequest",
+                      as: "item",
+                      in: {
+                        email: "$$item.email",
+                      }
+                    }
+                  }
+                }
+              }
+          ]);
+          
+        res.json(users[0].pendingRequest);
+    }
+    catch(err){
+        console.error(err);
+        res.json({"message":"Some Error Occured"})
+    }
+})
+
+UserRouter.post("/filterUser",async(req,res) => {
+    try{
+        const users = await User.find(
+            { role:"user" , email: { "$regex": req.body.user, "$options":'i' } }    
+        )
+        
+        res.json(users);
+    }
+    catch(err){
+        console.error(err);
+        res.json({"message":"Some Error Occured"})
+    }
+})
+
 UserRouter.put("/giveAccess/:id", async(req,res) => {
     try{
         const objectId = new mongoose.Types.ObjectId(req.params.id);

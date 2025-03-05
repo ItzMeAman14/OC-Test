@@ -7,86 +7,139 @@ const authenticateToken = require("../middleware/auth")
 RequestRouter.use(authenticateToken);
 
 // Routes
-RequestRouter.get("/getRequestedUsers",async(req,res) => {
-    try{
-        const requests = await User.find(
-            { role:"admin" },
-            { pendingRequest:1 ,_id:0})
+RequestRouter.get("/getRequestedUsers", async (req, res) => {
+  try {
+    const requests = await User.find(
+      { role: "admin" },
+      { pendingRequest: 1, _id: 0 })
 
-        if(requests.length !== 0){
-            return res.json(requests[0].pendingRequest)
-        }
-        else{
-            return res.json({"message":"No Pending Requests"})
-        }
+    if (requests.length !== 0) {
+      return res.json(requests[0].pendingRequest)
     }
-    catch(err){
-        console.error(err);
-        res.json({"message":"Some Error Occured"})
+    else {
+      return res.json({ "message": "No Pending Requests" })
     }
+  }
+  catch (err) {
+    console.error(err);
+    res.json({ "message": "Some Error Occured" })
+  }
 })
 
+// Accept Only necessary user
+RequestRouter.get("/acceptRequest/:id", async (req, res) => {
+  try {
+    const objectId = new mongoose.Types.ObjectId(req.params.id);
 
-RequestRouter.get("/acceptRequest/:id", async(req,res) => {
-    try{
-        const objectId = new mongoose.Types.ObjectId(req.params.id);
-
-        const requests = await User.aggregate([
-            {
-              $match: {
-                role: "admin",
-                "pendingRequest._id": objectId, 
-              }
-            },
-            {
-              $project: {
-                pendingRequest: {
-                  $filter: {
-                    input: "$pendingRequest",
-                    as: "request",
-                    cond: { $eq: ["$$request._id", objectId] }
-                  }
-                },
-                _id: 0
-              }
+    const requests = await User.aggregate([
+      {
+        $match: {
+          role: "admin",
+          "pendingRequest._id": objectId,
+        }
+      },
+      {
+        $project: {
+          pendingRequest: {
+            $filter: {
+              input: "$pendingRequest",
+              as: "request",
+              cond: { $eq: ["$$request._id", objectId] }
             }
-          ]);
-          
-        if(requests.length !== 0){
-            const newUser = new User(requests[0].pendingRequest[0]);
-
-            const exams = await collection.find({});
-            
-            let initialExamScore = [];
-            exams.forEach((exam) => {
-              initialExamScore.push({
-                exam_id:exam._id,
-                name: exam.name,
-                attempted:false,
-                questions:[...exam.questions],
-                score:{}
-              })
-            })
-
-            newUser.exams = initialExamScore;
-            await newUser.save();
-
-            const removeUser = await User.updateMany(
-                { role: "admin" },
-                { "$pull" : {
-                    "pendingRequest": { _id: objectId }
-                } }
-            )
-            res.json({"message":"Request Accepted Successfully"});
+          },
+          _id: 0
         }
-        else{
-            return res.json({"message":"No Pending Requests"})
+      }
+    ]);
+
+    if (requests.length !== 0) {
+      const newUser = new User(requests[0].pendingRequest[0]);
+
+      const exams = await collection.find({});
+
+      let initialExamScore = [];
+      exams.forEach((exam) => {
+        initialExamScore.push({
+          exam_id: exam._id,
+          name: exam.name,
+          attempted: false,
+          questions: [...exam.questions],
+          score: {}
+        })
+      })
+
+      newUser.exams = initialExamScore;
+      await newUser.save();
+
+      const removeUser = await User.updateMany(
+        { role: "admin" },
+        {
+          "$pull": {
+            "pendingRequest": { _id: objectId }
+          }
         }
+      )
+      res.json({ "message": "Request Accepted Successfully" });
     }
-    catch(err){
-        console.error(err);
-        res.json({"message":"Some Error Occured"})
+    else {
+      return res.json({ "message": "No Pending Requests" })
     }
+  }
+  catch (err) {
+    console.error(err);
+    res.json({ "message": "Some Error Occured" })
+  }
+})
+
+// Accept All
+RequestRouter.get("/acceptAllRequest", async (req, res) => {
+  try {
+
+    const requests = await User.find(
+      { role: "admin" }, { "pendingRequest": 1 }
+    )
+    
+    if (requests[0].pendingRequest.length === 0) {
+      return res.json({ "message": "No pending Request." })
+    }
+
+    const exams = await collection.find({});
+
+    let initialExamScore = [];
+    exams.forEach((exam) => {
+      initialExamScore.push({
+        exam_id: exam._id,
+        name: exam.name,
+        attempted: false,
+        questions: [...exam.questions],
+        score: {}
+      })
+    })
+
+    for (const request of requests[0].pendingRequest) {
+      let newUser = new User(request);
+
+      newUser.exams = initialExamScore;
+
+      await newUser.save();
+
+      // Removing user from admin's request array
+      await User.updateMany(
+        { role: "admin" },
+        {
+          "$pull": {
+            "pendingRequest": { _id: request._id }
+          }
+        }
+      );
+    }
+
+    res.json({ "message": "All Requests are Accepted." });
+  }
+  catch (err) {
+    console.error(err);
+    res.json({ "message": "Some Error Occured" });
+  }
 })
 
 module.exports = RequestRouter;
