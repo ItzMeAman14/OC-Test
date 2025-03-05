@@ -1,7 +1,7 @@
 const express = require("express")
 const ExamRouter = express.Router()
 const mongoose = require("mongoose")
-const { collection } = require("../config");
+const { collection, User } = require("../config");
 const authenticateToken = require("../middleware/auth")
 
 ExamRouter.use(authenticateToken);
@@ -20,8 +20,8 @@ ExamRouter.get('/getAllExams',async (req,res) => {
 
 ExamRouter.get('/getExam/:id', async (req,res) => {
     try{
-        const data = await collection.find({_id:req.params.id});
-        res.json(data);
+        const data = await User.find({"exams.exam_id":req.params.id},{ _id:0, "exams.$":1 });
+        res.json(data[0].exams);
     }
     catch(err){
         console.error(err);
@@ -73,23 +73,27 @@ ExamRouter.delete("/deleteExam/:id",async(req,res) => {
 
 ExamRouter.get("/noOfTestcases/:id",async(req,res) => {
     try{
-        const objectId = new mongoose.Types.ObjectId(req.params.id);
+        const examId = new mongoose.Types.ObjectId(req.params.id);
         const data =  await collection.aggregate([
             {
-                $match: { _id: objectId } 
+                $match: { _id: examId } 
             },
             {
               $unwind: "$questions" 
             },
             {
-              $project: {
-                "questionHeading": "$questions.heading",  
+              $project: {  
                 "testcasesCount": { $size: "$questions.testcases" } 
               }
-            }
+            },
           ]);
         
-        res.json(data);
+        let totalTestCases = 0;
+        data.forEach(testCase => {
+            totalTestCases += testCase.testcasesCount;
+        })
+
+        res.json(totalTestCases);
     }
     catch(err){
         console.error(err);

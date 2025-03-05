@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 const authenticateToken = (req, res, next) => {
-  if (req.path === '/auth/login' || req.path === '/auth/signup' || req.path === "/execute" || req.path === "/credit" || req.path === "/contact-us") {
+  if (req.path === '/auth/login' || req.path === '/auth/signup' || req.path === "/execute" || req.path === "/credit" || req.path === "/contact-us" || req.path === "/auth/sendOTP" || req.path === "/getUser") {
     return next();
   }
 
@@ -18,6 +18,8 @@ const authenticateToken = (req, res, next) => {
 
     next();
   } catch (err) {
+    console.log(err);
+    
     return res.status(403).json({ message: 'Invalid or expired token' });
   }
 };

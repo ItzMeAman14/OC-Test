@@ -1,2 +1,4 @@
 In Edit Question:
 1: Exam Detail Component
+2: Testing
+3: Score not Updating (testCasesPassed,timeTaken,numOfSubmissions)

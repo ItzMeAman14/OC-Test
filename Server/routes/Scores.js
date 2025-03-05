@@ -13,11 +13,18 @@ ScoreRouter.get("/getuserScores/:id",async(req,res) => {
         const userId = new mongoose.Types.ObjectId(req.query.user_id);
 
         const scores = await User.find(
-            { _id:userId, "examScore.exam_id": examId },
-            { "examScore.score":1,_id:0});
+          {
+            _id: userId,
+            "exams.exam_id": examId
+          },
+          {
+            "exams": { $elemMatch: { exam_id: examId } },
+            _id: 0
+          }
+        );
         
         if(scores){
-            res.json(scores[0].examScore[0].score);
+            res.json(scores[0].exams[0].score);
         }
         else{
             res.json({"message":"User not Found"});
@@ -34,7 +41,6 @@ ScoreRouter.put("/setuserScores/:id",async(req,res) => {
         const examId = new mongoose.Types.ObjectId(req.params.id);
         const userId = new mongoose.Types.ObjectId(req.query.user_id);
 
-
         const newScore = {
                 testCasesPassed: req.body.testCasesPassed,
                 totalTestCases: req.body.totalTestCases,
@@ -42,20 +48,23 @@ ScoreRouter.put("/setuserScores/:id",async(req,res) => {
                 givenTime: req.body.givenTime,
                 numOfSubmissions: req.body.numOfSubmissions 
         }
-        const score = await User.findByIdAndUpdate(
-            { _id: userId },
+          
+          const score = await User.findOneAndUpdate(
             { 
-                "$push":{
-                    "examScore":{
-                        exam_id:examId,
-                        attempted:true,
-                        score:newScore
-                    }
-                }    
+              _id: userId,  
+              "exams.exam_id": examId 
             },
-            { new: true }
-        )
-            
+            { 
+              $set: {
+                "exams.$.attempted": true ,
+                "exams.$.score": newScore
+              }
+            },
+            { 
+              new: true  
+            }
+          );  
+        
         if(score){
             res.json({"message":"Scores Updated Successfully"})
         }

@@ -3,7 +3,25 @@ const scoreSchema = require("./score");
 
 // User Schema
 
-const userScoreSchema = new mongoose.Schema({
+const TestCaseSchema = new mongoose.Schema({
+    input: mongoose.Schema.Types.Mixed,
+    output: mongoose.Schema.Types.Mixed,
+})
+
+
+const UserQuestionSchema = new mongoose.Schema({
+    passed:{
+        type:Boolean,
+        default:false
+    },
+    ques_id: {
+        type:mongoose.Schema.Types.ObjectId
+    },
+    testcases: [TestCaseSchema],
+})
+
+
+const userExamSchema = new mongoose.Schema({
   exam_id:{
       type:mongoose.Types.ObjectId
   },
@@ -14,6 +32,7 @@ const userScoreSchema = new mongoose.Schema({
       type:Boolean,
       default:false
   },
+  questions:[UserQuestionSchema],
   score:scoreSchema
 })
 
@@ -38,7 +57,7 @@ const userSchema = new mongoose.Schema({
     pendingRequest:{
         type:Array
     },
-    examScore:[userScoreSchema]
+    exams:[userExamSchema]
 });
 
 

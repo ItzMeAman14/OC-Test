@@ -1,7 +1,7 @@
 const express = require("express")
 const QuestionRouter = express.Router()
 const mongoose = require("mongoose")
-const { collection } = require("../config");
+const { collection, User } = require("../config");
 const authenticateToken = require("../middleware/auth")
 
 QuestionRouter.use(authenticateToken);
@@ -14,7 +14,7 @@ QuestionRouter.get("/getQuestion/:id", async(req,res) => {
             "questions._id": objectId },
             { "questions.$": 1 })
             
-            res.json(data)
+            res.json(data[0].questions)
     }
     catch(err){
         console.error(err);
@@ -83,14 +83,27 @@ QuestionRouter.delete("/deleteQuestion/:id", async(req,res) => {
 
 QuestionRouter.put("/passQuestion/:id", async(req,res) => {
     try{
-        const objectId = new mongoose.Types.ObjectId(req.params.id);
-        const data =  await collection.updateOne(
-            { "questions._id": objectId }, 
-            { "$set": { 
-                "questions.$.passed" : true
-            } } 
-        );
+        const quesId = new mongoose.Types.ObjectId(req.params.id);
+        const userId = new mongoose.Types.ObjectId(req.query.user_id);
+        const exam_id = new mongoose.Types.ObjectId(req.query.exam_id);
+
+        const data =  await User.updateOne(
+            {   _id: userId ,
+                "exams.exam_id": exam_id,
+                "exams.questions._id": quesId                           
+            }, 
+            {
+                $set: {
+                  "exams.$.questions.$[elem].passed": true
+                }
+            },
+            {
+                arrayFilters: [
+                  { "elem._id": quesId }
+                ]
+            }
         
+        );
         res.json({message:"Question Submitted Successfully"})
     }
     catch(err){

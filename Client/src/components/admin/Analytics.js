@@ -20,7 +20,7 @@ const Analytics = () => {
     const getScores = useCallback( async() => {
         try {
             const uid = Cookies.get("uid");
-            const token = Cookies.get("tokenAdmin");
+            const token = Cookies.get("tokenUser");
             const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getuserScores/${id}?user_id=${uid}`,{
                 method:"GET",
                 headers:{

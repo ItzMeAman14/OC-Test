@@ -55,18 +55,20 @@ RequestRouter.get("/acceptRequest/:id", async(req,res) => {
         if(requests.length !== 0){
             const newUser = new User(requests[0].pendingRequest[0]);
 
-            const exams = await collection.find({})
+            const exams = await collection.find({});
+            
             let initialExamScore = [];
             exams.forEach((exam) => {
               initialExamScore.push({
                 exam_id:exam._id,
                 name: exam.name,
                 attempted:false,
+                questions:[...exam.questions],
                 score:{}
               })
             })
 
-            newUser.examScore = initialExamScore;
+            newUser.exams = initialExamScore;
             await newUser.save();
 
             const removeUser = await User.updateMany(

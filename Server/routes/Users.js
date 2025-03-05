@@ -92,7 +92,7 @@ UserRouter.get("/userExams/:id", async (req,res) => {
         const objectId = new mongoose.Types.ObjectId(req.params.id);
         const user = await User.find({_id: objectId });
 
-        res.json(user[0].examScore);
+        res.json(user[0].exams);
     }
     catch(err){
         console.error(err);

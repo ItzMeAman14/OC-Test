@@ -72,7 +72,7 @@ authRouter.post("/login",async(req,res) => {
                 const token = jwt.sign(
                     { userId: user._id },
                     process.env.JWT_SECRET,
-                    { expiresIn: '1h' }
+                    { expiresIn: '6h' }
                   );
                   
                 res.json({"message":"Logged in Successfully","uid":user[0]._id,"token":token, "role":user[0].role});
@@ -102,7 +102,7 @@ authRouter.post("/sendOTP",async(req,res) => {
         // Send email
         transporter.sendMail(mailOptions, (error) => {
         if (error) {
-            console.log(error);
+            console.error(error);
             return res.status(500).json({"message":'Internal Server Error'});
         }
     });

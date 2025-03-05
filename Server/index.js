@@ -119,7 +119,7 @@ app.post('/contact-us', (req, res) => {
         
         const mailOptions = {
             from: email,
-            to: 'amanrehman2020@gmail.com',
+            to: process.env.RECIEVE_MAIL_CONTACT,
             subject: 'Contact Us From AIComp',
             text: `You have a new message from ${name} (${email}):\n\n${message}`
         };
