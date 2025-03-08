@@ -25,14 +25,32 @@ QuestionRouter.get("/getQuestion/:id", async(req,res) => {
 QuestionRouter.post("/createQuestion/:id",async(req,res) => {
     try{
         const objectId = new mongoose.Types.ObjectId(req.params.id);
-        const data = await collection.updateOne(
-            { _id:objectId },
-        {
-            $push:{
-                "questions": req.body.question
-            }
+        
+        const data = await collection.findOneAndUpdate(
+                { _id:objectId },
+            {
+                $push:{
+                    "questions": req.body.question
+                }
+            },
+            { returnDocument: 'after' }
+        )
+        
+        // Create question in every user
+        const users = await User.find({role:"user"});
+        
+        const userQuestion = { _id:data.questions[data.questions.length - 1]._id,...req.body.question };
+        
+        for(let user=0;user<users.length;user++){
+            await User.updateOne(
+                { "exams.exam_id" : objectId, _id: users[user]._id },
+                {
+                    "$push": {
+                        "exams.$.questions": userQuestion
+                    }
+                }
+            )
         }
-    )
     
     res.json({"message":"Question Added Successfully"})
     }
@@ -45,7 +63,8 @@ QuestionRouter.post("/createQuestion/:id",async(req,res) => {
 QuestionRouter.put("/updateQuestion/:id",async(req,res) => {
     try{
         const objectId = new mongoose.Types.ObjectId(req.params.id);
-        const data =  await collection.updateOne(
+
+        const data =  await collection.findOneAndUpdate(
             { "questions._id": objectId }, 
             { "$set": { 
                 "questions.$" : {
@@ -53,9 +72,35 @@ QuestionRouter.put("/updateQuestion/:id",async(req,res) => {
                     statement: req.body.question.statement,
                     testcases: req.body.testCases,
                 }
-            } } 
+            } },
+            { returnDocument: 'after' }
         );
         
+
+        const newId = data.questions.filter( (ques) => {
+            return ques.heading === req.body.question.heading
+        })
+
+        // Update Question in every user
+        const users = await User.find({role:"user"});
+        
+        for(let user=0;user<users.length;user++){
+            await User.updateOne(
+                { "exams.questions._id" : objectId, _id: users[user]._id },
+                {
+                    "$set": {
+                        "exams.$.questions.$[question]._id": newId[0]._id
+                    }
+                },
+                {
+                    arrayFilters: [
+                      { 'question._id': objectId }
+                    ]
+                }
+            )
+        }
+        
+
         res.json({message:"Question Updated Successfully"})
     }
     catch(err){
@@ -72,6 +117,26 @@ QuestionRouter.delete("/deleteQuestion/:id", async(req,res) => {
             { "questions._id": objectId }, 
             { $pull: { questions: { _id: objectId } } } 
         );
+
+
+        // Delete Question in every user
+        const users = await User.find({role:"user"});
+        
+        for(let user=0;user<users.length;user++){
+            await User.updateOne(
+                { "exams.questions._id" : objectId, _id: users[user]._id },
+                {
+                    "$pull": {
+                        "exams.$.questions" : { _id : objectId }
+                    }
+                },
+                {
+                    arrayFilters: [
+                      { 'question._id': objectId }
+                    ]
+                }
+            )
+        }
         
         res.json({message:"Question Deleted Successfully"})
     }

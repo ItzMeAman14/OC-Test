@@ -11,10 +11,6 @@ const TestCaseSchema = new mongoose.Schema({
 const QuestionSchema = new mongoose.Schema({
     heading:String,
     statement: String,
-    passed:{
-        type:Boolean,
-        default:false
-    },
     id: mongoose.Schema.Types.ObjectId,
     testcases: [TestCaseSchema],
 })

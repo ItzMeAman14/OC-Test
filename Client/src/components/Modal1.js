@@ -109,6 +109,7 @@ function Modal1(props) {
           <Button
             variant="outlined"
             color="primary"
+            fullWidth
             onClick={handleAddTestCase}
             sx={{ mb: 2 }}
           >

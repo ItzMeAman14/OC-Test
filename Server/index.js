@@ -10,6 +10,7 @@ const ScoreRouter = require("./routes/Scores");
 const authRouter = require("./routes/Auth");
 const UserRouter = require("./routes/Users");
 const RequestRouter = require("./routes/Requests");
+const contactUsTemplate = require("./emailTemplates/contactTemplate");
 
 // Protecting Routes using CORS
 const allowedOrigins = ['http://localhost:3000'];
@@ -121,7 +122,7 @@ app.post('/contact-us', (req, res) => {
             from: email,
             to: process.env.RECIEVE_MAIL_CONTACT,
             subject: 'Contact Us From AIComp',
-            text: `You have a new message from ${name} (${email}):\n\n${message}`
+            html: contactUsTemplate(name,email,message)
         };
     
         // Send email

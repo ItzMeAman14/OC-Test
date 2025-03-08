@@ -66,7 +66,7 @@ ScoreRouter.put("/setuserScores/:id",async(req,res) => {
           );  
         
         if(score){
-            res.json({"message":"Scores Updated Successfully"})
+            res.json({"message":"Exam Completed Successfully"})
         }
         else{
             res.json({"message":"User not Found"})

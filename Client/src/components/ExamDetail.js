@@ -147,8 +147,9 @@ function ExamDetail() {
 
   const getAllQuestions = useCallback(async () => {
     try {
+      const uid = Cookies.get("uid");
       const token = Cookies.get("tokenUser");
-      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getExam/${exam_id}`, {
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getExam/${exam_id}?user_id=${uid}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -248,7 +249,8 @@ function ExamDetail() {
       let givenTime = Math.floor(3600 / 60); // in minutes
       let timeTaken = Math.floor((3600 - time) / 60);  // in minutes
       let totalTestCases = await getTotalTestCases();
-
+      
+      
       const uid = Cookies.get("uid");
       const token = Cookies.get("tokenUser");
 
@@ -268,52 +270,29 @@ function ExamDetail() {
       })
 
       const parsed = await res.json();
-      if (!res.ok) {
-        console.log(parsed.message);
-      }
+      if (res.ok) {
+          getAllQuestions();
+          toast.success(parsed.message, {
+            autoClose: 5000,
+            hideProgressBar: false,
+            pauseOnHover: true,
+            closeButton: false,
+          });
+        }
+        else {
+          toast.error(parsed.message, {
+            autoClose: 5000,
+            hideProgressBar: false,
+            pauseOnHover: true,
+            closeButton: false,
+          });
+        }
+        navigate(`/score/${exam_id}`);
     }
     catch (err) {
       console.error(err);
     }
   }
-
-
-  const submitExam = useCallback(async () => {
-    try {
-      const token = Cookies.get("tokenUser");
-      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/completeExam/${exam_id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "userAPIKEY": token
-        },
-      });
-
-      const parsed = await res.json();
-      if (res.ok) {
-        getAllQuestions();
-        setScores();
-        toast.success(parsed.message, {
-          autoClose: 5000,
-          hideProgressBar: false,
-          pauseOnHover: true,
-          closeButton: false,
-        });
-      }
-      else {
-        toast.error(parsed.message, {
-          autoClose: 5000,
-          hideProgressBar: false,
-          pauseOnHover: true,
-          closeButton: false,
-        });
-      }
-      navigate(`/score/${exam_id}`);
-    }
-    catch (err) {
-      console.error(err);
-    }
-  }, [exam_id])
 
   useEffect(() => {
     let timer;
@@ -323,7 +302,7 @@ function ExamDetail() {
         setTime((prevTime) => prevTime - 1);
       }, 1000);
     } else if (time === 0) {
-      submitExam();
+      setCompleted(true);
     }
 
     return () => clearInterval(timer);
@@ -346,7 +325,7 @@ function ExamDetail() {
           </Box>
 
           {/* Right Side Button */}
-          <Button variant='contained' style={{ backgroundColor: "#FF2626", width: "200px" }} onClick={submitExam}>
+          <Button variant='contained' style={{ backgroundColor: "#FF2626", width: "200px" }} onClick={setScores}>
             Submit Exam
           </Button>
         </Toolbar>

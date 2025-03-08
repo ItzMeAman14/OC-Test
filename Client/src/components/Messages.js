@@ -81,7 +81,7 @@ function MessageModal() {
                         fontSize: '0.75rem', 
                       }} 
                     >
-                      {new Date(message.createdAt).toLocaleTimeString()} 
+                      {new Date(message.createdAt).toLocaleTimeString()} -  { new Date(message.createdAt).toLocaleDateString('en-GB') }
                     </Typography>
 
                     {/* Message   */}
