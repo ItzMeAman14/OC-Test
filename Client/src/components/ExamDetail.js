@@ -4,6 +4,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
 import ExamCompletion from "./ExamCompletion";
+import WarningDialog from "../DialogBox/WarningDialog";
+import DangerDialog from "../DialogBox/DangerDialog";
 
 function ExamDetail() {
   const navigate = useNavigate();
@@ -18,6 +20,11 @@ function ExamDetail() {
   const [question, setQuestion] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [completed, setCompleted] = useState(false);
+
+  // Secure Exam
+  const [warning, setWarning] = useState(false);
+  const [warningCount, setWarningCount] = useState(0);
+  const [danger, setDanger] = useState(false);
 
   // Timer
   const [time, setTime] = useState(3600);
@@ -168,6 +175,7 @@ function ExamDetail() {
       if (passedQuestion === parsed[0].questions.length) {
         setTimeout(() => {
           setCompleted(true);
+          localStorage.removeItem("counter");
         }, 3000)
       }
 
@@ -294,6 +302,15 @@ function ExamDetail() {
     }
   }
 
+  
+  const handlePaste = (e) => {
+    e.preventDefault();
+    setInput("Don't try to Cheat");
+  }
+
+  // UseEffects
+
+  // Timer
   useEffect(() => {
     let timer;
 
@@ -303,14 +320,62 @@ function ExamDetail() {
       }, 1000);
     } else if (time === 0) {
       setCompleted(true);
+      clearInterval(timer);
     }
 
     return () => clearInterval(timer);
   }, [time]);
 
+
+  // Get Questions
   useEffect(() => {
     getAllQuestions();
   }, [getAllQuestions]);
+
+
+  // Checking the tab Change
+  useEffect(() => {
+
+    const handleLoad = () => {
+      if(!warning){
+        setWarningCount(prevCount => prevCount + 1);
+        setWarning(true);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden && !warning) {
+        setWarning(true);
+        setWarningCount(prevCount => prevCount + 1);
+      }
+    };
+
+    const handleBlur = () => {
+      if(!warning){ 
+        setWarningCount(prevCount => prevCount + 1);
+        setWarning(true);
+      }
+    };
+
+    window.addEventListener('load', handleLoad);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleBlur);
+
+    return () => {
+      window.removeEventListener('load', handleLoad);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, []);
+
+  // Warning
+  useEffect(() => {
+    if(warningCount == 2){
+      setDanger(true);
+      setWarningCount(0);
+    }
+    
+  }, [warningCount]);
 
   return (
     <>
@@ -331,6 +396,10 @@ function ExamDetail() {
         </Toolbar>
       </AppBar>
 
+
+      {/* Dialog Boxes */}
+      { warning && <WarningDialog open={warning} setWarning={setWarning} /> }
+      { <DangerDialog open={danger} setScores={setScores} setDanger={setDanger} /> }
 
       {
         !completed &&
@@ -407,6 +476,7 @@ function ExamDetail() {
                 minRows={19}
                 variant="outlined"
                 placeholder="Write your code here"
+                onPaste={handlePaste}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 sx={{ flex: 1, overflow: "scroll" }}
