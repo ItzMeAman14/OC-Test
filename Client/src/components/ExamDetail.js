@@ -6,6 +6,7 @@ import Cookies from "js-cookie";
 import ExamCompletion from "./ExamCompletion";
 import WarningDialog from "../DialogBox/WarningDialog";
 import DangerDialog from "../DialogBox/DangerDialog";
+import { BallTriangle } from 'react-loader-spinner'
 
 function ExamDetail() {
   const navigate = useNavigate();
@@ -33,8 +34,13 @@ function ExamDetail() {
   const [numOfSubmissions, setNumOfSubmissions] = useState(0);
   const [scoreUpdates, setScoreUpdates] = useState({});
 
+  // Loader
+  const [loading, setLoading] = useState(false);
+
   const executeCode = async () => {
     try {
+      setOutput('');
+      setLoading(true);
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/execute`, {
         method: "POST",
         headers: {
@@ -53,6 +59,7 @@ function ExamDetail() {
 
       const data = await response.json();
       setOutput(data.output || data.error);
+      setLoading(false);
     }
     catch (error) {
       console.error(error);
@@ -62,9 +69,11 @@ function ExamDetail() {
   const runAll = async () => {
     const out = [];
     setOutput("");
+    setAllOutput("");
     setNumOfSubmissions(numOfSubmissions + 1);
     let passed = 0;
 
+    setLoading(true);
     for (let i of question.testcases) {
       let userInputEach = i.input;
 
@@ -108,6 +117,7 @@ function ExamDetail() {
       passQuestion(question._id);
     }
     setAllOutput(out);
+    setLoading(false);
   };
 
   const passQuestion = async (id) => {
@@ -510,7 +520,7 @@ function ExamDetail() {
                 <Button onClick={runAll} variant="contained" sx={{ margin: 1 }}>
                   Submit
                 </Button>
-              </Box>
+              </Box> 
 
               <Divider />
 
@@ -518,8 +528,18 @@ function ExamDetail() {
               <Box className="container-fluid" sx={{ marginTop: 3 }}>
                 <Box className="row row-cols-1 row-cols-md-3 g-4">
                   {
-                    output
+                    loading && <BallTriangle
+                    height={100}
+                    width={100}
+                    radius={5}
+                    color="#4fa94d"
+                    ariaLabel="ball-triangle-loading"
+                    wrapperStyle={{margin: 5}}
+                    wrapperClass=""
+                    visible={true}
+                    />
                   }
+                  { output }
                   {allOutput && allOutput.map((item, index) => (
                     <Box key={index} className="col" sx={{ textAlign: 'center' }}>
                       <i

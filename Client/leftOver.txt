@@ -1,2 +1,8 @@
 In Edit Question:
 1: Testing
+2: Add Loader in Exam Detail -> Done
+3: Send Mail when user is Blocked or Unblocked
+4: Delete msgs after 2 days
+5: Update the Editor
+6: Use Bcrypt
+7: Super Admin Page 

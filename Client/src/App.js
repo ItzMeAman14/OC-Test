@@ -13,6 +13,8 @@ import Contact from './components/Contact';
 import Analytics from './components/admin/Analytics';
 import Signup from './components/Signup';
 
+import Testing from './components/Testing';
+
 // Context
 import { MessageProvider } from './components/context/MessageContext';
 import { AuthProvider } from "./components/context/AuthContext";
@@ -75,6 +77,10 @@ function App() {
                   <Navbar />
                   <Contact />
                 </>
+              } />
+
+              <Route exact path="/testing" element={
+                <Testing />
               } />
 
               <Route exact path="/score/:id" element={
