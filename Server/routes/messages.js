@@ -18,7 +18,6 @@ msgRouter.post("/new", async(req,res) => {
         console.error(err);
         res.json({"message":"Some Error Occured"})
     }
-    
 })
 
 

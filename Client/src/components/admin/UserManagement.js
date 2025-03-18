@@ -3,14 +3,20 @@ import { Box, Typography, List, ListItem, ListItemText, Switch, FormControlLabel
 import { toast } from "react-toastify";
 import SearchIcon from '@mui/icons-material/Search';
 import Cookies from "js-cookie";
+import { newtonsCradle } from 'ldrs'
+
+newtonsCradle.register()
+
 
 function UserManagement() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [toFilter, setToFilter] = useState('');
+    const [statusLoader, setStatusLoader] = useState({status:false,id:null});
 
     const changeAccess = async (id) => {
         try {
+            setStatusLoader({status:true,id:id})
             const token = Cookies.get("tokenAdmin");
             const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/blockUser/${id}`, {
                 method: "PUT",
@@ -21,6 +27,7 @@ function UserManagement() {
             });
 
             const parsed = await res.json();
+            setStatusLoader({status:false,id:null});
             if (res.ok) {
                 getUsers();
                 toast.success(parsed.message, {
@@ -152,17 +159,25 @@ function UserManagement() {
                             users.map((user) => (
                                 <ListItem key={user._id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <ListItemText primary={user.email} />
-
+                            
                                     <FormControlLabel
                                         control={
+                                            statusLoader.status && statusLoader.id === user._id 
+                                            ?
+                                            <l-newtons-cradle
+                                            size="78"
+                                            speed="1.4" 
+                                            color="#0057e5" 
+                                            ></l-newtons-cradle>
+                                            :
                                             <Switch
                                                 checked={user.blocked}
                                                 onChange={() => changeAccess(user._id)}
                                                 color={user.blocked ? "error" : "primary"}
-
+                                                sx={ user.blocked && {marginRight:3}}
                                             />
                                         }
-                                        label={user.blocked ? 'Blocked' : 'unblocked'}
+                                        label={ statusLoader.status && statusLoader.id === user._id ? "" : user.blocked ? 'Blocked' : 'Unblocked'}
                                     />
                                 </ListItem>
                             ))}

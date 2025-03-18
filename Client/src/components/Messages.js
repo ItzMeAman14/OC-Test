@@ -62,8 +62,46 @@ function MessageModal() {
           </Typography>
           <Box>
             <List>
-              {messages.map((message, index) => (
-                <React.Fragment key={index}>
+              {
+               
+              messages.length === 0 
+              ?
+              
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent:'center',
+                  height:'400px',
+                  marginTop: 4,
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 'bold',
+                    fontSize: '1.2rem',
+                    marginBottom: 2,
+                  }}
+                >
+                  No live Messages.
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontSize: '0.9rem',
+                    color: 'gray',
+                  }}
+                >
+                  Note: All messages will be deleted after 2 day.
+                </Typography>
+              </Box>
+              
+              :
+              messages.map((message) => (
+                <React.Fragment key={message._id}>
                   <ListItem
                     sx={{
                       display: 'flex',              

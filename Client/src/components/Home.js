@@ -194,14 +194,14 @@ function Home() {
                         background: 'transparent',
                         borderRadius: '5px',
                         width: '40px',
-                        maxHeight: '400px',
+                        maxHeight: '500px',
                         zIndex: '1',
                         pointerEvents: 'none',
                         color: '#000',
                         whiteSpace: 'pre-wrap',
                         fontSize: '20px',
                         overflowY: 'hidden', 
-                        height: '400px'
+                        height: '500px'
                       }}>
                         {getLineNumbers(input).map((lineNumber) => (
                           <div key={lineNumber}>{lineNumber}</div>
@@ -219,7 +219,7 @@ function Home() {
                         ref={textareaRef}
                         fullWidth
                         sx={{
-                          maxHeight: '400px',
+                          maxHeight: '450px',
                           marginBottom: 2,
                           border: 'none',       
                           backgroundColor: '#ffffff',
@@ -227,7 +227,7 @@ function Home() {
                           position: 'relative',
                           paddingLeft: '25px',
                           fontSize: '16px',
-                          height: '400px',
+                          height: '450px',
                           overflowY: 'auto',
                           resize: 'none',
                           '& .MuiOutlinedInput-notchedOutline': {

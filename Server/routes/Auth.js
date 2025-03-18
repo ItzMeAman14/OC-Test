@@ -12,11 +12,14 @@ let loginRequestCount = 0;
 
 // Transporter For Sending Mail
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL,
-        pass: process.env.TEMP_PASSWORD
-    }
+  service: 'gmail',
+  auth: {
+      user: process.env.EMAIL,
+      pass: process.env.TEMP_PASSWORD, 
+  },
+  tls: {
+      rejectUnauthorized: false 
+  }
 });
 
 // Routes

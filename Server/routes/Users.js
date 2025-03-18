@@ -3,8 +3,23 @@ const UserRouter = express.Router();
 const mongoose = require("mongoose");
 const { User } = require("../config");
 const authenticateToken = require("../middleware/auth");
+const nodemailer = require("nodemailer")
+const blockTemplate = require("../emailTemplates/BlockTemplate")
 
 UserRouter.use(authenticateToken)
+
+
+// Transporter For Sending Mail
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL,
+        pass: process.env.TEMP_PASSWORD, 
+    },
+    tls: {
+        rejectUnauthorized: false 
+    }
+});
 
 // Routes
 UserRouter.get("/users",async(req,res) => {
@@ -131,26 +146,53 @@ UserRouter.put("/giveAccess/:id", async(req,res) => {
 })
 
 
-UserRouter.put("/blockUser/:id",async(req,res) => {
-    try{
+UserRouter.put("/blockUser/:id", async (req, res) => {
+    try {
         const objectId = new mongoose.Types.ObjectId(req.params.id);
-        const user = await User.find({_id: objectId });
+        const user = await User.find({ _id: objectId });
+
+        if (!user || user.length === 0) {
+            return res.status(404).json({ "message": "User not found" });
+        }
 
         const userBlockStatus = user[0].blocked ? false : true;
 
-        const users = await User.updateOne(
+        const updateResult = await User.updateOne(
             { _id: objectId },
-            { "$set": {
-                blocked: userBlockStatus
-            } }
+            { "$set": { blocked: userBlockStatus } }
         );
-        res.json({"message":"Status Updated SuccessFully"});
-    }
-    catch(err){
+
+        if (updateResult.nModified === 0) {
+            return res.status(400).json({ "message": "User status not updated" });
+        }
+
+        // Prepare email
+        const mailOptions = {
+            from: "AICOMP <no-reply@aicomp.com>",
+            to: user[0].email,
+            subject: 'Block Status Updated',
+            html: blockTemplate(user[0].email, userBlockStatus)
+        };
+
+        // Send email
+        transporter.sendMail(mailOptions, (error) => {
+            if (error) {
+                console.error(error);
+                return res.status(500).json({ "message": 'Internal Server Error while sending email' });
+            }
+
+            if (userBlockStatus) {
+                return res.json({ "message": "User Blocked Successfully" });
+            } else {
+                return res.json({ "message": "User Unblocked Successfully" });
+            }
+        });
+
+    } catch (err) {
         console.error(err);
-        res.json({"message":"Some Error Occured"})
+        return res.status(500).json({ "message": "Some Error Occurred" });
     }
-})
+});
 
 
 UserRouter.get("/userExams/:id", async (req,res) => {

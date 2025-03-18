@@ -1,8 +1,11 @@
+// Imports
 const express = require('express')
 const app = express()
 const cors = require('cors');
+const cron = require("node-cron");
 const nodemailer = require("nodemailer");
-require('dotenv').config();
+
+// Routes
 const msgRoute = require('./routes/messages');
 const ExamRouter = require("./routes/Exams");
 const QuestionRouter = require("./routes/Questions");
@@ -10,7 +13,16 @@ const ScoreRouter = require("./routes/Scores");
 const authRouter = require("./routes/Auth");
 const UserRouter = require("./routes/Users");
 const RequestRouter = require("./routes/Requests");
+
+// Templates
+const deleteMessageTemplate = require("./emailTemplates/messageTemplate");
 const contactUsTemplate = require("./emailTemplates/contactTemplate");
+
+// Schema
+const { messaging } = require("./config");
+
+// Configurations
+require('dotenv').config();
 
 // Protecting Routes using CORS
 const allowedOrigins = ['http://localhost:3000'];
@@ -41,10 +53,13 @@ app.use('/',RequestRouter)
 
 // Transporter For Sending Mail
 const transporter = nodemailer.createTransport({
-    service: 'gmail', 
+    service: 'gmail',
     auth: {
-      user: process.env.EMAIL,  
-      pass: process.env.TEMP_PASSWORD
+        user: process.env.EMAIL,
+        pass: process.env.TEMP_PASSWORD, 
+    },
+    tls: {
+        rejectUnauthorized: false
     }
 });
 
@@ -136,9 +151,44 @@ app.post('/contact-us', (req, res) => {
     }
     catch(err){
         console.error(err);
-        res.status(500).json({ error: 'Error executing code' });
+        res.status(500).json({ "message": 'Internal Server Error' });
     }
 });
+
+
+// Cron Tab for Messages Deletion in 2 Days -- It checks every single day if the message is 2 days old
+cron.schedule("0 0 * * *", async () => {
+    try{
+        const messages = await messaging.find({});
+        
+        const previousDate = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+
+        if(messages.length !== 0){
+            await messaging.deleteMany({createdAt: { "$lt": previousDate }});
+
+            const mailOptions = {
+                from: 'AICOMP',
+                to: process.env.RECIEVE_MAIL_CONTACT,
+                subject: 'Messages Deletion Updates',
+                html: deleteMessageTemplate()
+            };
+        
+            // Send email
+            transporter.sendMail(mailOptions, (error) => {
+            if (error) {
+                console.log(error);
+                return res.status(500).json({"message":'Internal Server Error'});
+            }
+            res.json({"message":"Messages Deleted Successfully"});
+        })
+        }
+    }
+    catch(err){
+        res.status(500).json({ "message": 'Internal Server Error' });
+        throw err;
+    }
+})
+
 
 app.listen(7123, () => {
     console.log("Listening on http://localhost:7123/");

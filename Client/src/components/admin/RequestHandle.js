@@ -187,22 +187,7 @@ function RequestHandle() {
                             <TaskAltIcon />
                         </IconButton>
                     </Tooltip>
-
-                    {/* <Button sx={{
-                            color: "green",
-                            borderRadius: 2
-                    }}>Accept All</Button> */}
                 </Box>
-                {/* <Box sx={{display:"flex", justifyContent:"space-between"}}>
-                    <Typography variant="h4" gutterBottom textAlign="center" marginLeft={5}>
-                        User Requests
-                    </Typography>
-
-                    <Button sx={{
-                            color: "green",
-                            borderRadius: 2
-                        }}>Accept All</Button>
-                </Box> */}
 
                 <Divider sx={{ marginBottom: 2 }} />
 
@@ -212,7 +197,7 @@ function RequestHandle() {
                             {
                                 users.length === 0 &&
                                 <Typography variant='body1'>
-                                    No Request Pending
+                                    No Pending Request
                                 </Typography>
                             }
                             {users.map((user) => (

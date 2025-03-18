@@ -48,10 +48,19 @@ function Navbar() {
           <Box>
             {
               !isAuthenticatedUser &&
+              <Button color="inherit" component={Link} to="/signup">
+                Signup
+              </Button>
+            }
+
+            {
+              !isAuthenticatedUser &&
               <Button color="inherit" component={Link} to="/login">
                 Login
               </Button>
             }
+
+
             
             {
               isAuthenticatedUser &&
