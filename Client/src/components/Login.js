@@ -3,8 +3,10 @@ import { TextField, Button, Box, Typography, Container, Paper } from '@mui/mater
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from "./context/AuthContext";
 
 const Login = () => {
+  const { setIsAuthenticatedUser ,setIsAuthenticatedAdmin } = useAuth()
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,11 +30,13 @@ const Login = () => {
           if(parsed.role === "user"){
             Cookies.set("uid",parsed.uid, { expires: 2 })
             Cookies.set("tokenUser",parsed.token,{ expires: 1 })
+            setIsAuthenticatedUser(true);
             navigate("/");
           }
           else{
             Cookies.set("adminid",parsed.uid, { expires: 2 })
             Cookies.set("tokenAdmin",parsed.token,{ expires: 1 })
+            setIsAuthenticatedAdmin(true);
             navigate("/admin");
           }
           toast.success(parsed.message, { 
@@ -133,9 +137,16 @@ const Login = () => {
               Login
             </Button>
 
-            <Typography variant="body1" sx={{marginLeft:12,marginTop:2}}>Don't have an account? 
-              <Link to="/signup">Signup</Link>
-            </Typography>
+
+            <Box sx={{display:'flex',width:'100%',marginTop:2,justifyContent:"space-between"}}>
+
+              <Typography variant="body1">Don't have an account? 
+                <Link to="/signup">Signup</Link>
+              </Typography>
+
+              <Link to="/forget-password">Forget Password</Link>
+            
+            </Box>
 
           </Box>
         </Box>

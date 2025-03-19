@@ -10,7 +10,7 @@ connect.then(() => {
 })
 .catch((err) => {
     console.log("Database Connection Failed.");
-    console.log(err);
+    console.error(err);
 })
 
 // Models

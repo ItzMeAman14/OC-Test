@@ -4,22 +4,28 @@ const nodemailer = require("nodemailer");
 const { User } = require("../config");
 const { generateOTP } = require("../Authentication/otp");
 const jwt = require("jsonwebtoken");
+
+require('dotenv').config()
+
+// Templates
 const otpTemplate = require("../emailTemplates/otpTemplate");
 const requestTemplate = require("../emailTemplates/requestTemplate");
+const forgetPTemplate = require("../emailTemplates/forgetPTemplate");
+const authenticateRecoveryToken = require("../middleware/resetPasswordAuth");
 
 // To send mail after every 5 request
 let loginRequestCount = 0;
 
 // Transporter For Sending Mail
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-      user: process.env.EMAIL,
-      pass: process.env.TEMP_PASSWORD, 
-  },
-  tls: {
-      rejectUnauthorized: false 
-  }
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL,
+        pass: process.env.TEMP_PASSWORD,
+    },
+    tls: {
+        rejectUnauthorized: false
+    }
 });
 
 // Routes
@@ -146,4 +152,61 @@ authRouter.post("/sendOTP", async (req, res) => {
 
 })
 
+
+authRouter.post('/sendRecoverOTP', async (req, res) => {
+    try {
+        let otp = generateOTP();
+
+        const user = await User.find({ email: req.body.email });
+
+        if (user.length === 0) {
+            return res.status(404).json({ message: "No User Found" });
+        } else {
+            try {
+                // JWT Token for Recovery Account
+                const token = jwt.sign(
+                    { userId: user[0]._id },
+                    process.env.JWT_SECRET,
+                    { expiresIn: '2m' }
+                );
+
+                const mailOptions = {
+                    from: "AICOMP <no-reply@aicomp.com>",
+                    to: req.body.email,
+                    subject: 'OTP for Account Recovery',
+                    html: forgetPTemplate(otp) 
+                };
+
+                transporter.sendMail(mailOptions); 
+
+                return res.json({ otp, recoverId: token });
+
+            } catch (err) {
+                console.error(err);
+                return res.status(500).json({ message: 'Internal Server Error' });
+            }
+        }
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ "message": "Some error Occurred" });
+    }
+});
+
+
+authRouter.post('/reset-password', authenticateRecoveryToken, async (req, res) => {
+    try {
+        const user = await User.updateOne(
+            { email: req.body.email },
+            { "$set": { password: req.body.password } }
+        )
+
+        res.json({ "message": "Password Changed Successfully" })
+
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).json({ "message": "Internal Server Error" })
+    }
+})
 module.exports = authRouter;

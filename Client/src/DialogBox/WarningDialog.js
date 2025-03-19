@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog, DialogActions, DialogContent, DialogTitle, Button, Typography, Icon } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogTitle, Button, Typography } from '@mui/material';
 import WarningIcon from '@mui/icons-material/Warning'; // Importing the Warning icon
 
 const WarningDialog = ({ open, setWarning }) => {

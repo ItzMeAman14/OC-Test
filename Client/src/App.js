@@ -12,6 +12,8 @@ import { ToastContainer } from 'react-toastify';
 import Contact from './components/Contact';
 import Analytics from './components/admin/Analytics';
 import Signup from './components/Signup';
+import ForgetPassword from './components/ForgetPassword';
+import ChangePassword from './components/ChangePassword';
 
 import Testing from './components/Testing';
 
@@ -20,7 +22,7 @@ import { MessageProvider } from './components/context/MessageContext';
 import { AuthProvider } from "./components/context/AuthContext";
 
 // Protected Routes
-import { ProtectedRouteAdmin, ProtectedRouteUser } from './components/context/AuthContext';
+import { ProtectedRouteAdmin, ProtectedRouteUser, ProtectedRouteForPasswordRecovery } from './components/context/AuthContext';
 
 function App() {
 
@@ -69,6 +71,14 @@ function App() {
               } />
 
               <Route exact path="/login" element={<Login />} />
+
+              <Route exact path="/forget-password" element={<ForgetPassword />} />
+
+              <Route exact path="/new-password/:email" element={
+                <ProtectedRouteForPasswordRecovery>
+                  <ChangePassword />
+                </ProtectedRouteForPasswordRecovery>
+              } />
 
               <Route exact path="/signup" element={<Signup />} />
 

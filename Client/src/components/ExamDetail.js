@@ -380,7 +380,7 @@ function ExamDetail() {
 
   // Warning
   useEffect(() => {
-    if(warningCount == 2){
+    if(warningCount === 2){
       setDanger(true);
       setWarningCount(0);
     }

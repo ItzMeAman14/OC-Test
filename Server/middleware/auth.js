@@ -1,27 +1,26 @@
 const jwt = require('jsonwebtoken');
 
 const authenticateToken = (req, res, next) => {
-  if (req.path === '/auth/login' || req.path === '/auth/signup' || req.path === "/execute" || req.path === "/credit" || req.path === "/contact-us" || req.path === "/auth/sendOTP" || req.path === "/getUser") {
+  if (req.path === '/auth/login' || req.path === '/auth/signup' || req.path === "/execute" || req.path === "/credit" || req.path === "/contact-us" || req.path === "/auth/sendOTP" || req.path === "/getUser" || req.path === "/auth/sendRecoverOTP" || req.path === "/auth/reset-password") {
     return next();
   }
 
-  const token = req.header('userAPIKEY');
-  
-  if (!token) {
-    return res.status(401).json({ message: 'No token provided' });
-  }
+    const token = req.header('userAPIKEY');
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!token) {
+      return res.status(401).json({ message: 'No token provided' });
+    }
 
-    req.user = decoded;
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    next();
-  } catch (err) {
-    console.log(err);
-    
-    return res.status(403).json({ message: 'Invalid or expired token' });
-  }
+      req.user = decoded;
+      next();
+    } catch (err) {
+      console.error(err);
+
+      return res.status(403).json({ message: 'Invalid or expired token' });
+    }
 };
 
-module.exports = authenticateToken;
+module.exports = authenticateToken

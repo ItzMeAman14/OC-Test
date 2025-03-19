@@ -64,7 +64,7 @@ const Analytics = () => {
     
     // Pass rate message
     const getPassRateMessage = () => {
-        if (passRate == 100) return 'Perfect! All test cases passed.';
+        if (passRate === 100) return 'Perfect! All test cases passed.';
         if (passRate >= 75) return 'Great job! You passed most test cases.';
         if (passRate >= 50) return 'Decent, but review your solution to pass more test cases.';
         return 'You need to revisit your solution. Most test cases failed.';
