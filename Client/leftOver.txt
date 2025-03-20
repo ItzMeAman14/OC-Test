@@ -1,5 +1,5 @@
 In Edit Question:
 1: Testing
 2: Update the Editor -> In Home it is updated
-3: Use Bcrypt
-4: Super Admin Page
+3: Super Admin Page
+4: Connect to MongoDB Atlas

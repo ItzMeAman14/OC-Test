@@ -4,6 +4,7 @@ const nodemailer = require("nodemailer");
 const { User } = require("../config");
 const { generateOTP } = require("../Authentication/otp");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 require('dotenv').config()
 
@@ -37,10 +38,12 @@ authRouter.post("/signup", async (req, res) => {
             return res.json({ "message": "Account Already Exists" });
         }
         else {
+            // Hashing password using bcrypt
+            let hashedPassword = bcrypt.hashSync(req.body.password,10);
 
             const user = new User({
                 email: req.body.email,
-                password: req.body.password
+                password: hashedPassword
             })
 
             const admins = await User.find({ role: "admin" });
@@ -101,7 +104,8 @@ authRouter.post("/login", async (req, res) => {
             if (user[0].blocked) {
                 return res.status(401).json({ "message": "You are Blocked by the Admin." })
             }
-            if (user[0].password === req.body.password) {
+            // Using bcrypt to check if password hash is correct
+            if (bcrypt.compareSync(req.body.password,user[0].password)) {
 
                 // JWT Token
                 const token = jwt.sign(
@@ -196,9 +200,10 @@ authRouter.post('/sendRecoverOTP', async (req, res) => {
 
 authRouter.post('/reset-password', authenticateRecoveryToken, async (req, res) => {
     try {
+        let hashedPassword = bcrypt.hashSync(req.body.password,10);
         const user = await User.updateOne(
             { email: req.body.email },
-            { "$set": { password: req.body.password } }
+            { "$set": { password: hashedPassword } }
         )
 
         res.json({ "message": "Password Changed Successfully" })
