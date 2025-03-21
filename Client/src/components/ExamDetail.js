@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { AppBar, Toolbar, Typography, Button, Box, TextField, Select, MenuItem, Divider } from '@mui/material';
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -7,6 +7,7 @@ import ExamCompletion from "./ExamCompletion";
 import WarningDialog from "../DialogBox/WarningDialog";
 import DangerDialog from "../DialogBox/DangerDialog";
 import { BallTriangle } from 'react-loader-spinner'
+import handleKeyPress from './TextEditorFunctions/SpecialCharAutoComplete';
 
 function ExamDetail() {
   const navigate = useNavigate();
@@ -37,6 +38,36 @@ function ExamDetail() {
   // Loader
   const [loading, setLoading] = useState(false);
 
+  // TextArea Number of Lines
+  const textareaRef = useRef(null);
+  const lineNumbersRef = useRef(null);
+
+  const getLineNumbers = (text) => {
+    const lines = text.split('\n');
+    return lines.map((_, index) => index + 1);
+  };
+
+
+  const handleScroll = () => {
+    if (lineNumbersRef.current && textareaRef.current) {
+      lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
+    }
+  };
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+
+    if (textarea) {
+      textarea.addEventListener('scroll', handleScroll);
+
+      return () => {
+        textarea.removeEventListener('scroll', handleScroll);
+      };
+    }
+  }, []);
+
+
+  // Code Editor Functions
   const executeCode = async () => {
     try {
       setOutput('');
@@ -240,7 +271,7 @@ function ExamDetail() {
   };
 
 
-  const getTotalTestCases = async() => {
+  const getTotalTestCases = async () => {
     try {
       const token = Cookies.get("tokenUser");
 
@@ -267,8 +298,8 @@ function ExamDetail() {
       let givenTime = Math.floor(3600 / 60); // in minutes
       let timeTaken = Math.floor((3600 - time) / 60);  // in minutes
       let totalTestCases = await getTotalTestCases();
-      
-      
+
+
       const uid = Cookies.get("uid");
       const token = Cookies.get("tokenUser");
 
@@ -289,30 +320,30 @@ function ExamDetail() {
 
       const parsed = await res.json();
       if (res.ok) {
-          getAllQuestions();
-          toast.success(parsed.message, {
-            autoClose: 5000,
-            hideProgressBar: false,
-            pauseOnHover: true,
-            closeButton: false,
-          });
-        }
-        else {
-          toast.error(parsed.message, {
-            autoClose: 5000,
-            hideProgressBar: false,
-            pauseOnHover: true,
-            closeButton: false,
-          });
-        }
-        navigate(`/score/${exam_id}`);
+        getAllQuestions();
+        toast.success(parsed.message, {
+          autoClose: 5000,
+          hideProgressBar: false,
+          pauseOnHover: true,
+          closeButton: false,
+        });
+      }
+      else {
+        toast.error(parsed.message, {
+          autoClose: 5000,
+          hideProgressBar: false,
+          pauseOnHover: true,
+          closeButton: false,
+        });
+      }
+      navigate(`/score/${exam_id}`);
     }
     catch (err) {
       console.error(err);
     }
   }
 
-  
+
   const handlePaste = (e) => {
     e.preventDefault();
     setInput("Don't try to Cheat");
@@ -347,7 +378,7 @@ function ExamDetail() {
   useEffect(() => {
 
     const handleLoad = () => {
-      if(!warning){
+      if (!warning) {
         setWarningCount(prevCount => prevCount + 1);
         setWarning(true);
       }
@@ -361,7 +392,7 @@ function ExamDetail() {
     };
 
     const handleBlur = () => {
-      if(!warning){ 
+      if (!warning) {
         setWarningCount(prevCount => prevCount + 1);
         setWarning(true);
       }
@@ -380,11 +411,11 @@ function ExamDetail() {
 
   // Warning
   useEffect(() => {
-    if(warningCount === 2){
+    if (warningCount === 2) {
       setDanger(true);
       setWarningCount(0);
     }
-    
+
   }, [warningCount]);
 
   return (
@@ -408,8 +439,8 @@ function ExamDetail() {
 
 
       {/* Dialog Boxes */}
-      { warning && <WarningDialog open={warning} setWarning={setWarning} /> }
-      { <DangerDialog open={danger} setScores={setScores} setDanger={setDanger} /> }
+      {warning && <WarningDialog open={warning} setWarning={setWarning} />}
+      {<DangerDialog open={danger} setScores={setScores} setDanger={setDanger} />}
 
       {
         !completed &&
@@ -480,7 +511,65 @@ function ExamDetail() {
                 <MenuItem value="cpp">C++</MenuItem>
               </Select>
 
-              <TextField
+
+              <div style={{ position: 'relative', display: 'inline-block', width: '100%', border: '2px solid black', borderRadius: 10 }}>
+                {/* Line Numbers div */}
+                <div ref={lineNumbersRef} style={{
+                  position: 'absolute',
+                  top: '13px',
+                  left: '8px',
+                  background: 'transparent',
+                  borderRadius: '5px',
+                  width: '40px',
+                  maxHeight: '570px',
+                  zIndex: '1',
+                  pointerEvents: 'none',
+                  color: '#000',
+                  whiteSpace: 'pre-wrap',
+                  fontSize: '20px',
+                  overflowY: 'hidden',
+                  height: '570px'
+                }}>
+                  {getLineNumbers(input).map((lineNumber) => (
+                    <div key={lineNumber}>{lineNumber}</div>
+                  ))}
+                </div>
+
+                {/* Textarea Section */}
+                <TextField
+                  id="code-editor"
+                  multiline
+                  placeholder="Write your code here..."
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={ (e) => { handleKeyPress(e,input,setInput) }}
+                  onPaste={handlePaste}
+                  ref={textareaRef}
+                  fullWidth
+                  sx={{
+                    maxHeight: '580px',
+                    marginBottom: 2,
+                    border: 'none',
+                    backgroundColor: '#ffffff',
+                    color: '#000000',
+                    position: 'relative',
+                    paddingLeft: '25px',
+                    fontSize: '16px',
+                    height: '580px',
+                    overflowY: 'auto',
+                    resize: 'none',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      border: 'none',
+                    },
+                    '&:focus-visible': {
+                      outline: 'none',
+                    }
+                  }}
+                />
+
+              </div>
+
+              {/* <TextField
                 fullWidth
                 multiline
                 minRows={19}
@@ -490,7 +579,7 @@ function ExamDetail() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 sx={{ flex: 1, overflow: "scroll" }}
-              />
+              /> */}
 
             </Box>
 
@@ -520,7 +609,7 @@ function ExamDetail() {
                 <Button onClick={runAll} variant="contained" sx={{ margin: 1 }}>
                   Submit
                 </Button>
-              </Box> 
+              </Box>
 
               <Divider />
 
@@ -529,17 +618,17 @@ function ExamDetail() {
                 <Box className="row row-cols-1 row-cols-md-3 g-4">
                   {
                     loading && <BallTriangle
-                    height={100}
-                    width={100}
-                    radius={5}
-                    color="#4fa94d"
-                    ariaLabel="ball-triangle-loading"
-                    wrapperStyle={{margin: 5}}
-                    wrapperClass=""
-                    visible={true}
+                      height={100}
+                      width={100}
+                      radius={5}
+                      color="#4fa94d"
+                      ariaLabel="ball-triangle-loading"
+                      wrapperStyle={{ margin: 5 }}
+                      wrapperClass=""
+                      visible={true}
                     />
                   }
-                  { output }
+                  {output}
                   {allOutput && allOutput.map((item, index) => (
                     <Box key={index} className="col" sx={{ textAlign: 'center' }}>
                       <i

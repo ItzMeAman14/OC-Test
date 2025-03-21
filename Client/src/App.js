@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import Exam from './components/Exam';
@@ -23,87 +23,102 @@ import { AuthProvider } from "./components/context/AuthContext";
 
 // Protected Routes
 import { ProtectedRouteAdmin, ProtectedRouteUser, ProtectedRouteForPasswordRecovery } from './components/context/AuthContext';
+import MobileWarning from './components/MobileWarning';
 
 function App() {
+  const [isMobileScreen, setIsMobileScreen] = useState(false);
+
+  const checkIfMobileScreen = () => {
+    setIsMobileScreen(window.innerWidth <= 1200);
+  }
+
+  useEffect(() => {
+    checkIfMobileScreen();
+    window.addEventListener('resize', checkIfMobileScreen)
+
+    return () => window.removeEventListener('resize', checkIfMobileScreen)
+  }, [])
 
   return (
     <AuthProvider>
       <MessageProvider>
 
-        <div className="App">
-          <Router>
-            <ToastContainer />
-            <Routes>
+        {isMobileScreen ? <MobileWarning /> :
+          <div className="App">
+            <Router>
+              <ToastContainer />
+              <Routes>
 
-              <Route exact path='/' element={
-                <>
-                  <Navbar />
-                  <Home />
-                </>
-              }/>
+                <Route exact path='/' element={
+                  <>
+                    <Navbar />
+                    <Home />
+                  </>
+                } />
 
-              <Route exact path='/exams' element={
-                <ProtectedRouteUser>
-                  <Navbar />
-                  <Messages />
-                  <Exam />
-                </ProtectedRouteUser>
-              }/>
+                <Route exact path='/exams' element={
+                  <ProtectedRouteUser>
+                    <Navbar />
+                    <Messages />
+                    <Exam />
+                  </ProtectedRouteUser>
+                } />
 
-              <Route exact path="/about" element={
-                <>
-                  <Navbar />
-                  <About />
-                </>
-              }/>
+                <Route exact path="/about" element={
+                  <>
+                    <Navbar />
+                    <About />
+                  </>
+                } />
 
-              <Route exact path="/exams/:exam_id" element={
-                <ProtectedRouteUser>
+                <Route exact path="/exams/:exam_id" element={
+                  <ProtectedRouteUser>
                     <ExamDetail />
-                </ProtectedRouteUser>
-              } />
+                  </ProtectedRouteUser>
+                } />
 
-              <Route exact path="/admin" element={
-                <ProtectedRouteAdmin>
-                  <Dashboard />
-                  <Messages />
-                </ProtectedRouteAdmin>
-              } />
+                <Route exact path="/admin" element={
+                  <ProtectedRouteAdmin>
+                    <Dashboard />
+                    <Messages />
+                  </ProtectedRouteAdmin>
+                } />
 
-              <Route exact path="/login" element={<Login />} />
+                <Route exact path="/login" element={<Login />} />
 
-              <Route exact path="/forget-password" element={<ForgetPassword />} />
+                <Route exact path="/forget-password" element={<ForgetPassword />} />
 
-              <Route exact path="/new-password/:email" element={
-                <ProtectedRouteForPasswordRecovery>
-                  <ChangePassword />
-                </ProtectedRouteForPasswordRecovery>
-              } />
+                <Route exact path="/new-password/:email" element={
+                  <ProtectedRouteForPasswordRecovery>
+                    <ChangePassword />
+                  </ProtectedRouteForPasswordRecovery>
+                } />
 
-              <Route exact path="/signup" element={<Signup />} />
+                <Route exact path="/signup" element={<Signup />} />
 
-              <Route exact path="/contact" element={
-                <>
-                  <Navbar />
-                  <Contact />
-                </>
-              } />
+                <Route exact path="/contact" element={
+                  <>
+                    <Navbar />
+                    <Contact />
+                  </>
+                } />
 
-              <Route exact path="/testing" element={
-                <Testing />
-              } />
+                <Route exact path="/testing" element={
+                  <Testing />
+                } />
 
-              <Route exact path="/score/:id" element={
-                <ProtectedRouteUser>
-                  <Navbar />
-                  <Analytics />
-                  <Messages />
-                </ProtectedRouteUser>
-              } />
+                <Route exact path="/score/:id" element={
+                  <ProtectedRouteUser>
+                    <Navbar />
+                    <Analytics />
+                    <Messages />
+                  </ProtectedRouteUser>
+                } />
 
-            </Routes>
-          </Router>
-        </div>
+              </Routes>
+            </Router>
+          </div>
+        }
 
       </MessageProvider>
     </AuthProvider>

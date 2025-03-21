@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { TextField, Select, MenuItem, Button, Box, Typography, Divider } from '@mui/material';
 import { toast } from 'react-toastify';
 import Loader from './Loader';
+import handleKeyPress from './TextEditorFunctions/SpecialCharAutoComplete';
 
 function Home() {
   const [output, setOutput] = useState('');
@@ -36,78 +37,6 @@ function Home() {
       };
     }
   }, []);
-
-  function handleKeyPress(event) {
-    const { selectionStart, selectionEnd } = event.target;
-    if (event.key === 'Tab') {
-      event.preventDefault();
-      const start = selectionStart;
-      const end = selectionEnd;
-      const spaces = '    ';
-      setInput(input.substring(0, start) + spaces + input.substring(end));
-
-      setTimeout(() => {
-        event.target.selectionStart = event.target.selectionEnd = start + spaces.length;
-      }, 0);
-    }
-
-    if (event.key === '(') {
-      event.preventDefault();
-      setInput(input.substring(0, selectionStart) + '()' + input.substring(selectionEnd));
-
-      setTimeout(() => {
-        event.target.selectionStart = event.target.selectionEnd = selectionStart + 1;
-      }, 0);
-    }
-
-    if (event.key === '{') {
-      event.preventDefault();
-      setInput(input.substring(0, selectionStart) + '{}' + input.substring(selectionEnd));
-
-      setTimeout(() => {
-        event.target.selectionStart = event.target.selectionEnd = selectionStart + 1;
-      }, 0);
-    }
-
-    if (event.key === "'") {
-      event.preventDefault();
-      setInput(input.substring(0, selectionStart) + "''" + input.substring(selectionEnd));
-
-      setTimeout(() => {
-        event.target.selectionStart = event.target.selectionEnd = selectionStart + 1;
-      }, 0);
-    }
-
-    if (event.key === '"') {
-      event.preventDefault();
-      setInput(input.substring(0, selectionStart) + '""' + input.substring(selectionEnd));
-
-      setTimeout(() => {
-        event.target.selectionStart = event.target.selectionEnd = selectionStart + 1;
-      }, 0);
-    }
-
-    if (event.key === '[') {
-      event.preventDefault();
-      setInput(input.substring(0, selectionStart) + '[]' + input.substring(selectionEnd));
-
-      setTimeout(() => {
-        event.target.selectionStart = event.target.selectionEnd = selectionStart + 1;
-      }, 0);
-    }
-
-    if (event.key === 'Enter') {
-      const lastKey = input.charAt(input.length - 1);
-      if (lastKey === ':') {
-        event.preventDefault();
-        setInput(input.substring(0, selectionStart + 1) + '\n    ' + input.substring(selectionEnd));
-
-        setTimeout(() => {
-          event.target.selectionStart = event.target.selectionEnd = selectionStart + 5;
-        }, 0);
-      }
-    }
-  }
 
   const executeCode = async () => {
     try {
@@ -215,7 +144,7 @@ function Home() {
                         placeholder="Write your code here..."
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={handleKeyPress}
+                        onKeyDown={(e) => { handleKeyPress(e,input,setInput) }}
                         ref={textareaRef}
                         fullWidth
                         sx={{
