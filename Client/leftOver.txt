@@ -2,4 +2,6 @@ In Edit Question:
 1: Testing
 2: Super Admin Page
 3: Connect to MongoDB Atlas
-4: The number line in editor is not aligned properly
+4: Admin can see the result of students
+5: LeaderBoard
+6: Output Scroll bar is not working.

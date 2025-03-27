@@ -1,109 +1,87 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { AppBar, Toolbar, Typography, Button, Box, TextField, Select, MenuItem, Divider } from '@mui/material';
-import { useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect, useRef, useCallback } from "react"
+import handleKeyPress from "./TextEditorFunctions/SpecialCharAutoComplete"
+import {
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Paper,
+  Typography,
+  Grid,
+  Box,
+  IconButton,
+} from "@mui/material"
+import { AccessTime, PlayArrow, Send, QuestionAnswer, Loop } from "@mui/icons-material"
+import Cookies from "js-cookie"
+import { useParams, useNavigate } from "react-router-dom"
 import { toast } from "react-toastify";
-import Cookies from "js-cookie";
-import ExamCompletion from "./ExamCompletion";
-import WarningDialog from "../DialogBox/WarningDialog";
-import DangerDialog from "../DialogBox/DangerDialog";
-import { BallTriangle } from 'react-loader-spinner'
-import handleKeyPress from './TextEditorFunctions/SpecialCharAutoComplete';
+import WarningDialog from "../DialogBox/WarningDialog"
+import DangerDialog from "../DialogBox/DangerDialog"
+import Loader from "./Loader"
 
-function ExamDetail() {
+const ExamDetail = () => {
   const navigate = useNavigate();
   const { exam_id } = useParams();
 
-  // States
-  const [lang, setLang] = useState('python3');
-  const [input, setInput] = useState('');
-  const [output, setOutput] = useState('');
-  const [allOutput, setAllOutput] = useState([]);
-  const [userInput, setUserInput] = useState('');
-  const [question, setQuestion] = useState([]);
+  const [code, setCode] = useState("")
+  const [input, setInput] = useState("")
+  const [output, setOutput] = useState("")
+  const [timeLeft, setTimeLeft] = useState(3600)
+  const [language, setLanguage] = useState("python3")
+  const [codeLines, setCodeLines] = useState(1)
+  const [showOutput, setShowOutput] = useState(false)
   const [questions, setQuestions] = useState([]);
+  const [question, setQuestion] = useState([]);
+  const [allOutput, setAllOutput] = useState([]);
   const [completed, setCompleted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Secure Exam
-  const [warning, setWarning] = useState(false);
-  const [warningCount, setWarningCount] = useState(0);
-  const [danger, setDanger] = useState(false);
-
-  // Timer
-  const [time, setTime] = useState(3600);
+  // Ref
+  const codeEditorRef = useRef(null)
+  const lineNumbersRef = useRef(null)
 
   // For Scores
   const [numOfSubmissions, setNumOfSubmissions] = useState(0);
   const [scoreUpdates, setScoreUpdates] = useState({});
 
-  // Loader
-  const [loading, setLoading] = useState(false);
+  // For Warnings and Security
+  const [warning, setWarning] = useState(false);
+  const [warningCount, setWarningCount] = useState(0);
+  const [danger, setDanger] = useState(false);
 
-  // TextArea Number of Lines
-  const textareaRef = useRef(null);
-  const lineNumbersRef = useRef(null);
-
-  const getLineNumbers = (text) => {
-    const lines = text.split('\n');
-    return lines.map((_, index) => index + 1);
-  };
-
-
-  const handleScroll = () => {
-    if (lineNumbersRef.current && textareaRef.current) {
-      lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
-    }
-  };
+  // Timer
+  const formatTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600)
+    const mins = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
+    return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
+  }
 
   useEffect(() => {
-    const textarea = textareaRef.current;
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 0) {
+          clearInterval(timer)
+          setCompleted(true);
+        }
+        return prev - 1
+      })
+    }, 1000)
 
-    if (textarea) {
-      textarea.addEventListener('scroll', handleScroll);
+    return () => clearInterval(timer)
+  }, [])
 
-      return () => {
-        textarea.removeEventListener('scroll', handleScroll);
-      };
-    }
-  }, []);
-
-
-  // Code Editor Functions
-  const executeCode = async () => {
-    try {
-      setOutput('');
-      setLoading(true);
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/execute`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          input,
-          lang,
-          userInputs: userInput
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Network response was not OK');
-      }
-
-      const data = await response.json();
-      setOutput(data.output || data.error);
-      setLoading(false);
-    }
-    catch (error) {
-      console.error(error);
-    }
-  };
 
   const runAll = async () => {
     const out = [];
     setOutput("");
-    setAllOutput("");
+    setAllOutput([]);
     setNumOfSubmissions(numOfSubmissions + 1);
     let passed = 0;
-
+    
+    setShowOutput(true);
     setLoading(true);
     for (let i of question.testcases) {
       let userInputEach = i.input;
@@ -115,8 +93,8 @@ function ExamDetail() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            input,
-            lang,
+            input: code,
+            lang: language,
             "userInputs": userInputEach
           }),
         });
@@ -168,9 +146,9 @@ function ExamDetail() {
         setTimeout(() => {
           getAllQuestions();
           setInput('');
+          setCode('');
           setOutput('')
           setAllOutput([]);
-          setUserInput('')
         }, 3000);
         toast.success(parsed.message, {
           autoClose: 5000,
@@ -193,82 +171,36 @@ function ExamDetail() {
     }
   }
 
-  const getAllQuestions = useCallback(async () => {
+  const runCustomCode = async () => {
     try {
-      const uid = Cookies.get("uid");
-      const token = Cookies.get("tokenUser");
-      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getExam/${exam_id}?user_id=${uid}`, {
-        method: "GET",
+      setOutput('');
+      setAllOutput([]);
+      setLoading(true);
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/execute`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "userAPIKEY": token
-        }
-      });
-      const parsed = await res.json();
-
-      let passedQuestion = 0;
-      parsed[0].questions.forEach(ques => {
-        if (ques.passed) {
-          passedQuestion++;
-        }
+        },
+        body: JSON.stringify({
+          input: code,
+          lang: language,
+          userInputs: input
+        }),
       });
 
-      if (passedQuestion === parsed[0].questions.length) {
-        setTimeout(() => {
-          setCompleted(true);
-          localStorage.removeItem("counter");
-        }, 3000)
+      if (!response.ok) {
+        throw new Error('Network response was not OK');
       }
 
-      setQuestions(parsed[0].questions);
-
-      for (let i = 0; i < parsed[0].questions.length; i++) {
-        if (!parsed[0].questions[i].passed) {
-
-          filterData(parsed[0].questions[i]._id);
-          break;
-        }
-      }
-
-
-    } catch (err) {
-      console.error(err);
+      const data = await response.json();
+      setOutput(data.output || data.error);
+      setLoading(false);
     }
-  }, [exam_id]);
-
-  const filterData = async (idtoFilter) => {
-    try {
-      const token = Cookies.get("tokenUser");
-      const res = await fetch(`http://localhost:7123/getQuestion/${idtoFilter}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "userAPIKEY": token
-        }
-      })
-
-      const parsed = await res.json();
-      if (res.ok) {
-        setQuestion(parsed[0]);
-      }
-      else {
-        console.error("Error in getting Question");
-      }
-
-    }
-    catch (err) {
-      console.error(err);
+    catch (error) {
+      console.error(error);
     }
   };
 
-
-  const formatTimer = (timeInSeconds) => {
-    const hours = Math.floor(timeInSeconds / 3600);
-    const minutes = Math.floor((timeInSeconds % 3600) / 60);
-    const seconds = timeInSeconds % 60;
-
-    return `${hours < 10 ? '0' + hours : hours}:${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
-  };
 
 
   const getTotalTestCases = async () => {
@@ -296,7 +228,7 @@ function ExamDetail() {
     try {
       let sumOfPassedTestCases = Object.values(scoreUpdates).reduce((acc, currentVal) => acc + currentVal, 0);
       let givenTime = Math.floor(3600 / 60); // in minutes
-      let timeTaken = Math.floor((3600 - time) / 60);  // in minutes
+      let timeTaken = Math.floor((3600 - timeLeft) / 60);  // in minutes
       let totalTestCases = await getTotalTestCases();
 
 
@@ -343,46 +275,131 @@ function ExamDetail() {
     }
   }
 
-
-  const handlePaste = (e) => {
-    e.preventDefault();
-    setInput("Don't try to Cheat");
+  // Submit entire exam
+  const submitExam = () => {
+    if (window.confirm("Are you sure you want to submit the exam? This action cannot be undone.")) {
+      setScores();
+    }
   }
 
-  // UseEffects
+  const handleCodeChange = (e) => {
+    const newCode = e.target.value
+    setCode(newCode)
 
-  // Timer
-  useEffect(() => {
-    let timer;
+    // Count the number of lines
+    const lines = newCode.split("\n").length
+    setCodeLines(Math.max(lines, 1))
+  }
 
-    if (time > 0) {
-      timer = setInterval(() => {
-        setTime((prevTime) => prevTime - 1);
-      }, 1000);
-    } else if (time === 0) {
-      setCompleted(true);
-      clearInterval(timer);
+
+  const renderLineNumbers = () => {
+    return Array.from({ length: codeLines }, (_, i) => (
+      <div
+        key={i}
+        style={{
+          height: "24px",
+          width: "100%",
+          textAlign: "center",
+          lineHeight: "24px",
+          color: "#757575",
+          fontSize: "16px",
+        }}
+      >
+        {i + 1}
+      </div>
+    ))
+  }
+
+  const getAllQuestions = useCallback(async () => {
+    try {
+      const uid = Cookies.get("uid");
+      const token = Cookies.get("tokenUser");
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getExam/${exam_id}?user_id=${uid}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "userAPIKEY": token
+        }
+      });
+      const parsed = await res.json();
+      let passedQuestion = 0;
+      parsed[0].questions.forEach(ques => {
+        if (ques.passed) {
+          passedQuestion++;
+        }
+      });
+
+      if (passedQuestion === parsed[0].questions.length) {
+        setTimeout(() => {
+          setCompleted(true);
+          localStorage.removeItem("counter");
+        }, 3000)
+      }
+
+      setQuestions(parsed[0].questions);
+
+      for (let i = 0; i < parsed[0].questions.length; i++) {
+        if (!parsed[0].questions[i].passed) {
+
+          filterData(parsed[0].questions[i]._id);
+          break;
+        }
+      }
+
+
+    } catch (err) {
+      console.error(err);
     }
+  }, [exam_id]);
 
-    return () => clearInterval(timer);
-  }, [time]);
+  const filterData = async (idtoFilter) => {
+    try {
+      const token = Cookies.get("tokenUser");
+      const res = await fetch(`http://localhost:7123/getQuestion/${idtoFilter}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "userAPIKEY": token
+        }
+      })
+
+      const parsed = await res.json();
+      if (res.ok) {
+        setQuestion(parsed[0]);
+        setShowOutput(false)
+      }
+      else {
+        console.error("Error in getting Question");
+      }
+
+    }
+    catch (err) {
+      console.error(err);
+    }
+  };
 
 
-  // Get Questions
+  const handleScroll = () => {
+    if (lineNumbersRef.current && codeEditorRef.current) {
+      lineNumbersRef.current.scrollTop = codeEditorRef.current.scrollTop;
+    }
+  };
+
   useEffect(() => {
-    getAllQuestions();
-  }, [getAllQuestions]);
+    const textarea = codeEditorRef.current;
+
+    if (textarea) {
+      textarea.addEventListener('scroll', handleScroll);
+
+      return () => {
+        textarea.removeEventListener('scroll', handleScroll);
+      };
+    }
+  }, []);
 
 
   // Checking the tab Change
   useEffect(() => {
-
-    const handleLoad = () => {
-      if (!warning) {
-        setWarningCount(prevCount => prevCount + 1);
-        setWarning(true);
-      }
-    };
 
     const handleVisibilityChange = () => {
       if (document.hidden && !warning) {
@@ -391,263 +408,487 @@ function ExamDetail() {
       }
     };
 
-    const handleBlur = () => {
-      if (!warning) {
-        setWarningCount(prevCount => prevCount + 1);
-        setWarning(true);
-      }
-    };
+    // const handleBlur = () => {
+    //   if (!warning) {
+    //     // setWarningCount(prevCount => prevCount + 1);
+    //     setWarning(true);
+    //   }
+    // }
 
-    window.addEventListener('load', handleLoad);
+    window.addEventListener('keydown', function (event) {
+      if ((event.key === 'F5') || (event.ctrlKey && event.key === 'r')) {
+        event.preventDefault();
+      }
+    });
+
+    window.addEventListener('beforeunload', function (event) {
+      event.preventDefault();
+      event.returnValue = '';
+    });
+
+    // window.addEventListener('load', (e) => { handleLoad(e) });
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('blur', handleBlur);
+    // window.addEventListener('blur', handleBlur);
 
     return () => {
-      window.removeEventListener('load', handleLoad);
+      // window.removeEventListener('load', handleLoad);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('blur', handleBlur);
+      // window.removeEventListener('blur', handleBlur);
     };
   }, []);
 
-  // Warning
+
+  // Danger (Last Warning)
   useEffect(() => {
-    if (warningCount === 2) {
+    if (warningCount === 3) {
       setDanger(true);
       setWarningCount(0);
     }
 
   }, [warningCount]);
 
+  useEffect(() => {
+    getAllQuestions();
+  }, [getAllQuestions]);
+
   return (
-    <>
-      <AppBar position="sticky" sx={{ backgroundColor: 'black' }}>
-        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: "row" }}>
-
-          {/* Timer in the middle */}
-          <Box sx={{ display: 'flex', justifyContent: 'center', flexGrow: 1 }}>
-            <Typography variant="h6" sx={{ color: '#FF2626', fontSize: '1.2rem' }}>
-              Timer: {formatTimer(time)}
-            </Typography>
-          </Box>
-
-          {/* Right Side Button */}
-          <Button variant='contained' style={{ backgroundColor: "#FF2626", width: "200px" }} onClick={setScores}>
-            Submit Exam
-          </Button>
-        </Toolbar>
-      </AppBar>
-
+    <Box
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        backgroundColor: "#f5f5f5",
+        fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+      }}
+    >
+      {/* Timer Navbar */}
+      <Paper
+        elevation={2}
+        style={{
+          backgroundColor: "#000000",
+          color: "white",
+          padding: "16px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          borderRadius: 0,
+        }}
+      >
+        <Box
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <AccessTime style={{ fontSize: 24 }} />
+          <Typography
+            variant="h6"
+            style={{
+              fontFamily: "monospace",
+              fontWeight: "bold",
+            }}
+          >
+            {formatTime(timeLeft)}
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          onClick={submitExam}
+          style={{
+            backgroundColor: "white",
+            color: "black",
+            fontWeight: "bold",
+            textTransform: "none",
+          }}
+        >
+          Submit Exam
+        </Button>
+      </Paper>
 
       {/* Dialog Boxes */}
       {warning && <WarningDialog open={warning} setWarning={setWarning} />}
       {<DangerDialog open={danger} setScores={setScores} setDanger={setDanger} />}
 
-      {
-        !completed &&
+      {/* Main Content */}
+      <Grid container spacing={2} style={{ flex: 1, padding: 16 }}>
+        {/* Question/Output Section (Toggleable) */}
+        <Grid item xs={12} md={4}>
+          {!showOutput ? (
+            <Paper
+              elevation={1}
+              style={{
+                height: "100%",
+                padding: 16,
+                display: "flex",
+                flexDirection: "column",
+                backgroundColor: "white",
+                border: "1px solid #e0e0e0",
+                position: "relative",
+              }}
+            >
 
-        <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 2 }}>
-          {
-            questions.map((question, index) => (
-              question.passed ?
-
-                <Button
-                  key={question._id}
-                  variant="text"
-                  disabled
-                  sx={{
-                    textTransform: 'none',
-                    borderBottom: '2px solid transparent',
-                    '&:hover': {
-                      borderBottom: '2px solid rgb(25, 0, 255)',
-                    },
+              <Box
+                style={{
+                  textAlign: "right",
+                  top: 8,
+                  left: 8,
+                  zIndex: 1,
+                }}
+              >
+                <IconButton
+                  onClick={() => setShowOutput(true)}
+                  style={{
+                    backgroundColor: "#f5f5f5",
+                    border: "1px solid #e0e0e0",
                   }}
+                  size="small"
+                  title="Custom Run"
                 >
-                  {index + 1}
-                </Button>
+                  <Loop fontSize="small" />
+                </IconButton>
+              </Box>
 
-                :
 
-                <Button
-                  key={question._id}
-                  variant="text"
-                  onClick={() => filterData(question._id)}
-                >
-                  {index + 1}
-                </Button>
-            ))
-          }
-        </Box>
-
-      }
-
-      {
-        completed ?
-
-          <ExamCompletion />
-
-          :
-
-          <div className="wrapper" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', height: '85vh' }}>
-            {/* Question Box */}
-            <Box className="question-box" sx={{ flex: 1.5, backgroundColor: '#f0f0f0', padding: 2, height: '100%' }}>
-              <Typography variant="h6" className="question-heading">
+              <Typography
+                variant="h5"
+                style={{
+                  fontWeight: "bold",
+                  marginBottom: 16,
+                  color: "#000000",
+                }}
+              >
                 {question.heading}
               </Typography>
-              <Typography variant="body1" className="question-desc" sx={{ marginBottom: 2 }}>
+              <Typography
+                variant="body1"
+                style={{
+                  color: "#424242",
+                  textAlign: "justify",
+                  fontSize: "22px",
+                  lineHeight: 1.6,
+                  flex: 1,
+                }}
+              >
                 {question.statement}
               </Typography>
-            </Box>
-
-            {/* Input Box */}
-            <Box sx={{ flex: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-              {/* Lang Select inside Input Box */}
-              <Select
-                value={lang}
-                onChange={(e) => setLang(e.target.value)}
-                fullWidth
+            </Paper>
+          ) : (
+            <Paper
+              elevation={1}
+              style={{
+                maxHeight: "100%",
+                height: "100%",
+                padding: 16,
+                display: "flex",
+                flexDirection: "column",
+                backgroundColor: "white",
+                border: "1px solid #e0e0e0",
+                position: "relative",
+              }}
+            >
+              <Box
+                style={{
+                  position: "absolute",
+                  top: 8,
+                  left: 8,
+                  zIndex: 1,
+                }}
               >
-                <MenuItem value="python3">Python 3</MenuItem>
-                <MenuItem value="java">Java</MenuItem>
-                <MenuItem value="cpp">C++</MenuItem>
-              </Select>
-
-
-              <div style={{ position: 'relative', display: 'inline-block', width: '100%', border: '2px solid black', borderRadius: 10 }}>
-                {/* Line Numbers div */}
-                <div ref={lineNumbersRef} style={{
-                  position: 'absolute',
-                  top: '13px',
-                  left: '8px',
-                  background: 'transparent',
-                  borderRadius: '5px',
-                  width: '40px',
-                  maxHeight: '570px',
-                  zIndex: '1',
-                  pointerEvents: 'none',
-                  color: '#000',
-                  whiteSpace: 'pre-wrap',
-                  fontSize: '20px',
-                  overflowY: 'hidden',
-                  height: '570px'
-                }}>
-                  {getLineNumbers(input).map((lineNumber) => (
-                    <div key={lineNumber}>{lineNumber}</div>
-                  ))}
-                </div>
-
-                {/* Textarea Section */}
-                <TextField
-                  id="code-editor"
-                  multiline
-                  placeholder="Write your code here..."
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={ (e) => { handleKeyPress(e,input,setInput) }}
-                  onPaste={handlePaste}
-                  ref={textareaRef}
-                  fullWidth
-                  sx={{
-                    maxHeight: '580px',
-                    marginBottom: 2,
-                    border: 'none',
-                    backgroundColor: '#ffffff',
-                    color: '#000000',
-                    position: 'relative',
-                    paddingLeft: '25px',
-                    fontSize: '16px',
-                    height: '580px',
-                    overflowY: 'auto',
-                    resize: 'none',
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      border: 'none',
-                    },
-                    '&:focus-visible': {
-                      outline: 'none',
-                    }
+                <IconButton
+                  onClick={() => setShowOutput(false)}
+                  style={{
+                    backgroundColor: "#f5f5f5",
+                    border: "1px solid #e0e0e0",
                   }}
-                />
+                  size="small"
+                  title="Show Question"
+                >
+                  <QuestionAnswer fontSize="small" />
+                </IconButton>
+              </Box>
 
-              </div>
-
-              {/* <TextField
-                fullWidth
-                multiline
-                minRows={19}
-                variant="outlined"
-                placeholder="Write your code here"
-                onPaste={handlePaste}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                sx={{ flex: 1, overflow: "scroll" }}
-              /> */}
-
-            </Box>
-
-            {/* Output Box */}
-            <Box className="fourth-box" sx={{ flex: 1, backgroundColor: '#cfcfcf', padding: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-              {/* Output Heading */}
-              <Typography variant="h6" className="output-heading" sx={{ textAlign: 'center', marginBottom: 2 }}>
-                Output
+              <Typography
+                variant="subtitle1"
+                style={{
+                  fontWeight: "bold",
+                  marginBottom: 8,
+                  marginTop: 8,
+                  color: "#000000",
+                  textAlign: "center"
+                }}
+              >
+                Custom Input
               </Typography>
 
-              {/* User Input Box */}
               <TextField
-                fullWidth
+                placeholder="Enter input for your code..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
                 variant="outlined"
-                placeholder="Enter custom inputs"
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                sx={{ marginBottom: 2 }}
+                size="small"
+                fullWidth
+                style={{ marginBottom: 5 }}
               />
 
-              {/* Buttons inside Output Box */}
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 2 }}>
-                <Button onClick={executeCode} variant="contained" sx={{ margin: 1 }}>
-                  <i className="fa-solid fa-play" />
-                  custom run
-                </Button>
-                <Button onClick={runAll} variant="contained" sx={{ margin: 1 }}>
-                  Submit
-                </Button>
-              </Box>
+              {
+                completed ?
 
-              <Divider />
+                  <Button
+                    variant="contained"
+                    startIcon={<PlayArrow />}
+                    disabled
+                    style={{
+                      backgroundColor: "#000000",
+                      color: "white",
+                      textTransform: "none",
+                      height: 56,
+                    }}
+                  >
+                    Custom run
+                  </Button>
 
-              {/* Display Icons for each output */}
-              <Box className="container-fluid" sx={{ marginTop: 3 }}>
-                <Box className="row row-cols-1 row-cols-md-3 g-4">
-                  {
-                    loading && <BallTriangle
-                      height={100}
-                      width={100}
-                      radius={5}
-                      color="#4fa94d"
-                      ariaLabel="ball-triangle-loading"
-                      wrapperStyle={{ margin: 5 }}
-                      wrapperClass=""
-                      visible={true}
-                    />
-                  }
-                  {output}
-                  {allOutput && allOutput.map((item, index) => (
-                    <Box key={index} className="col" sx={{ textAlign: 'center' }}>
-                      <i
-                        className={`${item.icon}`}
-                        style={{
-                          color: item.color,
-                          fontSize: 40,
-                          padding: 20,
-                        }}
-                      />
-                    </Box>
-                  ))}
-                </Box>
+                  :
+                  <Button
+                    variant="contained"
+                    startIcon={<PlayArrow />}
+                    onClick={runCustomCode}
+                    style={{
+                      backgroundColor: "#000000",
+                      color: "white",
+                      textTransform: "none",
+                      height: 56,
+                    }}
+                  >
+                    Custom run
+                  </Button>
+              }
+
+
+              <Typography
+                variant="subtitle1"
+                style={{
+                  fontWeight: "bold",
+                  marginBottom: 8,
+                  color: "#000000",
+                  textAlign: "center"
+                }}
+              >
+                Output
+              </Typography>
+              <Box
+                style={{
+                  height: "100%",
+                  backgroundColor: "#f5f5f5",
+                  padding: 12,
+                  borderRadius: 4,
+                  fontFamily: "monospace",
+                  fontSize: 16,
+                  overflowY: "auto",
+                  whiteSpace: "pre-wrap",
+                  border: "1px solid #e0e0e0",
+                }}
+              > 
+                { loading && <Loader /> }
+                {(!output && allOutput.length === 0 && !loading) && "Your output will appear here"}
+                {output ? output :
+                  <Grid container spacing={2}>
+                    {allOutput.map((item, index) => (
+                      <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                        <Box className="col" sx={{ textAlign: 'center' }}>
+                          <i
+                            className={`${item.icon}`}
+                            style={{
+                              color: item.color,
+                              fontSize: 30,
+                              padding: 10,
+                            }}
+                          />
+                        </Box>
+                      </Grid>
+                    ))}
+                  </Grid>
+                }
+
               </Box>
+            </Paper>
+          )}
+        </Grid>
+
+        {/* Code Editor Section */}
+        <Grid item xs={12} md={8}>
+          <Paper
+            elevation={1}
+            style={{
+              height: "100%",
+              padding: 16,
+              display: "flex",
+              flexDirection: "column",
+              backgroundColor: "white",
+              border: "1px solid #e0e0e0",
+            }}
+          >
+            <Box
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginBottom: 16,
+                gap: 8,
+              }}
+            >
+              <FormControl style={{ flex: 1 }}>
+                <InputLabel id="language-select-label">Language</InputLabel>
+                <Select
+                  labelId="language-select-label"
+                  value={language}
+                  label="Language"
+                  onChange={(e) => setLanguage(e.target.value)}
+                >
+                  <MenuItem value="python3">Python</MenuItem>
+                  <MenuItem value="java">Java</MenuItem>
+                  <MenuItem value="cpp">C++</MenuItem>
+                </Select>
+              </FormControl>
+
+              {completed ?
+                <Button
+                  variant="outlined"
+                  startIcon={<Send />}
+                  disabled
+                  style={{
+                    borderColor: "#000000",
+                    color: "#000000",
+                    textTransform: "none",
+                    height: 56
+                  }}
+                >
+                  Submit Answer
+                </Button>
+                :
+                <Button
+                  variant="outlined"
+                  startIcon={<Send />}
+                  onClick={runAll}
+                  style={{
+                    borderColor: "#000000",
+                    color: "#000000",
+                    textTransform: "none",
+                    height: 56
+                  }}
+                >
+                  Submit Answer
+                </Button>
+              }
+
             </Box>
-          </div>
-      }
-    </>
-  );
+
+            <Box
+              style={{
+                flex: 1,
+                position: "relative",
+                border: "1px solid #e0e0e0",
+                borderRadius: 4,
+              }}
+            >
+              <Box
+                ref={lineNumbersRef}
+                style={{
+                  position: "absolute",
+                  height: "100%",
+                  top: 0,
+                  left: 0,
+                  bottom: 0,
+                  width: "48px",
+                  backgroundColor: "#f5f5f5",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  paddingTop: "8px",
+                  fontFamily: "monospace",
+                  borderRight: "1px solid #e0e0e0",
+                  overflow: "hidden",
+                  userSelect: "none",
+                }}
+              >
+                {renderLineNumbers()}
+              </Box>
+              <textarea
+                ref={codeEditorRef}
+                style={{
+                  width: "90%",
+                  height: "100%",
+                  fontFamily: "monospace",
+                  backgroundColor: "white",
+                  resize: "none",
+                  paddingLeft: "50px",
+                  paddingTop: "8px",
+                  paddingRight: "8px",
+                  paddingBottom: "8px",
+                  border: "none",
+                  outline: "none",
+                  lineHeight: "24px",
+                  fontSize: "22px",
+                  overflow: "hidden",
+                }}
+                placeholder="Write your code here..."
+                value={completed ? "You have completed the exam.Submit to complete it." : code}
+                onChange={handleCodeChange}
+                onPaste={(e) => { e.preventDefault() }}
+                onKeyDown={(e) => { handleKeyPress(e, code, setCode) }}
+                spellCheck="false"
+              />
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
+
+      {/* Question Navigation */}
+      <Paper
+        elevation={2}
+        style={{
+          padding: 16,
+          display: "flex",
+          justifyContent: "center",
+          gap: 8,
+          marginTop: 5,
+          overflowX: "auto",
+          borderRadius: 0,
+          backgroundColor: "white",
+          borderTop: "1px solid #e0e0e0",
+        }}
+      >
+        {questions.map((ques, index) => (
+          (ques.passed || completed) ?
+
+            <Button
+              key={ques._id}
+              variant="outlined"
+              disabled
+              style={{
+                minWidth: 40
+              }}
+            >
+              {index + 1}
+            </Button>
+            :
+            <Button
+              key={ques._id}
+              variant={question._id === ques._id ? "contained" : "outlined"}
+              onClick={() => filterData(ques._id)}
+              style={{
+                minWidth: 40,
+                backgroundColor: question._id === ques._id ? "#000000" : "white",
+                color: question._id === ques._id ? "white" : "#000000",
+                borderColor: "#000000",
+              }}
+            >
+              {index + 1}
+            </Button>
+
+        ))}
+      </Paper>
+    </Box>
+  )
 }
 
 export default ExamDetail;

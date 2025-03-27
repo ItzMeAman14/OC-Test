@@ -103,7 +103,7 @@ function App() {
                   </>
                 } />
 
-                <Route exact path="/testing" element={
+                <Route exact path="/testing/:exam_id" element={
                   <Testing />
                 } />
 

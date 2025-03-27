@@ -124,27 +124,6 @@ UserRouter.post("/filterUser",async(req,res) => {
     }
 })
 
-UserRouter.put("/giveAccess/:id", async(req,res) => {
-    try{
-        const objectId = new mongoose.Types.ObjectId(req.params.id);
-        const user = await User.find({_id: objectId });
-
-        const userAccess = user[0].role === "admin" ? "user" : "admin";
-
-        const users = await User.updateOne(
-            { _id: objectId },
-            { "$set": {
-                role: userAccess
-            } }
-        );
-        res.json(users);
-    }
-    catch(err){
-        console.error(err);
-        res.json({"message":"Some Error Occured"})
-    }
-})
-
 
 UserRouter.put("/blockUser/:id", async (req, res) => {
     try {
