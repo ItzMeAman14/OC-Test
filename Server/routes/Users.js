@@ -187,4 +187,44 @@ UserRouter.get("/userExams/:id", async (req,res) => {
     }
 })
 
+
+
+UserRouter.put("/userExamPending/:id",async(req,res) => {
+    try{
+        const examId = new mongoose.Types.ObjectId(req.params.id);
+        const userId = new mongoose.Types.ObjectId(req.query.user_id);
+  
+          const score = await User.findOneAndUpdate(
+            { 
+              _id: userId,  
+              "exams.exam_id": examId 
+            },
+            { 
+              $set: {
+                "exams.$.attempted": 'pending'
+              }
+            },
+            { 
+              new: true  
+            }
+          );  
+        
+        if(score){
+            res.json({"message":"Exam Started"})
+        }
+        else{
+            res.json({"message":"User not Found"})
+        }
+    }
+    catch(err){
+        console.error(err);
+        res.json({"message":"Some Error Occured"})
+    } 
+})
+
+
+UserRouter.put("/userExam",(req,res) => {
+    res.send("Exam is pending now.");
+})
+
 module.exports = UserRouter;

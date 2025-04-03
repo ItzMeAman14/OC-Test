@@ -28,9 +28,10 @@ const userExamSchema = new mongoose.Schema({
   name:{
     type:String
   },
-  attempted:{
-      type:Boolean,
-      default:false
+  attempted: {
+    type: String,
+    enum: ['pending', 'true', 'false'],
+    default: 'false'
   },
   questions:[UserQuestionSchema],
   score:scoreSchema

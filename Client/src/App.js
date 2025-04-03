@@ -1,25 +1,28 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+// Components
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import Exam from './components/Exam';
 import About from './components/About';
 import ExamDetail from './components/ExamDetail';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Dashboard from "./components/admin/Dashboard";
-import Login from "./components/Login";
+import Login from "./components/Auth/Login";
 import Messages from './components/Messages';
 import { ToastContainer } from 'react-toastify';
 import Contact from './components/Contact';
 import Analytics from './components/admin/Analytics';
-import Signup from './components/Signup';
-import ForgetPassword from './components/ForgetPassword';
-import ChangePassword from './components/ChangePassword';
+import Signup from './components/Auth/Signup';
+import ForgetPassword from './components/Auth/ForgetPassword';
+import ChangePassword from './components/Auth/ChangePassword';
 
 import Testing from './components/Testing';
 
 // Context
 import { MessageProvider } from './components/context/MessageContext';
 import { AuthProvider } from "./components/context/AuthContext";
+import { LeaderboardProvider } from "./components/context/Leaderboard";
 
 // Protected Routes
 import { ProtectedRouteAdmin, ProtectedRouteUser, ProtectedRouteForPasswordRecovery } from './components/context/AuthContext';
@@ -41,7 +44,8 @@ function App() {
 
   return (
     <AuthProvider>
-      <MessageProvider>
+      <LeaderboardProvider>
+        <MessageProvider>
 
         {isMobileScreen ? <MobileWarning /> :
           <div className="App">
@@ -103,8 +107,11 @@ function App() {
                   </>
                 } />
 
-                <Route exact path="/testing/:exam_id" element={
+                <Route exact path="/testing" element={
+                  <>
+                  <Navbar />
                   <Testing />
+                  </>
                 } />
 
                 <Route exact path="/score/:id" element={
@@ -120,7 +127,8 @@ function App() {
           </div>
         }
 
-      </MessageProvider>
+        </MessageProvider>
+      </LeaderboardProvider>
     </AuthProvider>
   );
 }

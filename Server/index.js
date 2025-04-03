@@ -131,12 +131,12 @@ app.post('/execute', async (req, res) => {
 // Contact 
 app.post('/contact-us', (req, res) => {
     try{
-        const { name, email, message } = req.body;
+        const { name, email, message, subject } = req.body;
         
         const mailOptions = {
             from: email,
             to: process.env.RECIEVE_MAIL_CONTACT,
-            subject: 'Contact Us From AIComp',
+            subject: `From AICOMP - ${subject}`,
             html: contactUsTemplate(name,email,message)
         };
     

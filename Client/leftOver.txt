@@ -3,5 +3,6 @@ In Edit Question:
 2: Super Admin Page
 3: Connect to MongoDB Atlas
 4: Admin can see the result of students
-5: LeaderBoard
-6: Output Scroll bar is not working.
+5: LeaderBoard -> (For Exam Only - Completed)
+6: Output Scroll bar is not working in Exam Detail. (Solution -> Fix the height of parent)
+7: Update UI of Admin

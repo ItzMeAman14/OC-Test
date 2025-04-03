@@ -34,6 +34,26 @@ function Exam() {
     }
   }
 
+  const setUserExamPending = async (examId) => {
+    try{
+      const id = Cookies.get("uid");
+      const token = Cookies.get("tokenUser");
+      setLoading(true);
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/userExamPending/${examId}?user_id=${id}`,{
+        method:"PUT",
+        headers: {
+          'Content-Type': 'application/json',
+          'userAPIKEY': token,
+        }
+      });
+      const parsed = await res.json();
+      setLoading(false);
+    }
+    catch(err){
+      console.error(err);
+    }
+  }
+
   return (
     <Box sx={{ padding: 4, backgroundColor: '#f4f6f8' }}>
       <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: 'bold', color: '#333' }}>
@@ -81,7 +101,7 @@ function Exam() {
                   {/* Aligning the Button to the Bottom */}
                   <Box sx={{ marginTop: 'auto' }}>
                     {/* Buttons */}
-                    {exam.attempted ? (
+                    {exam.attempted === 'true' || exam.attempted === 'pending' ? (
                       <Box display="flex" justifyContent="space-between">
                         <Button variant="contained" color="primary" disabled>
                           Attempted
@@ -94,7 +114,7 @@ function Exam() {
                       </Box>
                     ) : (
                       <Link to={`/exams/${exam.exam_id}`} style={{ textDecoration: 'none' }}>
-                        <Button variant="contained" color="primary" fullWidth>
+                        <Button variant="contained" onClick={() => {setUserExamPending(exam.exam_id) }} color="primary" fullWidth>
                           Attempt
                         </Button>
                       </Link>

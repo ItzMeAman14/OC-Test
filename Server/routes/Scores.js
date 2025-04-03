@@ -56,7 +56,7 @@ ScoreRouter.put("/setuserScores/:id",async(req,res) => {
             },
             { 
               $set: {
-                "exams.$.attempted": true ,
+                "exams.$.attempted": 'true' ,
                 "exams.$.score": newScore
               }
             },

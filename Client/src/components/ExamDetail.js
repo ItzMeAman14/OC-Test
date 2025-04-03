@@ -20,6 +20,7 @@ import { toast } from "react-toastify";
 import WarningDialog from "../DialogBox/WarningDialog"
 import DangerDialog from "../DialogBox/DangerDialog"
 import Loader from "./Loader"
+import LeaderBoard from "./LeaderBoard"
 
 const ExamDetail = () => {
   const navigate = useNavigate();
@@ -37,6 +38,7 @@ const ExamDetail = () => {
   const [allOutput, setAllOutput] = useState([]);
   const [completed, setCompleted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [leaderboard, setLeaderboard] = useState(false);
 
   // Ref
   const codeEditorRef = useRef(null)
@@ -99,16 +101,21 @@ const ExamDetail = () => {
           }),
         });
         let outputResponse = await response.json();
-
+        
         if (!outputResponse.ok) {
           console.error(outputResponse.error);
         }
-
-        if (i.output !== outputResponse.output) {
-          out.push({ "icon": "fa-solid fa-face-sad-tear", "color": "red" });
-        } else {
-          passed++;
-          out.push({ "icon": "fa-solid fa-face-smile", "color": "green" });
+        if(!outputResponse.isExecutionSuccess){
+          setAllOutput([]);
+          setOutput(outputResponse.output)
+        }
+        else{
+          if (i.output !== outputResponse.output) {
+            out.push({ "icon": "fa-solid fa-face-sad-tear", "color": "red" });
+          } else {
+            passed++;
+            out.push({ "icon": "fa-solid fa-face-smile", "color": "green" });
+          }
         }
       }
       catch (err) {
@@ -403,17 +410,10 @@ const ExamDetail = () => {
 
     const handleVisibilityChange = () => {
       if (document.hidden && !warning) {
-        setWarning(true);
-        setWarningCount(prevCount => prevCount + 1);
+        // setWarning(true);
+        // setWarningCount(prevCount => prevCount + 1);
       }
     };
-
-    // const handleBlur = () => {
-    //   if (!warning) {
-    //     // setWarningCount(prevCount => prevCount + 1);
-    //     setWarning(true);
-    //   }
-    // }
 
     window.addEventListener('keydown', function (event) {
       if ((event.key === 'F5') || (event.ctrlKey && event.key === 'r')) {
@@ -426,14 +426,10 @@ const ExamDetail = () => {
       event.returnValue = '';
     });
 
-    // window.addEventListener('load', (e) => { handleLoad(e) });
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    // window.addEventListener('blur', handleBlur);
 
     return () => {
-      // window.removeEventListener('load', handleLoad);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      // window.removeEventListener('blur', handleBlur);
     };
   }, []);
 
@@ -492,27 +488,52 @@ const ExamDetail = () => {
             {formatTime(timeLeft)}
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          onClick={submitExam}
-          style={{
-            backgroundColor: "white",
-            color: "black",
-            fontWeight: "bold",
-            textTransform: "none",
-          }}
-        >
-          Submit Exam
-        </Button>
+        
+        <Box style={{
+          display:"flex",
+          gap:"6px"
+        }}>
+
+          <Button
+            variant="contained"
+            onClick={() => { leaderboard ? setLeaderboard(false) : setLeaderboard(true) }}
+            style={{
+              backgroundColor: "white",
+              color: "black",
+              fontWeight: "bold",
+              textTransform: "none",
+            }}
+            >
+            { leaderboard ? "Go to Question" : "Show Leaderboard" }
+          </Button>
+
+          <Button
+            variant="contained"
+            onClick={submitExam}
+            style={{
+              backgroundColor: "white",
+              color: "black",
+              fontWeight: "bold",
+              textTransform: "none",
+            }}
+          >
+            Submit Exam
+          </Button>
+        
+        </Box>
+
       </Paper>
 
       {/* Dialog Boxes */}
       {warning && <WarningDialog open={warning} setWarning={setWarning} />}
       {<DangerDialog open={danger} setScores={setScores} setDanger={setDanger} />}
 
+      
+      { leaderboard ? <LeaderBoard/> : ( <>
+          
       {/* Main Content */}
       <Grid container spacing={2} style={{ flex: 1, padding: 16 }}>
-        {/* Question/Output Section (Toggleable) */}
+        {/* Question/Output Section (Toggleable) */ }
         <Grid item xs={12} md={4}>
           {!showOutput ? (
             <Paper
@@ -577,7 +598,6 @@ const ExamDetail = () => {
             <Paper
               elevation={1}
               style={{
-                maxHeight: "100%",
                 height: "100%",
                 padding: 16,
                 display: "flex",
@@ -887,6 +907,9 @@ const ExamDetail = () => {
 
         ))}
       </Paper>
+      
+      </>
+    )}
     </Box>
   )
 }
