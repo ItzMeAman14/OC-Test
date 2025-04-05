@@ -1,191 +1,255 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, List, ListItem, ListItemText, Switch, FormControlLabel, Paper, Divider, TextField, IconButton } from '@mui/material';
-import { toast } from "react-toastify";
-import SearchIcon from '@mui/icons-material/Search';
+import { useState, useEffect } from "react"
+import {
+  Box,
+  Typography,
+  TextField,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Switch,
+  InputAdornment,
+  CircularProgress,
+  Snackbar,
+  Alert,
+} from "@mui/material"
+import { Search as SearchIcon } from "@mui/icons-material"
 import Cookies from "js-cookie";
-import { newtonsCradle } from 'ldrs'
 
-newtonsCradle.register()
+export default function UserManagement() {
+  const [users, setUsers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("")
+  const [loadingUserId, setLoadingUserId] = useState(null)
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  })
 
 
-function UserManagement() {
-    const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [toFilter, setToFilter] = useState('');
-    const [statusLoader, setStatusLoader] = useState({status:false,id:null});
+  const changeAccess = async (id) => {
+    try {
+        setLoadingUserId(id);
+        const token = Cookies.get("tokenAdmin");
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/blockUser/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "userAPIKEY": token
+            },
+        });
 
-    const changeAccess = async (id) => {
-        try {
-            setStatusLoader({status:true,id:id})
-            const token = Cookies.get("tokenAdmin");
-            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/blockUser/${id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "userAPIKEY": token
-                },
-            });
-
-            const parsed = await res.json();
-            setStatusLoader({status:false,id:null});
-            if (res.ok) {
-                getUsers();
-                toast.success(parsed.message, {
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    pauseOnHover: true,
-                    closeButton: false,
-                });
-            }
-            else {
-                toast.error(parsed.message, {
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    pauseOnHover: true,
-                    closeButton: false,
-                });
-            }
-        }
-        catch (err) {
-            console.error(err);
-        }
-
-    }
-
-    const filterUser = async () => {
-        try {
-            setLoading(true);
-            const token = Cookies.get("tokenAdmin");
-            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/filterUser`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "userAPIKEY": token
-                },
-                body:JSON.stringify({
-                    user:toFilter
-                })
+        const parsed = await res.json();
+        if (res.ok) {
+            getUsers();
+            setLoadingUserId(null);
+            setSnackbar({
+              open: true,
+              message: parsed.message,
+              severity: "success",
             })
-
-            const parsed = await res.json();
-
-            setUsers(parsed);
-            setLoading(false);
         }
-        catch (err) {
-            console.error(err);
-        }
-    }
-
-    const getUsers = async () => {
-        try {
-            setLoading(true);
-            const token = Cookies.get("tokenAdmin");
-            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/users`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "userAPIKEY": token
-                },
-            })
-
-            const parsed = await res.json();
-
-            setUsers(parsed);
-            setLoading(false);
-        }
-        catch (err) {
-            console.error(err);
+        else {
+          setSnackbar({
+            open: true,
+            message: parsed.message,
+            severity: "error",
+          })
         }
     }
+    catch (err) {
+        console.error(err);
+    }
+  
+  }
+  
+      const filterUser = async (e) => {
+          try {
+              setSearchTerm(e.target.value);
+              // setLoading(true);
+              const token = Cookies.get("tokenAdmin");
+              const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/filterUser`, {
+                  method: "POST",
+                  headers: {
+                      "Content-Type": "application/json",
+                      "userAPIKEY": token
+                  },
+                  body:JSON.stringify({
+                      user:e.target.value
+                  })
+              })
+  
+              const parsed = await res.json();
+  
+              setUsers(parsed);
+              // setLoading(false);
+          }
+          catch (err) {
+              console.error(err);
+          }
+      }
+  
+  const getUsers = async () => {
+    try {
+        // setLoading(true);
+        const token = Cookies.get("tokenAdmin");
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/users`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "userAPIKEY": token
+            },
+        })
 
-    useEffect(() => {
-        getUsers();
-    }, []);
+        const parsed = await res.json();
 
-    return (
-        <Box
-            sx={{
-                padding: 4,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                backgroundColor: '#f5f5f5',
-                height: '80vh',
-                width: '100%',
-                justifyContent: 'center',
-            }}
-        >
-            <Paper sx={{ padding: 3, width: '100%', maxWidth: 800, boxShadow: 3 }}>
-                <Box display="flex" sx={{ justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-                    <Typography variant="h4" gutterBottom>
-                        User Management
-                    </Typography>
+        setUsers(parsed);
+        // setLoading(false);
+    }
+    catch (err) {
+        console.error(err);
+    }
+  }
 
-                    <TextField
-                        label="Search user"
-                        variant="outlined"
-                        sx={{ height: 50, marginBottom:3}}
-                        value={toFilter}
-                        onChange={(e) => { setToFilter(e.target.value) }}
-                        InputProps={{
-                            endAdornment: (
-                                <IconButton
-                                    onClick={filterUser}
-                                    sx={{
-                                        '&:hover': {
-                                            backgroundColor: 'transparent', 
-                                        },
-                                    }}
-                                >
-                                    <SearchIcon />
-                                </IconButton>
-                            ),
-                        }}
+  useEffect(() => {
+      getUsers();
+  }, []);
+
+
+  const handleToggleStatus = (id) => {
+    setLoadingUserId(id)
+
+    const user = users.find((user) => user.id === id)
+    const newStatus = !user.active
+
+    setTimeout(() => {
+      setUsers(users.map((user) => (user.id === id ? { ...user, active: newStatus } : user)))
+
+      setLoadingUserId(null)
+
+      setSnackbar({
+        open: true,
+        message: `User ${newStatus ? "activated" : "blocked"} successfully`,
+        severity: "success",
+      })
+    }, 1500)
+  }
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({
+      ...snackbar,
+      open: false,
+    })
+  }
+
+  return (
+    <Box>
+      <Typography variant="h4" sx={{ mb: 3, color: "#333333" }}>
+        User Management
+      </Typography>
+      <Box sx={{ mb: 3 }}>
+        <TextField
+          fullWidth
+          placeholder="Search users..."
+          value={searchTerm}
+          onChange={(e) => filterUser(e) }
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon sx={{ color: "#555555" }}/>
+              </InputAdornment>
+            ),
+          }}
+          sx={{
+            mb: 2,
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "#e0e0e0",
+              },
+              "&:hover fieldset": {
+                borderColor: "#aaaaaa",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "#555555",
+              },
+            },
+          }}
+        />
+        <Typography variant="subtitle1" sx={{ color: "#555555" }}>
+          Total Users: {users.length}
+        </Typography>
+      </Box>
+      <TableContainer
+        component={Paper}
+        sx={{
+          maxHeight: "calc(100vh - 300px)",
+          boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Table stickyHeader>
+          <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
+            <TableRow>
+              <TableCell sx={{ fontWeight: "bold", color: "#333333" }}>S.No.</TableCell>
+              <TableCell sx={{ fontWeight: "bold", color: "#333333" }}>Email</TableCell>
+              <TableCell sx={{ fontWeight: "bold", color: "#333333" }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: "bold", color: "#333333" }}>Action</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {users.map((user,index) => (
+              <TableRow key={user._id} sx={{ "&:nth-of-type(odd)": { backgroundColor: "#fafafa" } }}>
+                <TableCell sx={{ color: "#333333" }}>{index + 1}</TableCell>
+                <TableCell sx={{ color: "#333333" }}>{user.email}</TableCell>
+                <TableCell>
+                  {!user.blocked ? (
+                    <Typography sx={{ color: "#333333", fontWeight: "bold" }}>Active</Typography>
+                  ) : (
+                    <Typography sx={{ color: "#777777" }}>Blocked</Typography>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {loadingUserId === user._id ? (
+                    <Box sx={{ display: "flex", justifyContent: "center", width: 58 }}>
+                      <CircularProgress size={24} sx={{ color: "#555555" }} />
+                    </Box>
+                  ) : (
+                    <Switch
+                      checked={user.blocked}
+                      onChange={() => changeAccess(user._id)}
+                      color="primary"
+                      sx={{
+                        "& .MuiSwitch-switchBase.Mui-checked": {
+                          color: "#333333",
+                          "&:hover": {
+                            backgroundColor: "rgba(51, 51, 51, 0.04)",
+                          },
+                        },
+                        "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                          backgroundColor: "#555555",
+                        },
+                      }}
                     />
-                </Box>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-                <Divider sx={{ marginBottom: 2 }} />
-
-                {
-                    loading ? "Loading....." :
-                        <List>
-                            {
-                                users.length === 0 ?
-                                <Typography variant='body1'>
-                                    No users Found
-                                </Typography>
-                            :
-                            users.map((user) => (
-                                <ListItem key={user._id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <ListItemText primary={user.email} />
-                            
-                                    <FormControlLabel
-                                        control={
-                                            statusLoader.status && statusLoader.id === user._id 
-                                            ?
-                                            <l-newtons-cradle
-                                            size="78"
-                                            speed="1.4" 
-                                            color="#0057e5" 
-                                            ></l-newtons-cradle>
-                                            :
-                                            <Switch
-                                                checked={user.blocked}
-                                                onChange={() => changeAccess(user._id)}
-                                                color={user.blocked ? "error" : "primary"}
-                                                sx={ user.blocked && {marginRight:3}}
-                                            />
-                                        }
-                                        label={ statusLoader.status && statusLoader.id === user._id ? "" : user.blocked ? 'Blocked' : 'Unblocked'}
-                                    />
-                                </ListItem>
-                            ))}
-                        </List>
-                }
-            </Paper>
-        </Box>
-    );
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Box>
+  )
 }
-
-export default UserManagement;

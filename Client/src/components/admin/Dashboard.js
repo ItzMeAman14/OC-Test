@@ -1,62 +1,89 @@
-import * as React from 'react';
-import PropTypes from 'prop-types';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
-import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Button from "@mui/material/Button";
-
-// Icons
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
-import EditIcon from '@mui/icons-material/Edit';
-import SendIcon from '@mui/icons-material/Send';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
-
-// Custom Component for Sidebar
-import Form from './Form';
-import EditExam from './EditExam';
-import AdminMsg from "./AdminMsg";
-import RequestHandle from "./RequestHandle";
-import { useNavigate } from 'react-router-dom';
-import Cookies from "js-cookie";
-import UserManagement from './UserManagement';
+import { useState } from "react"
+import {
+  Box,
+  Button,
+  CssBaseline,
+  Drawer,
+  AppBar,
+  Toolbar,
+  List,
+  Typography,
+  Divider,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Paper,
+  ThemeProvider,
+  createTheme,
+} from "@mui/material"
+import {
+  Create as CreateIcon,
+  Update as UpdateIcon,
+  Message as MessageIcon,
+  PersonAdd as PersonAddIcon,
+  ManageAccounts as ManageAccountsIcon,
+  Score as ScoreIcon,
+} from "@mui/icons-material"
+import CreateExam from "./CreateExam"
+import UpdateExistingExam from "./UpdateExistingExam"
+import SendMessage from "./SendMessage"
+import UserRequests from "./UserRequests"
+import UserManagement from "./UserManagement"
+import UserScores from "./UserScores"
 import { toast } from "react-toastify";
+import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
 
-const drawerWidth = 240;
+const drawerWidth = 240
 
-function Dashboard(props) {
+const theme = createTheme({
+  palette: {
+    mode: "light",
+    primary: {
+      main: "#333333",
+      light: "#555555",
+      dark: "#111111",
+      contrastText: "#ffffff",
+    },
+    secondary: {
+      main: "#777777",
+      light: "#999999",
+      dark: "#555555",
+      contrastText: "#ffffff",
+    },
+    background: {
+      default: "#f8f8f8",
+      paper: "#ffffff",
+    },
+    text: {
+      primary: "#333333",
+      secondary: "#777777",
+    },
+    divider: "#e0e0e0",
+  },
+  components: {
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: "none",
+        },
+      },
+    },
+  },
+})
+
+export default function Dashboard() {
   const navigate = useNavigate();
-  const { window } = props;
-  const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [isClosing, setIsClosing] = React.useState(false);
-  const [activeComponent, setactiveComponent] = React.useState('dashboard');
+  const [selectedItem, setSelectedItem] = useState("Create Exam")
 
-  const handleDrawerClose = () => {
-    setIsClosing(true);
-    setMobileOpen(false);
-  };
-
-  const handleDrawerTransitionEnd = () => {
-    setIsClosing(false);
-  };
-
-  const handleDrawerToggle = () => {
-    if (!isClosing) {
-      setMobileOpen(!mobileOpen);
-    }
-  };
-
-  const handleNavButtons = (active) => {
-        setactiveComponent(active);
-  }
 
   const logout = () => {
     Cookies.remove("adminid");
@@ -70,130 +97,127 @@ function Dashboard(props) {
     navigate("/login");
   }
 
-  const drawer = (
-    <div>
-      <Toolbar />
-      <Divider />
-      <List>
-        <ListItem button onClick={ () => { handleNavButtons('dashboard') } }>
-          <ListItemIcon>
-            <AddCircleIcon />
-          </ListItemIcon> 
-          <ListItemText primary="Create New Exam" />
-        </ListItem>
+  const menuItems = [
+    { text: "Create Exam", icon: <CreateIcon /> },
+    { text: "Update Existing Exam", icon: <UpdateIcon /> },
+    { text: "Send Message", icon: <MessageIcon /> },
+    { text: "User Requests", icon: <PersonAddIcon /> },
+    { text: "User Management", icon: <ManageAccountsIcon /> },
+    { text: "User Scores", icon: <ScoreIcon /> },
+  ]
 
-        <ListItem button onClick={ () => { handleNavButtons('questions') } }>
-          <ListItemIcon>
-            <EditIcon />
-          </ListItemIcon> 
-          <ListItemText primary="Add Questions to Existing Exam" />
-        </ListItem>
-
-        <ListItem button onClick={ () => { handleNavButtons('message') } }>
-          <ListItemIcon>
-            <SendIcon />
-          </ListItemIcon> 
-          <ListItemText primary="Send Message" />
-        </ListItem>
-
-        <ListItem button onClick={ () => { handleNavButtons('handleUsers') } }>
-          <ListItemIcon>
-            <ManageAccountsIcon />
-          </ListItemIcon> 
-          <ListItemText primary="Manage Users" />
-        </ListItem>
-
-        <ListItem button onClick={ () => { handleNavButtons('requests') } }>
-          <ListItemIcon>
-            <PersonAddIcon />
-          </ListItemIcon> 
-          <ListItemText primary="User Requests" />
-        </ListItem>
-
-      </List>
-    </div>
-  );
-
-  const container = window !== undefined ? () => window().document.body : undefined;
+  const renderContent = () => {
+    switch (selectedItem) {
+      case "Create Exam":
+        return <CreateExam />
+      case "Update Existing Exam":
+        return <UpdateExistingExam />
+      case "Send Message":
+        return <SendMessage />
+      case "User Requests":
+        return <UserRequests />
+      case "User Management":
+        return <UserManagement />
+      case "User Scores":
+        return <UserScores />
+      default:
+        return <CreateExam />
+    }
+  }
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      <AppBar
-        position="fixed"
-        sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
-        }}
-      >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
-          >
-            {/* Drawer Icon */}
-          </IconButton>
-          
-          <Typography variant="h6" noWrap component="div">
-            Admin Dashboard
-          </Typography>
-          
-          <Box sx={{ flexGrow: 1 }} /> 
-          
-          <Button color="inherit" onClick={logout}>Logout</Button>
-        </Toolbar>
-      </AppBar>
-      <Box
-        component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-      >
-        
-        <Drawer
-          container={container}
-          variant="temporary"
-          open={mobileOpen}
-          onTransitionEnd={handleDrawerTransitionEnd}
-          onClose={handleDrawerClose}
-          ModalProps={{
-            keepMounted: true,
-          }}
+    <ThemeProvider theme={theme}>
+      <Box sx={{ display: "flex", bgcolor: "background.default" }}>
+        <CssBaseline />
+        <AppBar
+          position="fixed"
           sx={{
-            display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            width: `calc(100% - ${drawerWidth}px)`,
+            ml: `${drawerWidth}px`,
+            bgcolor: "primary.main",
           }}
         >
-          {drawer}
-        </Drawer>
+          <Toolbar sx={{display:"flex",justifyContent:"space-between"}}>
+            <Typography variant="h6" noWrap component="div">
+              Admin Dashboard
+            </Typography>
+
+            <Button variant="h6" component="button" onClick={logout}>LOGOUT</Button>
+          </Toolbar>
+        </AppBar>
         <Drawer
+          sx={{
+            width: drawerWidth,
+            flexShrink: 0,
+            "& .MuiDrawer-paper": {
+              width: drawerWidth,
+              boxSizing: "border-box",
+              bgcolor: "background.paper",
+              borderRight: "1px solid",
+              borderColor: "divider",
+            },
+          }}
           variant="permanent"
-          sx={{
-            display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-          }}
-          open
+          anchor="left"
         >
-          {drawer}
+          <Toolbar>
+            <Typography variant="h6" sx={{ fontWeight: "bold", color: "text.primary" }}>
+              Admin Panel
+            </Typography>
+          </Toolbar>
+          <Divider />
+          <List>
+            {menuItems.map((item) => (
+              <ListItem key={item.text} disablePadding>
+                <ListItemButton
+                  selected={selectedItem === item.text}
+                  onClick={() => setSelectedItem(item.text)}
+                  sx={{
+                    "&.Mui-selected": {
+                      backgroundColor: "primary.light",
+                      color: "primary.contrastText",
+                      "&:hover": {
+                        backgroundColor: "primary.main",
+                      },
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      color: selectedItem === item.text ? "primary.contrastText" : "text.secondary",
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText primary={item.text} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
         </Drawer>
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            bgcolor: "background.default",
+            p: 3,
+            width: `calc(100% - ${drawerWidth}px)`,
+            mt: "30px",
+          }}
+        >
+          <Paper
+            elevation={3}
+            sx={{
+              mt:"20px",
+              p: 3,
+              minHeight: "calc(100vh - 128px)",
+              bgcolor: "background.paper",
+            }}
+          >
+            {renderContent()}
+          </Paper>
+        </Box>
       </Box>
-      <Box
-        component="main"
-        sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)`, backgroundColor:"white", color:"black" } }}
-      >
-        <Toolbar />
-          { activeComponent === 'dashboard' && <Form /> }
-          { activeComponent === 'questions' && <EditExam /> }
-          { activeComponent === 'message' && <AdminMsg /> }
-          { activeComponent === 'handleUsers' && <UserManagement /> }
-          { activeComponent === 'requests' && <RequestHandle /> }
-      </Box>
-    </Box>
-  );
+    </ThemeProvider>
+  )
 }
-
-Dashboard.propTypes = {
-  window: PropTypes.func,
-};
-
-export default Dashboard;

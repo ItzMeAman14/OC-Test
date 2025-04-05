@@ -8,7 +8,7 @@ import Modal1 from '../Modal1';
 import Cookies from "js-cookie";
 
 
-const EditExams = () => {
+const UpdateExistingExam = () => {
   const [showQuestions, setShowQuestions] = useState({});
   const [examModal,setExamModal] = useState({status:false,question_id:null});
   const [exams, setExams] = useState([]);
@@ -372,4 +372,4 @@ const EditExams = () => {
   );
 };
 
-export default EditExams;
+export default UpdateExistingExam;

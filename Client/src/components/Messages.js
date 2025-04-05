@@ -7,7 +7,6 @@ function MessageModal() {
   const { messages } = useMessages();
   const [open, setOpen] = useState(false);
 
-  // Toggle the modal open or closed
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -16,7 +15,6 @@ function MessageModal() {
     setOpen(false);
   };
 
-  
 
   return (
     <div>
@@ -27,13 +25,13 @@ function MessageModal() {
           bottom: 20,
           right: 20,
           zIndex: 10,
-          backgroundColor: 'primary.main',
+          backgroundColor: '#555555',
           color: 'white',
           borderRadius: '50%',
           width: 56, 
           height: 56,
           '&:hover': {
-            backgroundColor: 'primary.dark',
+            backgroundColor: '#333333',
           }
         }}
       >

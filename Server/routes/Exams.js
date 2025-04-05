@@ -53,7 +53,7 @@ ExamRouter.post('/createExam',async (req,res) => {
             )
         }
 
-        res.json({"success":"Exam created Successfully"})
+        res.json({message:"Exam created Successfully"})
     }
     catch(err){
         console.error(err);

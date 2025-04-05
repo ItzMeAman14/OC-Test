@@ -43,7 +43,8 @@ authRouter.post("/signup", async (req, res) => {
 
             const user = new User({
                 email: req.body.email,
-                password: hashedPassword
+                password: hashedPassword,
+                requestDate: new Date()
             })
 
             const admins = await User.find({ role: "admin" });
