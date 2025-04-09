@@ -16,13 +16,16 @@ import {
 import { AccessTime, PlayArrow, Send, QuestionAnswer, Loop } from "@mui/icons-material"
 import Cookies from "js-cookie"
 import { useParams, useNavigate } from "react-router-dom"
-import { toast } from "react-toastify";
+import { useToast } from './context/ToastContext'; 
 import WarningDialog from "../DialogBox/WarningDialog"
 import DangerDialog from "../DialogBox/DangerDialog"
 import Loader from "./Loader"
 import LeaderBoard from "./LeaderBoard"
+import { useLeaderBoard } from "./context/Leaderboard"
 
 const ExamDetail = () => {
+  const { showSuccess, showError } = useToast()
+  const { calculateScore, updateScore, leaderboard, setLeaderboard } = useLeaderBoard();
   const navigate = useNavigate();
   const { exam_id } = useParams();
 
@@ -38,15 +41,19 @@ const ExamDetail = () => {
   const [allOutput, setAllOutput] = useState([]);
   const [completed, setCompleted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [leaderboard, setLeaderboard] = useState(false);
+
+  // For leaderBoard
+  const [leaderboardVisibility, setLeaderboardVisibility] = useState(false);
+  const [currentUserLeaderBoard, setCurrentUserLeaderBoard] = useState({});
+  const [totalSubmissionByUser,setTotalSubmissionByUser] = useState(0);
+  const [currentUserScore,setCurrentUserScore] = useState(null);
 
   // Ref
   const codeEditorRef = useRef(null)
   const lineNumbersRef = useRef(null)
 
   // For Scores
-  const [numOfSubmissions, setNumOfSubmissions] = useState(0);
-  const [scoreUpdates, setScoreUpdates] = useState({});
+  const [scoreUpdates, setScoreUpdates] = useState([]);
 
   // For Warnings and Security
   const [warning, setWarning] = useState(false);
@@ -76,11 +83,83 @@ const ExamDetail = () => {
   }, [])
 
 
+  // Score Metrices Functions
+
+  // This function will check if question exist then update the question and if not exits then create new Question
+  const addOrUpdateQuestion = (userId, questionId, newQuestionData) => {
+    
+    const updatedScores = scoreUpdates.map((user) => {
+      if (user.hasOwnProperty(userId)) {
+
+        const userQuestions = user[userId];
+        const existingQuestionIndex = userQuestions.findIndex(q => q.hasOwnProperty(questionId));
+
+        if (existingQuestionIndex !== -1) {
+          userQuestions[existingQuestionIndex] = { [questionId]: newQuestionData };
+        } else {
+          userQuestions.push({ [questionId]: newQuestionData });
+        }
+
+        return {
+          ...user,
+          [userId]: userQuestions,
+        };
+      }
+      return user;
+    });
+
+    setScoreUpdates(updatedScores);
+  };
+
+
+  const getSubmissionValue = (userId, questionId) => {
+
+    const user = scoreUpdates.find(user => user.hasOwnProperty(userId));
+
+    if (user) {
+      const userQuestions = user[userId];
+      const question = userQuestions.find(q => q.hasOwnProperty(questionId));
+
+      if (question) {
+
+        return question[questionId].totalSubmission;
+      } 
+        return 0;
+      }
+  } 
+
+  const getScoreMetrices = (userId, questionId) => {
+
+    const user = scoreUpdates.find(user => user.hasOwnProperty(userId));
+
+    if (user) {
+      const userQuestions = user[userId];
+      const question = userQuestions.find(q => q.hasOwnProperty(questionId));
+
+      if (question) {
+
+        return question[questionId];
+      } 
+        return null;
+      }
+  } 
+
+  const addNewUserScoreMetrices = (userId) => {
+
+    const userExists = scoreUpdates.some(user => user.hasOwnProperty(userId));
+
+    if (!userExists) {
+      const updatedScores = [...scoreUpdates, { [userId]: [] }];
+      setScoreUpdates(updatedScores);
+    }
+  }
+
   const runAll = async () => {
+    const uid = Cookies.get("uid");
     const out = [];
     setOutput("");
     setAllOutput([]);
-    setNumOfSubmissions(numOfSubmissions + 1);
+    setTotalSubmissionByUser(totalSubmissionByUser + 1);
     let passed = 0;
     
     setShowOutput(true);
@@ -123,13 +202,11 @@ const ExamDetail = () => {
       }
     }
 
-    // Setting TestCases Passed
-    setScoreUpdates(prevState => ({
-      ...prevState,
-      [question._id]: passed
-    }));
-
     if (question.testcases.length === passed) {
+
+      const totalSubmissionDone = getSubmissionValue(uid,question._id)
+
+      addOrUpdateQuestion(uid,question._id,{timeTakenInMs:(3600 - timeLeft),testCasesPassed:passed,totalSubmission:(totalSubmissionDone + 1 )})
       passQuestion(question._id);
     }
     setAllOutput(out);
@@ -148,6 +225,12 @@ const ExamDetail = () => {
         },
       })
 
+      const metrices = getScoreMetrices(uid,id)
+      const score = calculateScore(question.testcases.length,3600,1,metrices.testCasesPassed,metrices.timeTakenInMs,metrices.totalSubmission)
+      const newScore = (1000*score)/100 + (currentUserLeaderBoard.score ?? 0)
+      updateScore(uid,newScore);
+      setCurrentUserScore(newScore)
+       
       const parsed = await res.json();
       if (res.ok) {
         setTimeout(() => {
@@ -157,20 +240,10 @@ const ExamDetail = () => {
           setOutput('')
           setAllOutput([]);
         }, 3000);
-        toast.success(parsed.message, {
-          autoClose: 5000,
-          hideProgressBar: false,
-          pauseOnHover: true,
-          closeButton: false,
-        });
+        showSuccess(parsed.message);
       }
       else {
-        toast.error(parsed.message, {
-          autoClose: 5000,
-          hideProgressBar: false,
-          pauseOnHover: true,
-          closeButton: false,
-        });
+        showError(parsed.message);
       }
     }
     catch (err) {
@@ -201,6 +274,7 @@ const ExamDetail = () => {
 
       const data = await response.json();
       setOutput(data.output || data.error);
+
       setLoading(false);
     }
     catch (error) {
@@ -210,7 +284,7 @@ const ExamDetail = () => {
 
 
 
-  const getTotalTestCases = async () => {
+  const getTotalTestCases = async (id) => {
     try {
       const token = Cookies.get("tokenUser");
 
@@ -233,13 +307,22 @@ const ExamDetail = () => {
 
   const setScores = async () => {
     try {
-      let sumOfPassedTestCases = Object.values(scoreUpdates).reduce((acc, currentVal) => acc + currentVal, 0);
+      const uid = Cookies.get("uid");
+
+      let sumOfPassedTestCases = 0;
+
+      scoreUpdates.map((score) => {
+        if(Object.keys(score)[0] == uid){
+            score[uid].map((ques) => {
+                sumOfPassedTestCases += ques[Object.keys(ques)[0]].testCasesPassed
+            })
+        }
+      })
+
       let givenTime = Math.floor(3600 / 60); // in minutes
       let timeTaken = Math.floor((3600 - timeLeft) / 60);  // in minutes
       let totalTestCases = await getTotalTestCases();
 
-
-      const uid = Cookies.get("uid");
       const token = Cookies.get("tokenUser");
 
       const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/setuserScores/${exam_id}?user_id=${uid}`, {
@@ -253,27 +336,18 @@ const ExamDetail = () => {
           totalTestCases,
           timeTaken,
           givenTime,
-          numOfSubmissions
+          numOfSubmissions:totalSubmissionByUser,
+          score:currentUserScore
         })
       })
 
       const parsed = await res.json();
       if (res.ok) {
         getAllQuestions();
-        toast.success(parsed.message, {
-          autoClose: 5000,
-          hideProgressBar: false,
-          pauseOnHover: true,
-          closeButton: false,
-        });
+        showSuccess(parsed.message);
       }
       else {
-        toast.error(parsed.message, {
-          autoClose: 5000,
-          hideProgressBar: false,
-          pauseOnHover: true,
-          closeButton: false,
-        });
+        showError(parsed.message);
       }
       navigate(`/score/${exam_id}`);
     }
@@ -362,7 +436,7 @@ const ExamDetail = () => {
   const filterData = async (idtoFilter) => {
     try {
       const token = Cookies.get("tokenUser");
-      const res = await fetch(`http://localhost:7123/getQuestion/${idtoFilter}`, {
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getQuestion/${idtoFilter}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -386,11 +460,35 @@ const ExamDetail = () => {
   };
 
 
+  const getUser = async (id) => {
+    
+    try{
+      const token = Cookies.get("tokenUser");
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getUserById/${id}`,{
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "userAPIKEY": token
+        }
+      });
+      const parsed = await res.json();
+      return parsed;
+    }
+    catch(err){
+      console.error(err);
+    }
+  }
+
   const handleScroll = () => {
     if (lineNumbersRef.current && codeEditorRef.current) {
       lineNumbersRef.current.scrollTop = codeEditorRef.current.scrollTop;
     }
   };
+
+
+  const sendCurrentUserToParent = (CurUser) => {
+    setCurrentUserLeaderBoard(CurUser);
+  }
 
   useEffect(() => {
     const textarea = codeEditorRef.current;
@@ -447,6 +545,21 @@ const ExamDetail = () => {
     getAllQuestions();
   }, [getAllQuestions]);
 
+
+  useEffect(() => {
+    const uid = Cookies.get("uid");
+
+    const getAndStoreUserData = async (uid) => {
+      const user = await getUser(uid);
+      const newUser = [...leaderboard,{id:uid,name:user.email,score:0}];
+      setLeaderboard(newUser);
+      addNewUserScoreMetrices(uid);
+    }
+
+    getAndStoreUserData(uid);
+
+  },[])
+
   return (
     <Box
       style={{
@@ -496,7 +609,7 @@ const ExamDetail = () => {
 
           <Button
             variant="contained"
-            onClick={() => { leaderboard ? setLeaderboard(false) : setLeaderboard(true) }}
+            onClick={() => { leaderboardVisibility ? setLeaderboardVisibility(false) : setLeaderboardVisibility(true) }}
             style={{
               backgroundColor: "white",
               color: "black",
@@ -504,7 +617,7 @@ const ExamDetail = () => {
               textTransform: "none",
             }}
             >
-            { leaderboard ? "Go to Question" : "Show Leaderboard" }
+            { leaderboardVisibility ? "Go to Question" : "Show Leaderboard" }
           </Button>
 
           <Button
@@ -529,7 +642,7 @@ const ExamDetail = () => {
       {<DangerDialog open={danger} setScores={setScores} setDanger={setDanger} />}
 
       
-      { leaderboard ? <LeaderBoard/> : ( <>
+      { leaderboardVisibility ? <LeaderBoard sendCurrentUserToParent={sendCurrentUserToParent} /> : ( <>
           
       {/* Main Content */}
       <Grid container spacing={2} style={{ flex: 1, padding: 16 }}>
@@ -683,7 +796,6 @@ const ExamDetail = () => {
                     Custom run
                   </Button>
               }
-
 
               <Typography
                 variant="subtitle1"

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Button, TextField, Typography, Box, Container } from "@mui/material";
-import { toast } from "react-toastify";
+import { useToast } from '../context/ToastContext'; 
 import { Link } from "react-router-dom";
 
 const Signup = () => {
+  const { showSuccess, showError, showWarning } = useToast()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -27,20 +28,10 @@ const Signup = () => {
       const parsed = await existUser.json();
       
       if(parsed.id){
-        toast.error("Account Already Exists", {
-          autoClose: 5000,
-          hideProgressBar: false,
-          pauseOnHover: true,
-          closeButton: false,
-        });
+        showError("Account Already Exists");
       }
       else if(parsed.request){
-        toast.warning("Request Already Sent to Admin", {
-          autoClose: 5000,
-          hideProgressBar: false,
-          pauseOnHover: true,
-          closeButton: false,
-        });
+        showWarning("Request Already Sent to Admin");
       }
       else{
         setShowOtpField(true);
@@ -69,12 +60,7 @@ const Signup = () => {
       
       const parsedOTP = await otp.json();
       setOtpBackend(parsedOTP.otp);
-      toast.success("OTP sent to your mail", {
-        autoClose: 5000,
-        hideProgressBar: false,
-        pauseOnHover: true,
-        closeButton: false,
-      });
+      showSuccess("OTP sent to your mail");
     }
     catch(err){
       console.error(err);
@@ -102,20 +88,10 @@ const Signup = () => {
           setPassword("");
           setConfirmPassword("");
           setOtp("");
-          toast.success(parsed.message, {
-            autoClose: 5000,
-            hideProgressBar: false,
-            pauseOnHover: true,
-            closeButton: false,
-          });
+          showSuccess(parsed.message);
         }
         else{
-          toast.error(parsed.message, {
-            autoClose: 5000,
-            hideProgressBar: false,
-            pauseOnHover: true,
-            closeButton: false,
-          });
+          showError(parsed.message);
         }
       }
       catch(err){
@@ -123,12 +99,7 @@ const Signup = () => {
       }
     }
     else{
-      toast.error("Wrong OTP", {
-        autoClose: 5000,
-        hideProgressBar: false,
-        pauseOnHover: true,
-        closeButton: false,
-      });
+      showError("Wrong OTP");
     }
   };
 

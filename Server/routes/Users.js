@@ -33,6 +33,19 @@ UserRouter.get("/users",async(req,res) => {
     }
 })
 
+
+UserRouter.get("/getUserById/:id",async(req,res) => {
+    try{
+        const userId = new mongoose.Types.ObjectId(req.params.id);
+        const users = await User.find({role:"user",_id:userId});
+        res.json({_id:users[0]._id,email:users[0].email});
+    }
+    catch(err){
+        console.error(err);
+        res.json({"message":"Some Error Occured"})
+    }
+})
+
 UserRouter.get("/getUser",async(req,res) => {
     try{
         const requests = await User.find(
@@ -220,11 +233,6 @@ UserRouter.put("/userExamPending/:id",async(req,res) => {
         console.error(err);
         res.json({"message":"Some Error Occured"})
     } 
-})
-
-
-UserRouter.put("/userExam",(req,res) => {
-    res.send("Exam is pending now.");
 })
 
 module.exports = UserRouter;

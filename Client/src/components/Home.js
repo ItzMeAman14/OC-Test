@@ -3,10 +3,11 @@ import React, { useState } from 'react';
 import CodeEditor from './Editor/CodeEditor';
 import OutputPanel from './Editor/OutputPanel';
 import { Box } from '@mui/material';
-import { toast } from "react-toastify";
+import { useToast } from './context/ToastContext'; 
 
 const Home = () => {
-  const [code, setCode] = useState('// Write your code here');
+  const { showSuccess, showError } = useToast()
+  const [code, setCode] = useState('# Write your code here');
   const [language, setLanguage] = useState('python3');
   const [output, setOutput] = useState('');
   const [input, setInput] = useState('');
@@ -33,21 +34,9 @@ const Home = () => {
     
           const data = await response.json();
           if (data.error === 'Daily limit reached') {
-            toast.error('Daily Limit Reached. Come Back Tomorrow.', {
-              autoClose: 5000,
-              closeOnClick: false,
-              pauseOnHover: true,
-              hideProgressBar: false,
-              closeButton: false,
-            });
+            showError('Daily Limit Reached. Come Back Tomorrow.');
           } else {
-            toast.success('Code Compiled Successfully', {
-              autoClose: 5000,
-              closeButton: false,
-              closeOnClick: false,
-              pauseOnHover: true,
-              hideProgressBar: false,
-            });
+            showSuccess("Code Compiled Successfully");
           }
           setIsRunning(false);
           setOutput(data.output || data.error);
@@ -81,7 +70,6 @@ const Home = () => {
 
   return (
     <Box style={containerStyle}>
-      
       <Box style={contentStyle}>
         <CodeEditor 
           code={code} 

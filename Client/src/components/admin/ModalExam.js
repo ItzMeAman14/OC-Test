@@ -1,10 +1,11 @@
 import React, { useState,useEffect } from 'react';
 import { Modal, Box, TextField, Button, Typography, Stack } from '@mui/material';
-import { toast } from "react-toastify";
+import { useToast } from '../context/ToastContext'; 
 import { InfinitySpin } from "react-loader-spinner";
 import Cookies from "js-cookie";
 
 function ModalExam(props) {
+  const { showSuccess, showError } = useToast()
   const [question, setQuestion] = useState([]); 
   const [testCases, setTestCases] = useState([]);
   const [load, setLoad] = useState(false);
@@ -83,21 +84,11 @@ function ModalExam(props) {
 
       const parsed = await res.json();
       if(res.ok){
-        toast.success(parsed.message,{
-          autoClose: 5000,
-          hideProgressBar: false,
-          pauseOnHover: true,
-          closeButton: false
-        })
+        showSuccess(parsed.message)
         props.enableModal({status:false})
       }
       else{
-        toast.error("Some Error Occured", {
-          autoClose: 5000,
-          hideProgressBar: false,
-          pauseOnHover: true,
-          closeButton: false,
-        })
+        showError("Some Error Occured")
       }
 
     }

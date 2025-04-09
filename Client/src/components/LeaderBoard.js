@@ -1,5 +1,5 @@
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Container,
   Typography,
@@ -12,21 +12,43 @@ import {
   TableRow,
   Box,
   Avatar,
-  TextField,
-  InputAdornment,
   Grid,
   Card,
   CardContent,
 } from "@mui/material"
-import SearchIcon from "@mui/icons-material/Search"
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents"
 import PersonIcon from "@mui/icons-material/Person"
 import { useLeaderBoard } from "./context/Leaderboard";
+import Cookies from "js-cookie";
 
-const LeaderBoard = () => {
-  const { leaderboard, currentUser } = useLeaderBoard();
+const LeaderBoard = (props) => {
+  const { leaderboard, currentUser, setLeaderboard, setCurrentUser } = useLeaderBoard();
 
-  const topUsers = leaderboard.filter((user,index) => index < 3 )
+  const [topUsers,setTopUsers] = useState([]);
+
+  useEffect(() => {
+    const uid = Cookies.get("uid");
+
+    leaderboard.sort((a,b) => b.score - a.score)
+
+    const topusers = leaderboard.filter((user,index) => index < 3 )
+    setTopUsers(topusers);
+    setLeaderboard(leaderboard)
+
+    let currentUserIndex = null;
+      
+    for(let i=0;i<leaderboard.length;i++){
+      if(leaderboard[i].id === uid){
+        currentUserIndex = i;
+        break;
+      }
+    }
+    const user = leaderboard.filter((user) => user.id === uid)
+    const curUser = {...user[0],index:currentUserIndex}
+    setCurrentUser(curUser);
+    props.sendCurrentUserToParent(curUser);
+    
+  },[])
 
   const getMedalColor = (index) => {
     switch (index) {
@@ -177,7 +199,7 @@ const LeaderBoard = () => {
 
               <TableCell>
                 <Typography variant="body2" fontWeight="medium">
-                  {currentUser.score.toLocaleString()}
+                  {currentUser.score}
                 </Typography>
               </TableCell>
 
@@ -228,7 +250,7 @@ const LeaderBoard = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="body2" fontWeight="medium">
-                    {user.score.toLocaleString()}
+                    {user.score}
                   </Typography>
                 </TableCell>
                 

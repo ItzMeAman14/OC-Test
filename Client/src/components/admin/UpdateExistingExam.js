@@ -26,9 +26,10 @@ import {
   Add as AddIcon,
 } from "@mui/icons-material"
 import Cookies from "js-cookie";
-import { toast } from "react-toastify";
+import { useToast } from '../context/ToastContext'; 
 
 export default function UpdateExistingExam() {
+  const { showSuccess, showError } = useToast();
   const [exams, setExams] = useState([])
   const [openDialog, setOpenDialog] = useState(false)
   const [currentExamId, setCurrentExamId] = useState(null)
@@ -123,21 +124,11 @@ export default function UpdateExistingExam() {
         })
         const data = await res.json();
         if(res.ok){
-          toast.success(data.message, {
-            autoClose: 5000, 
-            hideProgressBar: false, 
-            pauseOnHover: true,
-            closeButton: false,
-          })
+          showSuccess(data.message)
           getAllExams();
         }
         else{
-          toast.error(data.message,{
-            autoClose: 5000, 
-            hideProgressBar: false, 
-            pauseOnHover: true,
-            closeButton: false
-          })
+          showError(data.message)
         }
       }
       catch(err){
@@ -157,21 +148,11 @@ export default function UpdateExistingExam() {
   
         const data = await res.json();
         if(res.ok){
-          toast.success(data.message, {
-            autoClose: 5000, 
-            hideProgressBar: false, 
-            pauseOnHover: true,
-            closeButton: false,
-          });
+          showSuccess(data.message);
           getAllExams();
         }
         else{
-          toast.error("Some Error Occured", {
-            autoClose: 5000, 
-            hideProgressBar: false, 
-            pauseOnHover: true,
-            closeButton: false,
-          });
+          showError("Some Error Occured");
         }
       }
       catch(err){
@@ -245,21 +226,11 @@ export default function UpdateExistingExam() {
         })
         const data = await res.json();
         if(res.ok){
-          toast.success(data.message, {
-            autoClose: 5000, 
-            hideProgressBar: false, 
-            pauseOnHover: true,
-            closeButton: false,
-          })
+          showSuccess(data.message)
           getAllExams();
         }
         else{
-          toast.error(data.message,{
-            autoClose: 5000, 
-            hideProgressBar: false, 
-            pauseOnHover: true,
-            closeButton: false
-          })
+          showError(data.message)
         }
       }
       catch(err){
@@ -286,20 +257,10 @@ export default function UpdateExistingExam() {
         const parsed = await res.json();
         if(res.ok){
           getAllExams();
-          toast.success(parsed.message,{
-            autoClose: 5000,
-            hideProgressBar: false,
-            pauseOnHover: true,
-            closeButton: false
-          })
+          showSuccess(parsed.message)
         }
         else{
-          toast.error("Some Error Occured", {
-            autoClose: 5000,
-            hideProgressBar: false,
-            pauseOnHover: true,
-            closeButton: false,
-          })
+          showError("Some Error Occured")
         }
   
       }
@@ -338,21 +299,11 @@ export default function UpdateExistingExam() {
 
       const data = await res.json();
       if(res.ok){
-        toast.success(data.message, {
-          autoClose: 5000, 
-          hideProgressBar: false, 
-          pauseOnHover: true,
-          closeButton: false,
-        });
+        showSuccess(data.message);
         getAllExams();
       }
       else{
-        toast.error(data.message, {
-          autoClose: 5000, 
-          hideProgressBar: false, 
-          pauseOnHover: true,
-          closeButton: false,
-        });
+        showError(data.message);
       }
     }
     catch(err){

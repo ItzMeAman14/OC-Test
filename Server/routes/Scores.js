@@ -79,4 +79,39 @@ ScoreRouter.put("/setuserScores/:id",async(req,res) => {
 })
 
 
+ScoreRouter.get("/getFormattedScoreForAdmin", async(req,res) => {
+  try{
+    const exams = await collection.find({},{ _id:1, name:1 })
+    const users = await User.find({role:"user", blocked:false},{ _id:1,exams:1,email:1 })
+    
+    let finalData = []
+
+    exams.map((exam) => {
+      let scoreToset = null;
+      let status = null;
+      let data = { id:exam._id,name:exam.name, users:[] }
+      for(let i=0;i<users.length;i++){
+        // Finding Matched Exam and setting status and score
+        for(let j=0;j<users[i].exams.length;j++){
+          // Checking Exam Id and User Exam Id
+          if((users[i].exams[j].exam_id).equals(exam._id)){
+            status = users[i].exams[j].attempted
+            scoreToset = users[i].exams[j].score.finalScore ?? null
+            break
+          }
+        }
+        data.users.push({ id:users[i]._id, email: users[i].email, score:scoreToset, status:status })
+      }
+      finalData.push(data)
+    })
+
+    res.json(finalData);
+
+  }
+  catch(err){
+    console.error(err);
+    res.status(500).json({message:"Internal Server Error"})
+  }
+})
+
 module.exports = ScoreRouter

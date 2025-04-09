@@ -31,7 +31,7 @@ import SendMessage from "./SendMessage"
 import UserRequests from "./UserRequests"
 import UserManagement from "./UserManagement"
 import UserScores from "./UserScores"
-import { toast } from "react-toastify";
+import { useToast } from '../context/ToastContext'; 
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 
@@ -81,6 +81,7 @@ const theme = createTheme({
 })
 
 export default function Dashboard() {
+  const { showSuccess } = useToast()
   const navigate = useNavigate();
   const [selectedItem, setSelectedItem] = useState("Create Exam")
 
@@ -88,12 +89,7 @@ export default function Dashboard() {
   const logout = () => {
     Cookies.remove("adminid");
     Cookies.remove("tokenAdmin");
-    toast.success("Logged Out Successfully", {
-      autoClose: 5000,
-      hideProgressBar: false,
-      pauseOnHover: true,
-      closeButton: false,
-    });
+    showSuccess("Logged Out Successfully");
     navigate("/login");
   }
 

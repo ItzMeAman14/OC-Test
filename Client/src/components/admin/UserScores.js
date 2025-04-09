@@ -1,8 +1,7 @@
-"use client"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Box,
+  Button,
   Typography,
   Accordion,
   AccordionSummary,
@@ -22,58 +21,15 @@ import {
   InputAdornment,
   Grid,
 } from "@mui/material"
-import { ExpandMore as ExpandMoreIcon, Search as SearchIcon } from "@mui/icons-material"
-
-// Mock data for exams and user scores
-const mockExams = [
-  {
-    id: 1,
-    name: "Data Structures Exam",
-    users: [
-      { id: 101, email: "john@example.com", score: 85, status: "true" },
-      { id: 102, email: "jane@example.com", score: 92, status: "true" },
-      { id: 103, email: "robert@example.com", score: 78, status: "true" },
-      { id: 104, email: "emily@example.com", score: 0, status: "pending" },
-      { id: 105, email: "michael@example.com", score: 0, status: "false" },
-    ],
-  },
-  {
-    id: 2,
-    name: "Algorithms Exam",
-    users: [
-      { id: 201, email: "john@example.com", score: 76, status: "true" },
-      { id: 202, email: "jane@example.com", score: 88, status: "true" },
-      { id: 203, email: "sarah@example.com", score: 0, status: "pending" },
-      { id: 204, email: "david@example.com", score: 0, status: "false" },
-      { id: 205, email: "lisa@example.com", score: 0, status: "false" },
-      { id: 206, email: "thomas@example.com", score: 0, status: "pending" },
-    ],
-  },
-  {
-    id: 3,
-    name: "Database Systems Exam",
-    users: [
-      { id: 301, email: "john@example.com", score: 90, status: "true" },
-      { id: 302, email: "robert@example.com", score: 82, status: "true" },
-      { id: 303, email: "emily@example.com", score: 0, status: "pending" },
-      { id: 304, email: "michael@example.com", score: 0, status: "false" },
-      { id: 305, email: "sarah@example.com", score: 0, status: "false" },
-      { id: 306, email: "alex@example.com", score: 55, status: "true" },
-      { id: 307, email: "patricia@example.com", score: 42, status: "true" },
-      { id: 308, email: "james@example.com", score: 35, status: "true" },
-    ],
-  },
-]
+import { ExpandMore as ExpandMoreIcon, Search as SearchIcon, Description } from "@mui/icons-material"
+import Cookies from "js-cookie";
+import * as XLSX from "xlsx";
 
 export default function UserScores() {
   const [searchTerm, setSearchTerm] = useState("")
-  // Store filters for each exam separately
-  const [filters, setFilters] = useState(
-    mockExams.reduce((acc, exam) => {
-      acc[exam.id] = { status: "all", score: "all" }
-      return acc
-    }, {}),
-  )
+  const [examScores, setExamScores ] = useState([]);
+  
+  const [filters, setFilters] = useState()
 
   const handleStatusFilterChange = (examId, value) => {
     setFilters({
@@ -152,16 +108,73 @@ export default function UserScores() {
     return filterUsersBySearch(filteredUsers)
   }
 
+
+  const exportToExcel = (id) => {
+
+    const wb = XLSX.utils.book_new();
+
+    const examData = examScores.filter((exam) => exam.id === id)
+
+    examData.forEach(exam => {
+      const usersData = exam.users.map(user => [
+        user.email,
+        user.score,
+        user.status
+      ]);
+
+      const headers = ["Email", "Score", "Status"];
+      const data = [headers, ...usersData];
+
+      console.log(data)
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      XLSX.utils.book_append_sheet(wb, ws, exam.name);
+    });
+
+    XLSX.writeFile(wb, 'AICOMP_ExamSheet.xlsx');
+
+  }
+
+  const getAllUsersScore = async () => {
+      try{
+        const token = Cookies.get("tokenAdmin")
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getFormattedScoreForAdmin`,{
+          method: "GET",
+          headers: {
+              "Content-Type": "application/json",
+              "userAPIKEY": token
+          }
+        })
+
+        const parsed = await res.json();
+        setFilters(
+
+          parsed.reduce((acc, exam) => {
+            acc[exam.id] = { status: "all", score: "all" }
+            return acc
+          }, {}),
+        )
+
+        setExamScores(parsed);
+      }
+      catch(err){
+        console.error(err);
+      }
+  }
+
+  useEffect(() => {
+    getAllUsersScore()
+  },[])
+
   return (
     <Box>
       <Typography variant="h4" sx={{ mb: 3, color: "#333333" }}>
         User Scores
       </Typography>
       <Typography variant="subtitle1" sx={{ mb: 2, color: "#555555" }}>
-        Total Exams: {mockExams.length}
+        Total Exams: {examScores.length}
       </Typography>
 
-      {mockExams.map((exam) => (
+      {examScores.map((exam) => (
         <Accordion
           key={exam.id}
           sx={{
@@ -273,22 +286,30 @@ export default function UserScores() {
               <Typography variant="subtitle2" sx={{ mb: 1, color: "#555555" }}>
                 Showing {getFilteredUsers(exam.users, exam.id).length} of {exam.users.length} users
               </Typography>
+
+              <Button
+                sx={{ backgroundColor: "#18a300", color: "white" }}
+                startIcon={<Description />} start
+                onClick={() => exportToExcel(exam.id)}
+              >
+                Export as Excel
+              </Button>
             </Box>
 
             <TableContainer component={Paper} sx={{ boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)" }}>
               <Table>
                 <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: "bold", color: "#333333" }}>ID</TableCell>
+                    <TableCell sx={{ fontWeight: "bold", color: "#333333" }}>S.No.</TableCell>
                     <TableCell sx={{ fontWeight: "bold", color: "#333333" }}>Email</TableCell>
                     <TableCell sx={{ fontWeight: "bold", color: "#333333" }}>Score</TableCell>
                     <TableCell sx={{ fontWeight: "bold", color: "#333333" }}>Status</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {getFilteredUsers(exam.users, exam.id).map((user) => (
+                  {getFilteredUsers(exam.users, exam.id).map((user, index) => (
                     <TableRow key={user.id} sx={{ "&:nth-of-type(odd)": { backgroundColor: "#fafafa" } }}>
-                      <TableCell sx={{ color: "#333333" }}>{user.id}</TableCell>
+                      <TableCell sx={{ color: "#333333" }}>{index + 1}</TableCell>
                       <TableCell sx={{ color: "#333333" }}>{user.email}</TableCell>
                       <TableCell sx={{ color: "#333333" }}>{user.status === "true" ? `${user.score}%` : "-"}</TableCell>
                       <TableCell>

@@ -3,6 +3,9 @@ const mongoose = require('mongoose');
 
 // Score Schema
 const scoreSchema = new mongoose.Schema({
+  finalScore:{
+    type:Number
+  },
   testCasesPassed: {
     type: Number,
   },

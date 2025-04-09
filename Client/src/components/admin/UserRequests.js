@@ -15,9 +15,10 @@ import {
 } from "@mui/material"
 import { Search as SearchIcon } from "@mui/icons-material"
 import Cookies from "js-cookie";
-import { toast } from "react-toastify";
+import { useToast } from '../context/ToastContext'; 
 
 export default function UserRequest() {
+  const { showSuccess, showError } = useToast()
   const [requests, setRequests] = useState([]);
   const [searchTerm, setSearchTerm] = useState("")
 
@@ -37,20 +38,10 @@ export default function UserRequest() {
 
           if (res.ok) {
               getUsers();
-              toast.success(parsed.message, {
-                  autoClose: 5000,
-                  hideProgressBar: false,
-                  pauseOnHover: true,
-                  closeButton: false,
-              });
+              showSuccess(parsed.message);
           }
           else {
-              toast.error(parsed.message, {
-                  autoClose: 5000,
-                  hideProgressBar: false,
-                  pauseOnHover: true,
-                  closeButton: false,
-              });
+              showError(parsed.message);
           }
       }
       catch (err) {
@@ -122,20 +113,10 @@ export default function UserRequest() {
           const parsed = await res.json();
           if (res.ok) {
               getUsers();
-              toast.success(parsed.message, {
-                  autoClose: 5000,
-                  hideProgressBar: false,
-                  pauseOnHover: true,
-                  closeButton: false,
-              });
+              showSuccess(parsed.message);
           }
           else {
-              toast.error(parsed.message, {
-                  autoClose: 5000,
-                  hideProgressBar: false,
-                  pauseOnHover: true,
-                  closeButton: false,
-              });
+              showError(parsed.message);
           }
 
           // setLoading(false);

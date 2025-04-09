@@ -13,11 +13,11 @@ import {
   CardContent,
 } from "@mui/material"
 import EmailIcon from "@mui/icons-material/Email"
-import LocationOnIcon from "@mui/icons-material/LocationOn"
 import PhoneIcon from "@mui/icons-material/Phone"
-import { toast } from "react-toastify"
+import { useToast } from './context/ToastContext'; 
 
 const About = () => {
+  const { showSuccess, showError } = useToast()
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -91,20 +91,10 @@ const About = () => {
           })
           const parsed = await res.json();
           if(res.ok){
-            toast.success(parsed.message, {
-              autoClose: 5000,
-              hideProgressBar: false,
-              pauseOnHover: true,
-              closeButton: false,
-            });
+            showSuccess(parsed.message)
           }
           else{
-            toast.error(parsed.message, {
-              autoClose: 5000,
-              hideProgressBar: false,
-              pauseOnHover: true,
-              closeButton: false,
-            });
+            showError(parsed.message)
           }
         }
         catch(err){

@@ -1,898 +1,1048 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
+import handleKeyPress from "./TextEditorFunctions/SpecialCharAutoComplete"
 import {
-  Box,
-  Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
-  List,
-  ListItem,
-  ListItemText,
-  IconButton,
-  Divider,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
   Paper,
-  Stack,
+  Typography,
+  Grid,
+  Box,
+  IconButton,
 } from "@mui/material"
-import {
-  ExpandMore as ExpandMoreIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Add as AddIcon,
-} from "@mui/icons-material"
-import Cookies from "js-cookie";
+import { AccessTime, PlayArrow, Send, QuestionAnswer, Loop } from "@mui/icons-material"
+import Cookies from "js-cookie"
+import { useParams, useNavigate } from "react-router-dom"
 import { toast } from "react-toastify";
+import WarningDialog from "../DialogBox/WarningDialog"
+import DangerDialog from "../DialogBox/DangerDialog"
+import Loader from "./Loader"
+import LeaderBoard from "./LeaderBoard"
+import { useLeaderBoard } from "./context/Leaderboard"
 
-export default function UpdateExistingExam() {
-  const [exams, setExams] = useState([])
-  const [openDialog, setOpenDialog] = useState(false)
-  const [currentExamId, setCurrentExamId] = useState(null)
-  const [currentQuestionId, setCurrentQuestionId] = useState(null)
-  const [editMode, setEditMode] = useState(null)
-  const [formData, setFormData] = useState({
-    examName: "",
-    questionHeading: "",
-    questionStatement: "",
-    testcases: [],
-    newTestcaseInput: "",
-    newTestcaseOutput: "",
-  })
+const ExamDetail = () => {
+  const { calculateScore, updateScore, leaderboard, setLeaderboard } = useLeaderBoard();
+  const navigate = useNavigate();
+  const { exam_id } = useParams();
 
-  const [deleteConfirmDialog, setDeleteConfirmDialog] = useState({
-    open: false,
-    type: "",
-    id: null,
-  })
+  const [code, setCode] = useState("")
+  const [input, setInput] = useState("")
+  const [output, setOutput] = useState("")
+  const [timeLeft, setTimeLeft] = useState(3600)
+  const [language, setLanguage] = useState("python3")
+  const [codeLines, setCodeLines] = useState(1)
+  const [showOutput, setShowOutput] = useState(false)
+  const [questions, setQuestions] = useState([]);
+  const [question, setQuestion] = useState([]);
+  const [allOutput, setAllOutput] = useState([]);
+  const [completed, setCompleted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [addQuestionDialog, setAddQuestionDialog] = useState({
-    open: false,
-    examId: null,
-  })
+  // For leaderBoard
+  const [leaderboardVisibility, setLeaderboardVisibility] = useState(false);
+  const [currentUserLeaderBoard, setCurrentUserLeaderBoard] = useState({});
+  const [totalSubmissionByUser,setTotalSubmissionByUser] = useState(0);
+  const [currentUserScore,setCurrentUserScore] = useState(null);
 
-  const handleUpdateExamName = (exam) => {
-    setCurrentExamId(exam._id)
-    setFormData({
-      ...formData,
-      examName: exam.name,
-    })
-    setEditMode("exam")
-    setOpenDialog(true)
+  // Ref
+  const codeEditorRef = useRef(null)
+  const lineNumbersRef = useRef(null)
+
+  // For Scores
+  const [scoreUpdates, setScoreUpdates] = useState([]);
+
+  // For Warnings and Security
+  const [warning, setWarning] = useState(false);
+  const [warningCount, setWarningCount] = useState(0);
+  const [danger, setDanger] = useState(false);
+
+  // Timer
+  const formatTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600)
+    const mins = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
+    return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
   }
 
-  const handleUpdateQuestion = (exam, question) => {
-    setCurrentExamId(exam)
-    setCurrentQuestionId(question._id)
-    setFormData({
-      ...formData,
-      questionHeading: question.heading,
-      questionStatement: question.statement,
-      testcases: [...question.testcases],
-      newTestcaseInput: "",
-      newTestcaseOutput: "",
-    })
-    setEditMode("question")
-    setOpenDialog(true)
-  }
-
-  const handleAddQuestion = (examId) => {
-    setAddQuestionDialog({
-      open: true,
-      examId,
-    })
-    setFormData({
-      ...formData,
-      questionHeading: "",
-      questionStatement: "",
-      testcases: [],
-      newTestcaseInput: "",
-      newTestcaseOutput: "",
-    })
-  }
-
-  const handleDeleteExam = (examId) => {
-    setDeleteConfirmDialog({
-      open: true,
-      type: "exam",
-      id: examId,
-    })
-  }
-
-  const handleDeleteQuestion = (questionId) => {
-    setDeleteConfirmDialog({
-      open: true,
-      type: "question",
-      id: questionId,
-    })
-  }
-
-  const confirmDelete = async () => {
-    if (deleteConfirmDialog.type === "exam") {
-      try{
-        const token = Cookies.get("tokenAdmin");
-        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/deleteExam/${deleteConfirmDialog.id}`,{
-          method:"DELETE",
-          headers:{
-            "Content-Type":"application/json",
-            "userAPIKEY":token
-          },
-        })
-        const data = await res.json();
-        if(res.ok){
-          toast.success(data.message, {
-            autoClose: 5000, 
-            hideProgressBar: false, 
-            pauseOnHover: true,
-            closeButton: false,
-          })
-          getAllExams();
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 0) {
+          clearInterval(timer)
+          setCompleted(true);
         }
-        else{
-          toast.error(data.message,{
-            autoClose: 5000, 
-            hideProgressBar: false, 
-            pauseOnHover: true,
-            closeButton: false
-          })
-        }
-      }
-      catch(err){
-        console.error(err);
-      }
-      
-    } else if (deleteConfirmDialog.type === "question") {
-      try{
-        const token = Cookies.get("tokenAdmin");
-        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/deleteQuestion/${deleteConfirmDialog.id}`,{
-          method:"DELETE",
-          headers:{
-            "Content-Type":"application/json",
-            "userAPIKEY":token
-          },
-        })
-  
-        const data = await res.json();
-        if(res.ok){
-          toast.success(data.message, {
-            autoClose: 5000, 
-            hideProgressBar: false, 
-            pauseOnHover: true,
-            closeButton: false,
-          });
-          getAllExams();
-        }
-        else{
-          toast.error("Some Error Occured", {
-            autoClose: 5000, 
-            hideProgressBar: false, 
-            pauseOnHover: true,
-            closeButton: false,
-          });
-        }
-      }
-      catch(err){
-        console.error(err);
-      }
-    }
-    setDeleteConfirmDialog({ open: false, type: "", id: null })
-  }
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false)
-    setEditMode(null)
-    setCurrentExamId(null)
-    setCurrentQuestionId(null)
-  }
-
-  const handleCloseAddQuestionDialog = () => {
-    setAddQuestionDialog({
-      open: false,
-      examId: null,
-    })
-  }
-
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData({
-      ...formData,
-      [name]: value,
-    })
-  }
-
-  const handleAddTestcase = () => {
-    if (formData.newTestcaseInput && formData.newTestcaseOutput) {
-      setFormData({
-        ...formData,
-        testcases: [
-          ...formData.testcases,
-          {
-            input: formData.newTestcaseInput,
-            output: formData.newTestcaseOutput,
-          },
-        ],
-        newTestcaseInput: "",
-        newTestcaseOutput: "",
+        return prev - 1
       })
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [])
+
+
+  // Score Metrices Functions
+
+  // This function will check if question exist then update the question and if not exits then create new Question
+  const addOrUpdateQuestion = (userId, questionId, newQuestionData) => {
+    
+    const updatedScores = scoreUpdates.map((user) => {
+      if (user.hasOwnProperty(userId)) {
+
+        const userQuestions = user[userId];
+        const existingQuestionIndex = userQuestions.findIndex(q => q.hasOwnProperty(questionId));
+
+        if (existingQuestionIndex !== -1) {
+          userQuestions[existingQuestionIndex] = { [questionId]: newQuestionData };
+        } else {
+          userQuestions.push({ [questionId]: newQuestionData });
+        }
+
+        return {
+          ...user,
+          [userId]: userQuestions,
+        };
+      }
+      return user;
+    });
+
+    setScoreUpdates(updatedScores);
+  };
+
+
+  const getSubmissionValue = (userId, questionId) => {
+
+    const user = scoreUpdates.find(user => user.hasOwnProperty(userId));
+
+    if (user) {
+      const userQuestions = user[userId];
+      const question = userQuestions.find(q => q.hasOwnProperty(questionId));
+
+      if (question) {
+
+        return question[questionId].totalSubmission;
+      } 
+        return 0;
+      }
+  } 
+
+  const getScoreMetrices = (userId, questionId) => {
+
+    const user = scoreUpdates.find(user => user.hasOwnProperty(userId));
+
+    if (user) {
+      const userQuestions = user[userId];
+      const question = userQuestions.find(q => q.hasOwnProperty(questionId));
+
+      if (question) {
+
+        return question[questionId];
+      } 
+        return null;
+      }
+  } 
+
+  const addNewUserScoreMetrices = (userId) => {
+
+    const userExists = scoreUpdates.some(user => user.hasOwnProperty(userId));
+
+    if (!userExists) {
+      const updatedScores = [...scoreUpdates, { [userId]: [] }];
+      setScoreUpdates(updatedScores);
     }
   }
 
-  const handleRemoveTestcase = (index) => {
-    const updatedTestcases = [...formData.testcases]
-    updatedTestcases.splice(index, 1)
-    setFormData({
-      ...formData,
-      testcases: updatedTestcases,
-    })
-  }
+  const runAll = async () => {
+    const uid = Cookies.get("uid");
+    const out = [];
+    setOutput("");
+    setAllOutput([]);
+    setTotalSubmissionByUser(totalSubmissionByUser + 1);
+    let passed = 0;
+    
+    setShowOutput(true);
+    setLoading(true);
+    for (let i of question.testcases) {
+      let userInputEach = i.input;
 
-  const handleSave = async () => {
-    if (editMode === "exam" && currentExamId) {
-      try{
-        const token = Cookies.get("tokenAdmin");
-        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/updateExamName/${currentExamId}`,{
-          method:"PUT",
-          headers:{
-            "Content-Type":"application/json",
-            "userAPIKEY":token
+      try {
+        let response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/execute`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-          body:JSON.stringify({
-            name:formData.examName
-          })
-        })
-        const data = await res.json();
-        if(res.ok){
-          toast.success(data.message, {
-            autoClose: 5000, 
-            hideProgressBar: false, 
-            pauseOnHover: true,
-            closeButton: false,
-          })
-          getAllExams();
+          body: JSON.stringify({
+            input: code,
+            lang: language,
+            "userInputs": userInputEach
+          }),
+        });
+        let outputResponse = await response.json();
+        
+        if (!outputResponse.ok) {
+          console.error(outputResponse.error);
+        }
+        if(!outputResponse.isExecutionSuccess){
+          setAllOutput([]);
+          setOutput(outputResponse.output)
         }
         else{
-          toast.error(data.message,{
-            autoClose: 5000, 
-            hideProgressBar: false, 
-            pauseOnHover: true,
-            closeButton: false
-          })
+          if (i.output !== outputResponse.output) {
+            out.push({ "icon": "fa-solid fa-face-sad-tear", "color": "red" });
+          } else {
+            passed++;
+            out.push({ "icon": "fa-solid fa-face-smile", "color": "green" });
+          }
         }
       }
-      catch(err){
-      console.error(err);
-      }
-    } else if (editMode === "question" && currentExamId && currentQuestionId) {
-      try{
-        const token = Cookies.get("tokenAdmin");
-        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/updateQuestion/${currentQuestionId}`,{
-          method:"PUT",
-          headers:{
-            "Content-Type":"application/json",
-            "userAPIKEY":token
-          },
-          body:JSON.stringify({
-            question:{
-              heading:formData.questionHeading,
-              statement:formData.questionStatement
-            },
-            testCases:formData.testcases
-          })
-        })
-  
-        const parsed = await res.json();
-        if(res.ok){
-          getAllExams();
-          toast.success(parsed.message,{
-            autoClose: 5000,
-            hideProgressBar: false,
-            pauseOnHover: true,
-            closeButton: false
-          })
-        }
-        else{
-          toast.error("Some Error Occured", {
-            autoClose: 5000,
-            hideProgressBar: false,
-            pauseOnHover: true,
-            closeButton: false,
-          })
-        }
-  
-      }
-      catch(err){
+      catch (err) {
         console.error(err);
       }
     }
-    handleCloseDialog()
-  }
 
-  const handleSaveNewQuestion = async () => {
-    // Validate form
-    if (!formData.questionHeading || !formData.questionStatement || formData.testcases.length === 0) {
-      alert("Please fill all fields and add at least one test case")
-      return
+    if (question.testcases.length === passed) {
+
+      const totalSubmissionDone = getSubmissionValue(uid,question._id)
+
+      addOrUpdateQuestion(uid,question._id,{timeTakenInMs:(3600 - timeLeft),testCasesPassed:passed,totalSubmission:(totalSubmissionDone + 1 )})
+      passQuestion(question._id);
     }
+    setAllOutput(out);
+    setLoading(false);
+  };
 
-    const newQuestion = {
-      heading: formData.questionHeading,
-      statement: formData.questionStatement,
-      testcases: formData.testcases,
-    }
-
-    try{
-      const token = Cookies.get("tokenAdmin");
-      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/createQuestion/${addQuestionDialog.examId}`,{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
-          "userAPIKEY":token
+  const passQuestion = async (id) => {
+    try {
+      const token = Cookies.get("tokenUser");
+      const uid = Cookies.get("uid");
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/passQuestion/${id}?user_id=${uid}&exam_id=${exam_id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "userAPIKEY": token
         },
-        body:JSON.stringify({
-          question: newQuestion
+      })
+
+      const metrices = getScoreMetrices(uid,id)
+      const score = calculateScore(question.testcases.length,3600,1,metrices.testCasesPassed,metrices.timeTakenInMs,metrices.totalSubmission)
+      const newScore = (1000*score)/100 + (currentUserLeaderBoard.score ?? 0)
+      updateScore(uid,newScore);
+      setCurrentUserScore(newScore)
+       
+      const parsed = await res.json();
+      if (res.ok) {
+        setTimeout(() => {
+          getAllQuestions();
+          setInput('');
+          setCode('');
+          setOutput('')
+          setAllOutput([]);
+        }, 3000);
+        toast.success(parsed.message, {
+          autoClose: 5000,
+          hideProgressBar: false,
+          pauseOnHover: true,
+          closeButton: false,
+        });
+      }
+      else {
+        toast.error(parsed.message, {
+          autoClose: 5000,
+          hideProgressBar: false,
+          pauseOnHover: true,
+          closeButton: false,
+        });
+      }
+    }
+    catch (err) {
+      console.error(err);
+    }
+  }
+
+  const runCustomCode = async () => {
+    try {
+      setOutput('');
+      setAllOutput([]);
+      setLoading(true);
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/execute`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          input: code,
+          lang: language,
+          userInputs: input
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not OK');
+      }
+
+      const data = await response.json();
+      setOutput(data.output || data.error);
+
+      setLoading(false);
+    }
+    catch (error) {
+      console.error(error);
+    }
+  };
+
+
+
+  const getTotalTestCases = async (id) => {
+    try {
+      const token = Cookies.get("tokenUser");
+
+      const response = await fetch(`http://localhost:7123/noOfTestcases/${exam_id}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "userAPIKEY": token
+        }
+      });
+
+      const parsedCases = await response.json();
+      return parsedCases;
+    } catch (err) {
+      console.error("Error fetching test cases:", err);
+    }
+  };
+
+
+
+  const setScores = async () => {
+    try {
+      const uid = Cookies.get("uid");
+
+      let sumOfPassedTestCases = 0;
+
+      scoreUpdates.map((score) => {
+        if(Object.keys(score)[0] == uid){
+            score[uid].map((ques) => {
+                sumOfPassedTestCases += ques[Object.keys(ques)[0]].testCasesPassed
+            })
+        }
+      })
+
+      let givenTime = Math.floor(3600 / 60); // in minutes
+      let timeTaken = Math.floor((3600 - timeLeft) / 60);  // in minutes
+      let totalTestCases = await getTotalTestCases();
+
+      const token = Cookies.get("tokenUser");
+
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/setuserScores/${exam_id}?user_id=${uid}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "userAPIKEY": token
+        },
+        body: JSON.stringify({
+          testCasesPassed: sumOfPassedTestCases,
+          totalTestCases,
+          timeTaken,
+          givenTime,
+          numOfSubmissions:totalSubmissionByUser,
+          score:currentUserScore
         })
       })
 
-      const data = await res.json();
-      if(res.ok){
-        toast.success(data.message, {
-          autoClose: 5000, 
-          hideProgressBar: false, 
-          pauseOnHover: true,
-          closeButton: false,
-        });
-        getAllExams();
-      }
-      else{
-        toast.error(data.message, {
-          autoClose: 5000, 
-          hideProgressBar: false, 
+      const parsed = await res.json();
+      if (res.ok) {
+        getAllQuestions();
+        toast.success(parsed.message, {
+          autoClose: 5000,
+          hideProgressBar: false,
           pauseOnHover: true,
           closeButton: false,
         });
       }
+      else {
+        toast.error(parsed.message, {
+          autoClose: 5000,
+          hideProgressBar: false,
+          pauseOnHover: true,
+          closeButton: false,
+        });
+      }
+      navigate(`/score/${exam_id}`);
+    }
+    catch (err) {
+      console.error(err);
+    }
+  }
+
+  // Submit entire exam
+  const submitExam = () => {
+    if (window.confirm("Are you sure you want to submit the exam? This action cannot be undone.")) {
+      setScores();
+    }
+  }
+
+  const handleCodeChange = (e) => {
+    const newCode = e.target.value
+    setCode(newCode)
+
+    // Count the number of lines
+    const lines = newCode.split("\n").length
+    setCodeLines(Math.max(lines, 1))
+  }
+
+
+  const renderLineNumbers = () => {
+    return Array.from({ length: codeLines }, (_, i) => (
+      <div
+        key={i}
+        style={{
+          height: "24px",
+          width: "100%",
+          textAlign: "center",
+          lineHeight: "24px",
+          color: "#757575",
+          fontSize: "16px",
+        }}
+      >
+        {i + 1}
+      </div>
+    ))
+  }
+
+  const getAllQuestions = useCallback(async () => {
+    try {
+      const uid = Cookies.get("uid");
+      const token = Cookies.get("tokenUser");
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getExam/${exam_id}?user_id=${uid}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "userAPIKEY": token
+        }
+      });
+      const parsed = await res.json();
+      let passedQuestion = 0;
+      parsed[0].questions.forEach(ques => {
+        if (ques.passed) {
+          passedQuestion++;
+        }
+      });
+
+      if (passedQuestion === parsed[0].questions.length) {
+        setTimeout(() => {
+          setCompleted(true);
+          localStorage.removeItem("counter");
+        }, 3000)
+      }
+
+      setQuestions(parsed[0].questions);
+
+      for (let i = 0; i < parsed[0].questions.length; i++) {
+        if (!parsed[0].questions[i].passed) {
+
+          filterData(parsed[0].questions[i]._id);
+          break;
+        }
+      }
+
+
+    } catch (err) {
+      console.error(err);
+    }
+  }, [exam_id]);
+
+  const filterData = async (idtoFilter) => {
+    try {
+      const token = Cookies.get("tokenUser");
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getQuestion/${idtoFilter}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "userAPIKEY": token
+        }
+      })
+
+      const parsed = await res.json();
+      if (res.ok) {
+        setQuestion(parsed[0]);
+        setShowOutput(false)
+      }
+      else {
+        console.error("Error in getting Question");
+      }
+
+    }
+    catch (err) {
+      console.error(err);
+    }
+  };
+
+
+  const getUser = async (id) => {
+    
+    try{
+      const token = Cookies.get("tokenUser");
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getUserById/${id}`,{
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "userAPIKEY": token
+        }
+      });
+      const parsed = await res.json();
+      return parsed;
     }
     catch(err){
       console.error(err);
     }
-
-    handleCloseAddQuestionDialog()
   }
 
+  const handleScroll = () => {
+    if (lineNumbersRef.current && codeEditorRef.current) {
+      lineNumbersRef.current.scrollTop = codeEditorRef.current.scrollTop;
+    }
+  };
 
-  
-    const getAllExams = async() => {
-      try{
-        const token = Cookies.get("tokenAdmin");
-        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getAllExams`,{
-          method:"GET",
-          headers:{
-            "Content-Type":"application/json",
-            "userAPIKEY":token
-          },
-        });
-        const data = await res.json();      
-        setExams(data);
-  
+
+  const sendCurrentUserToParent = (CurUser) => {
+    setCurrentUserLeaderBoard(CurUser);
+  }
+
+  useEffect(() => {
+    const textarea = codeEditorRef.current;
+
+    if (textarea) {
+      textarea.addEventListener('scroll', handleScroll);
+
+      return () => {
+        textarea.removeEventListener('scroll', handleScroll);
+      };
+    }
+  }, []);
+
+
+  // Checking the tab Change
+  useEffect(() => {
+
+    const handleVisibilityChange = () => {
+      if (document.hidden && !warning) {
+        // setWarning(true);
+        // setWarningCount(prevCount => prevCount + 1);
       }
-      catch(err){
-        console.error(err);
+    };
+
+    window.addEventListener('keydown', function (event) {
+      if ((event.key === 'F5') || (event.ctrlKey && event.key === 'r')) {
+        event.preventDefault();
       }
+    });
+
+    window.addEventListener('beforeunload', function (event) {
+      event.preventDefault();
+      event.returnValue = '';
+    });
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+
+  // Danger (Last Warning)
+  useEffect(() => {
+    if (warningCount === 3) {
+      setDanger(true);
+      setWarningCount(0);
     }
 
+  }, [warningCount]);
 
-    useEffect(() => {
-      getAllExams();
-    },[]);
+  useEffect(() => {
+    getAllQuestions();
+  }, [getAllQuestions]);
+
+
+  useEffect(() => {
+    const uid = Cookies.get("uid");
+
+    const getAndStoreUserData = async (uid) => {
+      const user = await getUser(uid);
+      const newUser = [...leaderboard,{id:uid,name:user.email,score:0}];
+      setLeaderboard(newUser);
+      addNewUserScoreMetrices(uid);
+    }
+
+    getAndStoreUserData(uid);
+
+  },[])
 
   return (
-    <Box>
-      <Typography variant="h4" sx={{ mb: 3, color: "#333333" }}>
-        Update Existing Exams
-      </Typography>
-      <Typography variant="subtitle1" sx={{ mb: 2, color: "#555555" }}>
-        Total Exams: {exams.length}
-      </Typography>
-
-      {exams.map((exam) => (
-        <Accordion key={exam._id} sx={{ mb: 2, bgcolor: "#f8f8f8", border: "1px solid #e0e0e0" }}>
-          <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: "#555555" }} />}>
-            <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
-              <Typography sx={{ flexGrow: 1, color: "#333333" }}>{exam.name}</Typography>
-              <Stack direction="row" spacing={1} sx={{ mr: 2 }}>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<EditIcon />}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleUpdateExamName(exam)
-                  }}
-                  sx={{
-                    borderColor: "#333333",
-                    color: "#333333",
-                    "&:hover": {
-                      borderColor: "#555555",
-                      backgroundColor: "rgba(85, 85, 85, 0.04)",
-                    },
-                  }}
-                >
-                  Update Exam
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  color="error"
-                  startIcon={<DeleteIcon />}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleDeleteExam(exam._id)
-                  }}
-                  sx={{
-                    borderColor: "#d32f2f",
-                    color: "#d32f2f",
-                    "&:hover": {
-                      borderColor: "#b71c1c",
-                      backgroundColor: "rgba(211, 47, 47, 0.04)",
-                    },
-                  }}
-                >
-                  Delete Exam
-                </Button>
-              </Stack>
-              <Typography variant="body2" sx={{ color: "#555555" }}>
-                {exam.questions.length} Questions
-              </Typography>
-            </Box>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Box sx={{ mb: 2 }}>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => handleAddQuestion(exam._id)}
-                sx={{
-                  bgcolor: "#333333",
-                  "&:hover": {
-                    bgcolor: "#555555",
-                  },
-                }}
-              >
-                Add Question
-              </Button>
-            </Box>
-            <List>
-              {exam.questions.map((question) => (
-                <Paper key={question._id} sx={{ mb: 2, p: 2, bgcolor: "white" }}>
-                  <Box sx={{ display: "flex", alignItems: "flex-start" }}>
-                    <Box sx={{ flexGrow: 1 }}>
-                      <Typography variant="h6" sx={{ color: "#333333" }}>
-                        {question.heading}
-                      </Typography>
-                      <Typography variant="body2" sx={{ mt: 1, mb: 2, color: "#555555" }}>
-                        {question.statement}
-                      </Typography>
-                      <Typography variant="subtitle2" sx={{ color: "#555555" }}>
-                        Test Cases: {question.testcases.length}
-                      </Typography>
-                      <List dense>
-                        {question.testcases.map((testcase) => (
-                          <ListItem key={testcase._id}>
-                            <ListItemText
-                              primary={`Input: ${testcase.input}`}
-                              secondary={`Output: ${testcase.output}`}
-                              primaryTypographyProps={{ color: "#333333" }}
-                              secondaryTypographyProps={{ color: "#555555" }}
-                            />
-                          </ListItem>
-                        ))}
-                      </List>
-                    </Box>
-                    <Stack direction="row" spacing={1}>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        startIcon={<EditIcon />}
-                        onClick={() => handleUpdateQuestion(exam, question)}
-                        sx={{
-                          bgcolor: "#333333",
-                          "&:hover": {
-                            bgcolor: "#555555",
-                          },
-                        }}
-                      >
-                        Update
-                      </Button>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        color="error"
-                        startIcon={<DeleteIcon />}
-                        onClick={() => handleDeleteQuestion(question._id)}
-                      >
-                        Delete
-                      </Button>
-                    </Stack>
-                  </Box>
-                </Paper>
-              ))}
-              {exam.questions.length === 0 && (
-                <Typography sx={{ textAlign: "center", color: "#777777", py: 2 }}>
-                  No questions in this exam. Click "Add Question" to create one.
-                </Typography>
-              )}
-            </List>
-          </AccordionDetails>
-        </Accordion>
-      ))}
-
-      {/* Dialog for updating exam or question */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
-        <DialogTitle sx={{ color: "#333333" }}>
-          {editMode === "exam" ? "Update Exam" : editMode === "question" ? "Update Question" : ""}
-        </DialogTitle>
-        <DialogContent>
-          {editMode === "exam" && (
-            <TextField
-              fullWidth
-              label="Exam Name"
-              name="examName"
-              value={formData.examName}
-              onChange={handleChange}
-              margin="normal"
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": {
-                    borderColor: "#e0e0e0",
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "#aaaaaa",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#555555",
-                  },
-                },
-              }}
-            />
-          )}
-
-          {editMode === "question" && (
-            <>
-              <TextField
-                fullWidth
-                label="Question Heading"
-                name="questionHeading"
-                value={formData.questionHeading}
-                onChange={handleChange}
-                margin="normal"
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    "& fieldset": {
-                      borderColor: "#e0e0e0",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#aaaaaa",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#555555",
-                    },
-                  },
-                }}
-              />
-              <TextField
-                fullWidth
-                label="Question Statement"
-                name="questionStatement"
-                value={formData.questionStatement}
-                onChange={handleChange}
-                margin="normal"
-                multiline
-                rows={4}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    "& fieldset": {
-                      borderColor: "#e0e0e0",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#aaaaaa",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#555555",
-                    },
-                  },
-                }}
-              />
-
-              <Typography variant="h6" sx={{ mt: 3, mb: 1, color: "#333333" }}>
-                Test Cases
-              </Typography>
-              <List>
-                {formData.testcases.map((testcase, index) => (
-                  <ListItem
-                    key={testcase._id}
-                    secondaryAction={
-                      <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveTestcase(index)}>
-                        <DeleteIcon sx={{ color: "#d32f2f" }} />
-                      </IconButton>
-                    }
-                  >
-                    <ListItemText
-                      primary={`Input: ${testcase.input}`}
-                      secondary={`Output: ${testcase.output}`}
-                      primaryTypographyProps={{ color: "#333333" }}
-                      secondaryTypographyProps={{ color: "#555555" }}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="subtitle1" sx={{ color: "#333333" }}>
-                Add New Test Case
-              </Typography>
-              <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
-                <TextField
-                  label="Input"
-                  name="newTestcaseInput"
-                  value={formData.newTestcaseInput}
-                  onChange={handleChange}
-                  sx={{
-                    mr: 1,
-                    flexGrow: 1,
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: "#e0e0e0",
-                      },
-                      "&:hover fieldset": {
-                        borderColor: "#aaaaaa",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#555555",
-                      },
-                    },
-                  }}
-                />
-                <TextField
-                  label="Output"
-                  name="newTestcaseOutput"
-                  value={formData.newTestcaseOutput}
-                  onChange={handleChange}
-                  sx={{
-                    mr: 1,
-                    flexGrow: 1,
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: "#e0e0e0",
-                      },
-                      "&:hover fieldset": {
-                        borderColor: "#aaaaaa",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#555555",
-                      },
-                    },
-                  }}
-                />
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={handleAddTestcase}
-                  sx={{
-                    bgcolor: "#333333",
-                    "&:hover": {
-                      bgcolor: "#555555",
-                    },
-                  }}
-                >
-                  Add
-                </Button>
-              </Box>
-            </>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} sx={{ color: "#555555" }}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSave}
-            variant="contained"
-            sx={{
-              bgcolor: "#333333",
-              "&:hover": {
-                bgcolor: "#555555",
-              },
+    <Box
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        backgroundColor: "#f5f5f5",
+        fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+      }}
+    >
+      {/* Timer Navbar */}
+      <Paper
+        elevation={2}
+        style={{
+          backgroundColor: "#000000",
+          color: "white",
+          padding: "16px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          borderRadius: 0,
+        }}
+      >
+        <Box
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <AccessTime style={{ fontSize: 24 }} />
+          <Typography
+            variant="h6"
+            style={{
+              fontFamily: "monospace",
+              fontWeight: "bold",
             }}
           >
-            Save
+            {formatTime(timeLeft)}
+          </Typography>
+        </Box>
+        
+        <Box style={{
+          display:"flex",
+          gap:"6px"
+        }}>
+
+          <Button
+            variant="contained"
+            onClick={() => { leaderboardVisibility ? setLeaderboardVisibility(false) : setLeaderboardVisibility(true) }}
+            style={{
+              backgroundColor: "white",
+              color: "black",
+              fontWeight: "bold",
+              textTransform: "none",
+            }}
+            >
+            { leaderboardVisibility ? "Go to Question" : "Show Leaderboard" }
           </Button>
-        </DialogActions>
-      </Dialog>
 
-      {/* Dialog for adding a new question */}
-      <Dialog open={addQuestionDialog.open} onClose={handleCloseAddQuestionDialog} maxWidth="md" fullWidth>
-        <DialogTitle sx={{ color: "#333333" }}>Add New Question</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            label="Question Heading"
-            name="questionHeading"
-            value={formData.questionHeading}
-            onChange={handleChange}
-            margin="normal"
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: "#e0e0e0",
-                },
-                "&:hover fieldset": {
-                  borderColor: "#aaaaaa",
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: "#555555",
-                },
-              },
+          <Button
+            variant="contained"
+            onClick={submitExam}
+            style={{
+              backgroundColor: "white",
+              color: "black",
+              fontWeight: "bold",
+              textTransform: "none",
             }}
-          />
-          <TextField
-            fullWidth
-            label="Question Statement"
-            name="questionStatement"
-            value={formData.questionStatement}
-            onChange={handleChange}
-            margin="normal"
-            multiline
-            rows={4}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: "#e0e0e0",
-                },
-                "&:hover fieldset": {
-                  borderColor: "#aaaaaa",
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: "#555555",
-                },
-              },
-            }}
-          />
+          >
+            Submit Exam
+          </Button>
+        
+        </Box>
 
-          <Typography variant="h6" sx={{ mt: 3, mb: 1, color: "#333333" }}>
-            Test Cases
-          </Typography>
-          {formData.testcases.length > 0 ? (
-            <List>
-              {formData.testcases.map((testcase, index) => (
-                <ListItem
-                  key={testcase._id}
-                  secondaryAction={
-                    <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveTestcase(index)}>
-                      <DeleteIcon sx={{ color: "#d32f2f" }} />
-                    </IconButton>
-                  }
-                >
-                  <ListItemText
-                    primary={`Input: ${testcase.input}`}
-                    secondary={`Output: ${testcase.output}`}
-                    primaryTypographyProps={{ color: "#333333" }}
-                    secondaryTypographyProps={{ color: "#555555" }}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          ) : (
-            <Typography sx={{ color: "#777777", my: 1 }}>
-              No test cases added yet. Add at least one test case below.
-            </Typography>
-          )}
+      </Paper>
 
-          <Divider sx={{ my: 2 }} />
-          <Typography variant="subtitle1" sx={{ color: "#333333" }}>
-            Add Test Case
-          </Typography>
-          <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
-            <TextField
-              label="Input"
-              name="newTestcaseInput"
-              value={formData.newTestcaseInput}
-              onChange={handleChange}
-              sx={{
-                mr: 1,
-                flexGrow: 1,
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": {
-                    borderColor: "#e0e0e0",
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "#aaaaaa",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#555555",
-                  },
-                },
-              }}
-            />
-            <TextField
-              label="Output"
-              name="newTestcaseOutput"
-              value={formData.newTestcaseOutput}
-              onChange={handleChange}
-              sx={{
-                mr: 1,
-                flexGrow: 1,
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": {
-                    borderColor: "#e0e0e0",
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "#aaaaaa",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#555555",
-                  },
-                },
-              }}
-            />
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={handleAddTestcase}
-              sx={{
-                bgcolor: "#333333",
-                "&:hover": {
-                  bgcolor: "#555555",
-                },
+      {/* Dialog Boxes */}
+      {warning && <WarningDialog open={warning} setWarning={setWarning} />}
+      {<DangerDialog open={danger} setScores={setScores} setDanger={setDanger} />}
+
+      
+      { leaderboardVisibility ? <LeaderBoard sendCurrentUserToParent={sendCurrentUserToParent} /> : ( <>
+          
+      {/* Main Content */}
+      <Grid container spacing={2} style={{ flex: 1, padding: 16 }}>
+        {/* Question/Output Section (Toggleable) */ }
+        <Grid item xs={12} md={4}>
+          {!showOutput ? (
+            <Paper
+              elevation={1}
+              style={{
+                height: "100%",
+                padding: 16,
+                display: "flex",
+                flexDirection: "column",
+                backgroundColor: "white",
+                border: "1px solid #e0e0e0",
+                position: "relative",
               }}
             >
-              Add
-            </Button>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseAddQuestionDialog} sx={{ color: "#555555" }}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSaveNewQuestion}
-            variant="contained"
-            sx={{
-              bgcolor: "#333333",
-              "&:hover": {
-                bgcolor: "#555555",
-              },
+
+              <Box
+                style={{
+                  textAlign: "right",
+                  top: 8,
+                  left: 8,
+                  zIndex: 1,
+                }}
+              >
+                <IconButton
+                  onClick={() => setShowOutput(true)}
+                  style={{
+                    backgroundColor: "#f5f5f5",
+                    border: "1px solid #e0e0e0",
+                  }}
+                  size="small"
+                  title="Custom Run"
+                >
+                  <Loop fontSize="small" />
+                </IconButton>
+              </Box>
+
+
+              <Typography
+                variant="h5"
+                style={{
+                  fontWeight: "bold",
+                  marginBottom: 16,
+                  color: "#000000",
+                }}
+              >
+                {question.heading}
+              </Typography>
+              <Typography
+                variant="body1"
+                style={{
+                  color: "#424242",
+                  textAlign: "justify",
+                  fontSize: "22px",
+                  lineHeight: 1.6,
+                  flex: 1,
+                }}
+              >
+                {question.statement}
+              </Typography>
+            </Paper>
+          ) : (
+            <Paper
+              elevation={1}
+              style={{
+                height: "100%",
+                padding: 16,
+                display: "flex",
+                flexDirection: "column",
+                backgroundColor: "white",
+                border: "1px solid #e0e0e0",
+                position: "relative",
+              }}
+            >
+              <Box
+                style={{
+                  position: "absolute",
+                  top: 8,
+                  left: 8,
+                  zIndex: 1,
+                }}
+              >
+                <IconButton
+                  onClick={() => setShowOutput(false)}
+                  style={{
+                    backgroundColor: "#f5f5f5",
+                    border: "1px solid #e0e0e0",
+                  }}
+                  size="small"
+                  title="Show Question"
+                >
+                  <QuestionAnswer fontSize="small" />
+                </IconButton>
+              </Box>
+
+              <Typography
+                variant="subtitle1"
+                style={{
+                  fontWeight: "bold",
+                  marginBottom: 8,
+                  marginTop: 8,
+                  color: "#000000",
+                  textAlign: "center"
+                }}
+              >
+                Custom Input
+              </Typography>
+
+              <TextField
+                placeholder="Enter input for your code..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                variant="outlined"
+                size="small"
+                fullWidth
+                style={{ marginBottom: 5 }}
+              />
+
+              {
+                completed ?
+
+                  <Button
+                    variant="contained"
+                    startIcon={<PlayArrow />}
+                    disabled
+                    style={{
+                      backgroundColor: "#000000",
+                      color: "white",
+                      textTransform: "none",
+                      height: 56,
+                    }}
+                  >
+                    Custom run
+                  </Button>
+
+                  :
+                  <Button
+                    variant="contained"
+                    startIcon={<PlayArrow />}
+                    onClick={runCustomCode}
+                    style={{
+                      backgroundColor: "#000000",
+                      color: "white",
+                      textTransform: "none",
+                      height: 56,
+                    }}
+                  >
+                    Custom run
+                  </Button>
+              }
+
+              <Typography
+                variant="subtitle1"
+                style={{
+                  fontWeight: "bold",
+                  marginBottom: 8,
+                  color: "#000000",
+                  textAlign: "center"
+                }}
+              >
+                Output
+              </Typography>
+              <Box
+                style={{
+                  height: "100%",
+                  backgroundColor: "#f5f5f5",
+                  padding: 12,
+                  borderRadius: 4,
+                  fontFamily: "monospace",
+                  fontSize: 16,
+                  overflowY: "auto",
+                  whiteSpace: "pre-wrap",
+                  border: "1px solid #e0e0e0",
+                }}
+              > 
+                { loading && <Loader /> }
+                {(!output && allOutput.length === 0 && !loading) && "Your output will appear here"}
+                {output ? output :
+                  <Grid container spacing={2}>
+                    {allOutput.map((item, index) => (
+                      <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                        <Box className="col" sx={{ textAlign: 'center' }}>
+                          <i
+                            className={`${item.icon}`}
+                            style={{
+                              color: item.color,
+                              fontSize: 30,
+                              padding: 10,
+                            }}
+                          />
+                        </Box>
+                      </Grid>
+                    ))}
+                  </Grid>
+                }
+
+              </Box>
+            </Paper>
+          )}
+        </Grid>
+
+        {/* Code Editor Section */}
+        <Grid item xs={12} md={8}>
+          <Paper
+            elevation={1}
+            style={{
+              height: "100%",
+              padding: 16,
+              display: "flex",
+              flexDirection: "column",
+              backgroundColor: "white",
+              border: "1px solid #e0e0e0",
             }}
           >
-            Save Question
-          </Button>
-        </DialogActions>
-      </Dialog>
+            <Box
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginBottom: 16,
+                gap: 8,
+              }}
+            >
+              <FormControl style={{ flex: 1 }}>
+                <InputLabel id="language-select-label">Language</InputLabel>
+                <Select
+                  labelId="language-select-label"
+                  value={language}
+                  label="Language"
+                  onChange={(e) => setLanguage(e.target.value)}
+                >
+                  <MenuItem value="python3">Python</MenuItem>
+                  <MenuItem value="java">Java</MenuItem>
+                  <MenuItem value="cpp">C++</MenuItem>
+                </Select>
+              </FormControl>
 
-      {/* Confirmation dialog for deleting exam or question */}
-      <Dialog
-        open={deleteConfirmDialog.open}
-        onClose={() => setDeleteConfirmDialog({ open: false, type: "", id: null })}
+              {completed ?
+                <Button
+                  variant="outlined"
+                  startIcon={<Send />}
+                  disabled
+                  style={{
+                    borderColor: "#000000",
+                    color: "#000000",
+                    textTransform: "none",
+                    height: 56
+                  }}
+                >
+                  Submit Answer
+                </Button>
+                :
+                <Button
+                  variant="outlined"
+                  startIcon={<Send />}
+                  onClick={runAll}
+                  style={{
+                    borderColor: "#000000",
+                    color: "#000000",
+                    textTransform: "none",
+                    height: 56
+                  }}
+                >
+                  Submit Answer
+                </Button>
+              }
+
+            </Box>
+
+            <Box
+              style={{
+                flex: 1,
+                position: "relative",
+                border: "1px solid #e0e0e0",
+                borderRadius: 4,
+              }}
+            >
+              <Box
+                ref={lineNumbersRef}
+                style={{
+                  position: "absolute",
+                  height: "100%",
+                  top: 0,
+                  left: 0,
+                  bottom: 0,
+                  width: "48px",
+                  backgroundColor: "#f5f5f5",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  paddingTop: "8px",
+                  fontFamily: "monospace",
+                  borderRight: "1px solid #e0e0e0",
+                  overflow: "hidden",
+                  userSelect: "none",
+                }}
+              >
+                {renderLineNumbers()}
+              </Box>
+              <textarea
+                ref={codeEditorRef}
+                style={{
+                  width: "90%",
+                  height: "100%",
+                  fontFamily: "monospace",
+                  backgroundColor: "white",
+                  resize: "none",
+                  paddingLeft: "50px",
+                  paddingTop: "8px",
+                  paddingRight: "8px",
+                  paddingBottom: "8px",
+                  border: "none",
+                  outline: "none",
+                  lineHeight: "24px",
+                  fontSize: "22px",
+                  overflow: "hidden",
+                }}
+                placeholder="Write your code here..."
+                value={completed ? "You have completed the exam.Submit to complete it." : code}
+                onChange={handleCodeChange}
+                onPaste={(e) => { e.preventDefault() }}
+                onKeyDown={(e) => { handleKeyPress(e, code, setCode) }}
+                spellCheck="false"
+              />
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
+
+      {/* Question Navigation */}
+      <Paper
+        elevation={2}
+        style={{
+          padding: 16,
+          display: "flex",
+          justifyContent: "center",
+          gap: 8,
+          marginTop: 5,
+          overflowX: "auto",
+          borderRadius: 0,
+          backgroundColor: "white",
+          borderTop: "1px solid #e0e0e0",
+        }}
       >
-        <DialogTitle sx={{ color: "#d32f2f" }}>Confirm Delete</DialogTitle>
-        <DialogContent>
-          <Typography sx={{ color: "#333333" }}>
-            {deleteConfirmDialog.type === "exam"
-              ? "Are you sure you want to delete this exam? This action cannot be undone."
-              : "Are you sure you want to delete this question? This action cannot be undone."}
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteConfirmDialog({ open: false, type: "", id: null })} sx={{ color: "#555555" }}>
-            Cancel
-          </Button>
-          <Button onClick={confirmDelete} variant="contained" color="error">
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
+        {questions.map((ques, index) => (
+          (ques.passed || completed) ?
+
+            <Button
+              key={ques._id}
+              variant="outlined"
+              disabled
+              style={{
+                minWidth: 40
+              }}
+            >
+              {index + 1}
+            </Button>
+            :
+            <Button
+              key={ques._id}
+              variant={question._id === ques._id ? "contained" : "outlined"}
+              onClick={() => filterData(ques._id)}
+              style={{
+                minWidth: 40,
+                backgroundColor: question._id === ques._id ? "#000000" : "white",
+                color: question._id === ques._id ? "white" : "#000000",
+                borderColor: "#000000",
+              }}
+            >
+              {index + 1}
+            </Button>
+
+        ))}
+      </Paper>
+      
+      </>
+    )}
     </Box>
   )
 }
+
+export default ExamDetail;

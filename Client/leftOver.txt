@@ -6,3 +6,4 @@ In Edit Question:
 5: LeaderBoard -> (For Exam Only - Completed)
 6: Output Scroll bar is not working in Exam Detail. (Solution -> Fix the height of parent)
 7: Admin Scores Left - API Creation Left.
+8: Score Calculation Done -> Convert Float Score into Int in Exam Detail

@@ -1,11 +1,12 @@
 import React from 'react';
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
-import { toast } from "react-toastify";
+import { useToast } from './context/ToastContext'; 
 import { useAuth } from "./context/AuthContext";
 import Cookies from "js-cookie";
 
 const Navbar = () => {
+  const { showSuccess } = useToast()
   const navigate = useNavigate();
   const { isAuthenticatedUser } = useAuth();
 
@@ -13,12 +14,7 @@ const Navbar = () => {
     Cookies.remove("uid");
     Cookies.remove("tokenUser");
     navigate("/login")
-    toast.success("Logged Out Successfully", {
-      autoClose: 5000,
-      hideProgressBar: false,
-      pauseOnHover: true,
-      closeButton: false,
-    });
+    showSuccess("Logged Out Successfully");
   }
 
 

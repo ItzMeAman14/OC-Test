@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Container, Paper } from '@mui/material';
-import { toast } from "react-toastify";
+import { useToast } from '../context/ToastContext'; 
 import Cookies from "js-cookie";
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
+  const { showSuccess, showError, showWarning } = useToast()
   const { setIsAuthenticatedUser ,setIsAuthenticatedAdmin } = useAuth()
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -39,31 +40,14 @@ const Login = () => {
             setIsAuthenticatedAdmin(true);
             navigate("/admin");
           }
-          toast.success(parsed.message, { 
-            autoClose: 5000, 
-            closeButton: false, 
-            closeOnClick: false, 
-            pauseOnHover: true, 
-            hideProgressBar: false, 
-          }); 
+          showSuccess(parsed.message); 
         }
         else{
           if(parsed.request){
-            toast.warning("Request Already Sent to Admin", {
-              autoClose: 5000,
-              hideProgressBar: false,
-              pauseOnHover: true,
-              closeButton: false,
-            });
+            showWarning("Request Already Sent to Admin");
           }
           else{
-            toast.error(parsed.message, { 
-              autoClose: 5000, 
-              closeOnClick: false, 
-              pauseOnHover: true, 
-              hideProgressBar: false, 
-              closeButton: false, 
-            });
+            showError(parsed.message);
           }
         }
     }

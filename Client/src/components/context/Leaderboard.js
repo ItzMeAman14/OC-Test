@@ -1,5 +1,4 @@
-import React, { createContext, useState, useEffect , useContext } from 'react';
-import Cookies from "js-cookie";
+import React, { createContext, useState , useContext } from 'react';
 
 const LeaderBoardContext = createContext();
 
@@ -11,7 +10,8 @@ export const useLeaderBoard = () => {
 
 export const LeaderboardProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState({});
-    const [leaderboard, setLeaderboard] = useState([{
+    const [leaderboard, setLeaderboard] = useState([
+      {
         id: 1,
         name: "Alex Johnson",
         score: 9850
@@ -88,42 +88,31 @@ export const LeaderboardProvider = ({ children }) => {
         score: 4520
       }]);
 
-    const addLeaderBoardUsers = (user) => {
-        const newUser = [...leaderboard,user];
-        setLeaderboard(newUser);
-    }
 
-    const alignUsers = () => {
-        setLeaderboard((prevArray) => {
-            prevArray.sort((a,b) => b.score - a.score )
-        })
+    const calculateScore = (totalTestCases,totalTimeInMs,totalSubmission,testCasesPassed,timeTakenInMs,totalSubmissionDone) => {
+
+      // Adjust Weights Accordingly for priority
+      const W1 = 1
+      const W2 = 1.001
+      const W3 = 1
+
+      const Score = ((testCasesPassed/totalTestCases) * W1) + (((totalTimeInMs - timeTakenInMs)/totalTimeInMs) * W2) +
+      ((totalSubmission/totalSubmissionDone)* W3)
+
+      const finalScore = (Score/3) * 100
+      return finalScore
     }
 
     const updateScore = (id,newScore) => {
-        setLeaderboard((prevArray) => {
-            prevArray.map((user) => {
-                return user.id === id ? { ...user,score:newScore } : user
-            })
-        })
+      setLeaderboard((prevLeaderboard) =>
+        prevLeaderboard.map((user) =>
+          user.id === id ? { ...user, score: newScore } : user
+        )
+      )
     }
 
-    useEffect(() => {
-      const uid = Cookies.get("uid");
-      let currentUserIndex = null;
-      
-      for(let i=0;i<leaderboard.length;i++){
-        if(leaderboard[i].id === 5){
-          currentUserIndex = i;
-          break;
-        }
-      }
-      const user = leaderboard.filter((user) => user.id === 5) // Here replace 2 with uid
-      const curUser = {...user[0],index:currentUserIndex}
-      setCurrentUser(curUser);
-    },[currentUser.id])
-
     return (
-        <LeaderBoardContext.Provider value={{ leaderboard, addLeaderBoardUsers, alignUsers, updateScore, currentUser }}>
+        <LeaderBoardContext.Provider value={{ leaderboard, updateScore, currentUser, calculateScore, setLeaderboard, setCurrentUser }}>
             {children}
         </LeaderBoardContext.Provider>
     );

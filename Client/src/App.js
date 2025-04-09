@@ -10,7 +10,6 @@ import ExamDetail from './components/ExamDetail';
 import Dashboard from "./components/admin/Dashboard";
 import Login from "./components/Auth/Login";
 import Messages from './components/Messages';
-import { ToastContainer } from 'react-toastify';
 import Contact from './components/Contact';
 import Analytics from './components/admin/Analytics';
 import Signup from './components/Auth/Signup';
@@ -23,6 +22,7 @@ import Testing from './components/Testing';
 import { MessageProvider } from './components/context/MessageContext';
 import { AuthProvider } from "./components/context/AuthContext";
 import { LeaderboardProvider } from "./components/context/Leaderboard";
+import { ToastProvider } from "./components/context/ToastContext";
 
 // Protected Routes
 import { ProtectedRouteAdmin, ProtectedRouteUser, ProtectedRouteForPasswordRecovery } from './components/context/AuthContext';
@@ -44,13 +44,14 @@ function App() {
 
   return (
     <AuthProvider>
-      <LeaderboardProvider>
-        <MessageProvider>
+      <ToastProvider>
+        <LeaderboardProvider>
+          <MessageProvider>
 
         {isMobileScreen ? <MobileWarning /> :
           <div className="App">
             <Router>
-              <ToastContainer />
+
               <Routes>
 
                 <Route exact path='/' element={
@@ -107,7 +108,7 @@ function App() {
                   </>
                 } />
 
-                <Route exact path="/testing" element={
+                <Route exact path="/testing/:exam_id" element={
                   <>
                   <Navbar />
                   <Testing />
@@ -127,8 +128,9 @@ function App() {
           </div>
         }
 
-        </MessageProvider>
-      </LeaderboardProvider>
+          </MessageProvider>
+        </LeaderboardProvider>
+      </ToastProvider>
     </AuthProvider>
   );
 }

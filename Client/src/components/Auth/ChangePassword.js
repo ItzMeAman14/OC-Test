@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Container, Paper, IconButton, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material'; 
-import { toast } from "react-toastify";
+import { useToast } from '../context/ToastContext'; 
 import { useNavigate, useParams } from 'react-router-dom';
 import Cookies from "js-cookie";
 
 const ChangePassword = () => {
+    const { showSuccess, showError } = useToast()
     const navigate = useNavigate();
     const { email } = useParams();
     const [password, setPassword] = useState('');
@@ -39,32 +40,14 @@ const ChangePassword = () => {
                 setConfirmPassword("");
                 Cookies.remove('recoverID');
                 navigate("/login");
-                toast.success(parsed.message, {
-                    autoClose: 5000,
-                    closeButton: false,
-                    closeOnClick: false,
-                    pauseOnHover: true,
-                    hideProgressBar: false,
-                });
+                showSuccess(parsed.message);
             }
             else{
-                toast.error(parsed.message, {
-                    autoClose: 5000,
-                    closeButton: false,
-                    closeOnClick: false,
-                    pauseOnHover: true,
-                    hideProgressBar: false,
-                });
+                showError(parsed.message);
             }
         }
         else{
-            toast.error('Password Not Matched', {
-                autoClose: 5000,
-                closeButton: false,
-                closeOnClick: false,
-                pauseOnHover: true,
-                hideProgressBar: false,
-            });
+            showError('Password Not Matched');
         }
         }
         catch (err) {
