@@ -2,7 +2,7 @@ const express = require("express")
 const QuestionRouter = express.Router()
 const mongoose = require("mongoose")
 const { collection, User } = require("../config");
-const authenticateToken = require("../middleware/auth")
+const { authenticateToken, authorizeRole } = require("../middleware/auth")
 
 QuestionRouter.use(authenticateToken);
 
@@ -22,7 +22,7 @@ QuestionRouter.get("/getQuestion/:id", async(req,res) => {
     }
 })
 
-QuestionRouter.post("/createQuestion/:id",async(req,res) => {
+QuestionRouter.post("/createQuestion/:id", authorizeRole('admin') ,async(req,res) => {
     try{
         const objectId = new mongoose.Types.ObjectId(req.params.id);
         
@@ -60,7 +60,7 @@ QuestionRouter.post("/createQuestion/:id",async(req,res) => {
     }
 })
 
-QuestionRouter.put("/updateQuestion/:id",async(req,res) => {
+QuestionRouter.put("/updateQuestion/:id", authorizeRole('admin') ,async(req,res) => {
     try{
         const objectId = new mongoose.Types.ObjectId(req.params.id);
 
@@ -109,7 +109,7 @@ QuestionRouter.put("/updateQuestion/:id",async(req,res) => {
     }
 })
 
-QuestionRouter.delete("/deleteQuestion/:id", async(req,res) => {
+QuestionRouter.delete("/deleteQuestion/:id", authorizeRole('admin') , async(req,res) => {
     try{
 
         const objectId = new mongoose.Types.ObjectId(req.params.id);
@@ -146,7 +146,7 @@ QuestionRouter.delete("/deleteQuestion/:id", async(req,res) => {
     }
 })
 
-QuestionRouter.put("/passQuestion/:id", async(req,res) => {
+QuestionRouter.put("/passQuestion/:id" ,async(req,res) => {
     try{
         const quesId = new mongoose.Types.ObjectId(req.params.id);
         const userId = new mongoose.Types.ObjectId(req.query.user_id);

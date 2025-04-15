@@ -55,9 +55,6 @@ const userSchema = new mongoose.Schema({
         type:Boolean,
         default:false
     },
-    pendingRequest:{
-        type:Array
-    },
     exams:[userExamSchema]
 });
 

@@ -2,7 +2,7 @@ const express = require("express")
 const ExamRouter = express.Router()
 const mongoose = require("mongoose")
 const { collection, User } = require("../config");
-const authenticateToken = require("../middleware/auth")
+const { authenticateToken, authorizeRole } = require("../middleware/auth")
 
 ExamRouter.use(authenticateToken);
 
@@ -32,7 +32,7 @@ ExamRouter.get('/getExam/:id', async (req,res) => {
 })
 
 
-ExamRouter.post('/createExam',async (req,res) => {
+ExamRouter.post('/createExam', authorizeRole('admin') ,async (req,res) => {
     try{
         const exam = new collection(req.body)
         await exam.save();
@@ -61,7 +61,7 @@ ExamRouter.post('/createExam',async (req,res) => {
     }
 })
 
-ExamRouter.put("/updateExamName/:id", async(req,res) => {
+ExamRouter.put("/updateExamName/:id", authorizeRole('admin') , async(req,res) => {
     try{
         const objectId = new mongoose.Types.ObjectId(req.params.id);
         const exam = await collection.updateOne(
@@ -93,7 +93,7 @@ ExamRouter.put("/updateExamName/:id", async(req,res) => {
 })
 
 
-ExamRouter.delete("/deleteExam/:id",async(req,res) => {
+ExamRouter.delete("/deleteExam/:id", authorizeRole('admin') ,async(req,res) => {
     try{
         const examId = new mongoose.Types.ObjectId(req.params.id);
         const exam = await collection.deleteOne({_id:examId});
@@ -121,7 +121,7 @@ ExamRouter.delete("/deleteExam/:id",async(req,res) => {
 })
 
 
-ExamRouter.get("/noOfTestcases/:id",async(req,res) => {
+ExamRouter.get("/noOfTestcases/:id" ,async(req,res) => {
     try{
         const examId = new mongoose.Types.ObjectId(req.params.id);
         const data =  await collection.aggregate([

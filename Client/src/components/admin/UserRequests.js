@@ -15,121 +15,125 @@ import {
 } from "@mui/material"
 import { Search as SearchIcon } from "@mui/icons-material"
 import Cookies from "js-cookie";
-import { useToast } from '../context/ToastContext'; 
+import Loader from "../Loader";
+import { useToast } from '../context/ToastContext';
 
 export default function UserRequest() {
   const { showSuccess, showError } = useToast()
+  const [loading,setLoading] = useState(false);
   const [requests, setRequests] = useState([]);
   const [searchTerm, setSearchTerm] = useState("")
 
 
   const acceptRequest = async (id) => {
-      try {
-          const token = Cookies.get("tokenAdmin");
-          const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/acceptRequest/${id}`, {
-              method: "GET",
-              headers: {
-                  "Content-Type": "application/json",
-                  "userAPIKEY": token
-              }
-          })
+    try {
+      setLoading(true);
+      const token = Cookies.get("tokenAdmin");
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/acceptRequest/${id}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "userAPIKEY": token
+        }
+      })
 
-          const parsed = await res.json();
+      const parsed = await res.json();
 
-          if (res.ok) {
-              getUsers();
-              showSuccess(parsed.message);
-          }
-          else {
-              showError(parsed.message);
-          }
+      if (res.ok) {
+        getUsers();
+        showSuccess(parsed.message);
       }
-      catch (err) {
-          console.error(err);
+      else {
+        showError(parsed.message);
       }
+      setLoading(false);
+    }
+    catch (err) {
+      console.error(err);
+    }
   }
 
-  
+
   const filterUser = async (e) => {
-      try {
-          setSearchTerm(e.target.value);
-          // setLoading(true);
-          const token = Cookies.get("tokenAdmin");
-          const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/filterRequestUser`, {
-              method: "POST",
-              headers: {
-                  "Content-Type": "application/json",
-                  "userAPIKEY": token
-              },
-              body: JSON.stringify({
-                  user: e.target.value
-              })
-          })
+    try {
+      setSearchTerm(e.target.value);
+      setLoading(true);
+      const token = Cookies.get("tokenAdmin");
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/filterRequestUser`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "userAPIKEY": token
+        },
+        body: JSON.stringify({
+          user: e.target.value
+        })
+      })
 
-          const parsed = await res.json();
+      const parsed = await res.json();
 
-          setRequests(parsed);
-          // setLoading(false);
-      }
-      catch (err) {
-          console.error(err);
-      }
+      setRequests(parsed);
+      setLoading(false);
+    }
+    catch (err) {
+      console.error(err);
+    }
   }
-  
+
   const getUsers = async () => {
-      try {
-          // setLoading(true);
-          const token = Cookies.get("tokenAdmin");
-          const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getRequestedUsers`, {
-              method: "GET",
-              headers: {
-                  "Content-Type": "application/json",
-                  "userAPIKEY": token
-              },
-          })
+    try {
+      setLoading(true);
+      const token = Cookies.get("tokenAdmin");
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getRequestedUsers`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "userAPIKEY": token
+        },
+      })
 
-          const parsed = await res.json();
+      const parsed = await res.json();
 
-          setRequests(parsed);
-          // setLoading(false);
-      }
-      catch (err) {
-          console.error(err);
-      }
+      setRequests(parsed);
+      setLoading(false);
+    }
+    catch (err) {
+      console.error(err);
+    }
   }
 
   const acceptAll = async () => {
-      try {
-          // setLoading(true);
-          const token = Cookies.get("tokenAdmin");
-          const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/acceptAllRequest`, {
-              method: "GET",
-              headers: {
-                  "Content-Type": "application/json",
-                  "userAPIKEY": token
-              },
-          })
+    try {
+      setLoading(true);
+      const token = Cookies.get("tokenAdmin");
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/acceptAllRequest`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "userAPIKEY": token
+        },
+      })
 
-          const parsed = await res.json();
-          if (res.ok) {
-              getUsers();
-              showSuccess(parsed.message);
-          }
-          else {
-              showError(parsed.message);
-          }
+      const parsed = await res.json();
+      if (res.ok) {
+        getUsers();
+        showSuccess(parsed.message);
+      }
+      else {
+        showError(parsed.message);
+      }
 
-          // setLoading(false);
-      }
-      catch (err) {
-          console.error(err);
-      }
+      setLoading(false);
+    }
+    catch (err) {
+      console.error(err);
+    }
   }
 
   useEffect(() => {
-      getUsers();
+    getUsers();
   }, []);
-  
+
 
   return (
     <Box>
@@ -140,7 +144,7 @@ export default function UserRequest() {
         <TextField
           placeholder="Search requests..."
           value={searchTerm}
-          onChange={(e) => filterUser(e) }
+          onChange={(e) => filterUser(e)}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -201,37 +205,46 @@ export default function UserRequest() {
               <TableCell sx={{ fontWeight: "bold", color: "#333333" }}>Action</TableCell>
             </TableRow>
           </TableHead>
+
           <TableBody>
-            {requests.map((request,index) => (
-              <TableRow key={request._id} sx={{ "&:nth-of-type(odd)": { backgroundColor: "#fafafa" } }}>
-                <TableCell sx={{ color: "#333333" }}>{index + 1}</TableCell>
-                <TableCell sx={{ color: "#333333" }}>{request.email}</TableCell>
-                <TableCell sx={{ color: "#333333" }}>{request.date}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="contained"
-                    color="success"
-                    size="small"
-                    onClick={() => acceptRequest(request._id)}
-                    sx={{
-                      bgcolor: "#333333",
-                      "&:hover": {
-                        bgcolor: "#555555",
-                      },
-                    }}
-                  >
-                    Accept
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-            {requests.length === 0 && (
-              <TableRow>
+            { loading && 
+              ( <TableRow>
                 <TableCell colSpan={4} align="center" sx={{ color: "#777777" }}>
-                  No pending requests
+                  <Loader />
                 </TableCell>
-              </TableRow>
-            )}
+              </TableRow> ) }
+            {requests.length === 0 ?
+              (
+                <TableRow>
+                  <TableCell colSpan={4} align="center" sx={{ color: "#777777" }}>
+                    No pending requests
+                  </TableCell>
+                </TableRow>
+              ) :
+
+              requests.map((request, index) => (
+                <TableRow key={request._id} sx={{ "&:nth-of-type(odd)": { backgroundColor: "#fafafa" } }}>
+                  <TableCell sx={{ color: "#333333" }}>{index + 1}</TableCell>
+                  <TableCell sx={{ color: "#333333" }}>{request.email}</TableCell>
+                  <TableCell sx={{ color: "#333333" }}>{new Date(request.requestDate).toDateString()}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      size="small"
+                      onClick={() => acceptRequest(request._id)}
+                      sx={{
+                        bgcolor: "#333333",
+                        "&:hover": {
+                          bgcolor: "#555555",
+                        },
+                      }}
+                    >
+                      Accept
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </TableContainer>

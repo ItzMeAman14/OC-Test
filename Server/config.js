@@ -2,6 +2,8 @@ const mongoose = require("mongoose")
 const ExamSchema = require("./models/exam");
 const MessageSchema = require("./models/messages");
 const userSchema = require("./models/user");
+const pendingRequestsSchema = require('./models/pendingRequests');
+const LeaderBoardSchema = require("./models/Leaderboard");
 
 const connect = mongoose.connect("mongodb://localhost:27017/oc");
 
@@ -17,5 +19,7 @@ connect.then(() => {
 const messaging = new mongoose.model("messages",MessageSchema);
 const collection = new mongoose.model("exams",ExamSchema);
 const User = new mongoose.model("users",userSchema);
+const pendingUsers = mongoose.model('pendingUsers', pendingRequestsSchema)
+const leaderboard = mongoose.model('leaderboard', LeaderBoardSchema)
 
-module.exports = { collection,messaging,User }
+module.exports = { collection, messaging, User, pendingUsers, leaderboard }

@@ -1,8 +1,8 @@
 const express = require("express")
 const RequestRouter = express.Router();
 const mongoose = require("mongoose");
-const { User, collection } = require("../config");
-const authenticateToken = require("../middleware/auth")
+const { User, collection, pendingUsers } = require("../config");
+const { authenticateToken, authorizeRole } = require("../middleware/auth")
 const acceptTemplate = require("../emailTemplates/acceptTemplate")
 const nodemailer = require("nodemailer");
 
@@ -22,17 +22,15 @@ const transporter = nodemailer.createTransport({
 
 
 // Routes
-RequestRouter.get("/getRequestedUsers", async (req, res) => {
+RequestRouter.get("/getRequestedUsers", authorizeRole('admin') , async (req, res) => {
   try {
-    const requests = await User.find(
-      { role: "admin" },
-      { pendingRequest: 1, _id: 0 })
+    const requests = await pendingUsers.find({})
 
     if (requests.length !== 0) {
-      return res.json(requests[0].pendingRequest)
+      return res.json(requests)
     }
     else {
-      return res.json({ "message": "No Pending Requests" })
+      return res.json([])
     }
   }
   catch (err) {
@@ -42,33 +40,14 @@ RequestRouter.get("/getRequestedUsers", async (req, res) => {
 })
 
 // Accept Only necessary user
-RequestRouter.get("/acceptRequest/:id", async (req, res) => {
+RequestRouter.get("/acceptRequest/:id", authorizeRole('admin') ,async (req, res) => {
   try {
     const objectId = new mongoose.Types.ObjectId(req.params.id);
 
-    const requests = await User.aggregate([
-      {
-        $match: {
-          role: "admin",
-          "pendingRequest._id": objectId,
-        }
-      },
-      {
-        $project: {
-          pendingRequest: {
-            $filter: {
-              input: "$pendingRequest",
-              as: "request",
-              cond: { $eq: ["$$request._id", objectId] }
-            }
-          },
-          _id: 0
-        }
-      }
-    ]);
+    const requests = await pendingUsers.find({_id:objectId})
 
     if (requests.length !== 0) {
-      const newUser = new User(requests[0].pendingRequest[0]);
+      const newUser = new User({email:requests[0].email,password:requests[0].password});
 
       const exams = await collection.find({});
 
@@ -86,14 +65,7 @@ RequestRouter.get("/acceptRequest/:id", async (req, res) => {
       newUser.exams = initialExamScore;
       await newUser.save();
 
-      const removeUser = await User.updateMany(
-        { role: "admin" },
-        {
-          "$pull": {
-            "pendingRequest": { _id: objectId }
-          }
-        }
-      )
+      const removeUser = await pendingUsers.deleteOne({ _id: objectId })
 
       // Send mail to User about Request Accept
       const mailOptions = {
@@ -125,14 +97,12 @@ RequestRouter.get("/acceptRequest/:id", async (req, res) => {
 })
 
 // Accept All
-RequestRouter.get("/acceptAllRequest", async (req, res) => {
+RequestRouter.get("/acceptAllRequest", authorizeRole('admin') ,async (req, res) => {
   try {
 
-    const requests = await User.find(
-      { role: "admin" }, { "pendingRequest": 1 }
-    )
+    const requests = await pendingUsers.find({})
 
-    if (requests[0].pendingRequest.length === 0) {
+    if (requests.length === 0) {
       return res.json({ "message": "No pending Request." })
     }
 
@@ -149,7 +119,7 @@ RequestRouter.get("/acceptAllRequest", async (req, res) => {
       })
     })
 
-    for (const request of requests[0].pendingRequest) {
+    for (const request of requests) {
 
 
       // Send mail to Users about Request Accept
@@ -169,21 +139,14 @@ RequestRouter.get("/acceptAllRequest", async (req, res) => {
       })
 
 
-      let newUser = new User(request);
+      let newUser = new User({email:request.email,password:request.password});
 
       newUser.exams = initialExamScore;
 
       await newUser.save();
 
       // Removing user from admin's request array
-      await User.updateMany(
-        { role: "admin" },
-        {
-          "$pull": {
-            "pendingRequest": { _id: request._id }
-          }
-        }
-      );
+      await pendingUsers.deleteOne({ _id: request._id });
     }
 
     res.json({ "message": "All Requests are Accepted." });

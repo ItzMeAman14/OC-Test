@@ -78,7 +78,6 @@ export default function UserScores() {
 
     return users.filter((user) => {
       // Only filter users who have completed the exam
-      if (user.status !== "true") return true
 
       switch (scoreFilter) {
         case "excellent":
@@ -109,6 +108,14 @@ export default function UserScores() {
   }
 
 
+  const scoreFormatInPercentage = (score, id) => {
+    const examData = examScores.filter((exam) => exam.id === id)
+
+    let percentage = ((score * 100)/examData[0].totalScore);
+    return parseFloat(percentage.toFixed(2));
+  }
+
+
   const exportToExcel = (id) => {
 
     const wb = XLSX.utils.book_new();
@@ -125,7 +132,6 @@ export default function UserScores() {
       const headers = ["Email", "Score", "Status"];
       const data = [headers, ...usersData];
 
-      console.log(data)
       const ws = XLSX.utils.aoa_to_sheet(data);
       XLSX.utils.book_append_sheet(wb, ws, exam.name);
     });
@@ -311,7 +317,7 @@ export default function UserScores() {
                     <TableRow key={user.id} sx={{ "&:nth-of-type(odd)": { backgroundColor: "#fafafa" } }}>
                       <TableCell sx={{ color: "#333333" }}>{index + 1}</TableCell>
                       <TableCell sx={{ color: "#333333" }}>{user.email}</TableCell>
-                      <TableCell sx={{ color: "#333333" }}>{user.status === "true" ? `${user.score}%` : "-"}</TableCell>
+                      <TableCell sx={{ color: "#333333" }}>{user.status === "true" ? `${scoreFormatInPercentage(user.score,exam.id)}%` : "-"}</TableCell>
                       <TableCell>
                         <Typography
                           sx={{

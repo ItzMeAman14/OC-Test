@@ -24,8 +24,9 @@ import LeaderBoard from "./LeaderBoard"
 import { useLeaderBoard } from "./context/Leaderboard"
 
 const ExamDetail = () => {
+  const uid = Cookies.get("uid");
   const { showSuccess, showError } = useToast()
-  const { calculateScore, updateScore, leaderboard, setLeaderboard } = useLeaderBoard();
+  const { calculateScore, setLeaderboard } = useLeaderBoard();
   const navigate = useNavigate();
   const { exam_id } = useParams();
 
@@ -213,6 +214,30 @@ const ExamDetail = () => {
     setLoading(false);
   };
 
+
+  const updateScore = async(newScore) => {
+    try{
+      const token = Cookies.get("tokenUser")
+      const uid = Cookies.get("uid");
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/updateScore/${uid}?exam_id=${exam_id}`,{
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "userAPIKEY": token
+        },
+        body:JSON.stringify({
+          newScore
+        })
+      })
+
+      const parsed = await res.json();
+      setLeaderboard(parsed);
+    }
+    catch(err){
+      console.error(err)
+    }
+  }
+
   const passQuestion = async (id) => {
     try {
       const token = Cookies.get("tokenUser");
@@ -228,7 +253,7 @@ const ExamDetail = () => {
       const metrices = getScoreMetrices(uid,id)
       const score = calculateScore(question.testcases.length,3600,1,metrices.testCasesPassed,metrices.timeTakenInMs,metrices.totalSubmission)
       const newScore = (1000*score)/100 + (currentUserLeaderBoard.score ?? 0)
-      updateScore(uid,newScore);
+      updateScore(newScore);
       setCurrentUserScore(newScore)
        
       const parsed = await res.json();
@@ -337,7 +362,8 @@ const ExamDetail = () => {
           timeTaken,
           givenTime,
           numOfSubmissions:totalSubmissionByUser,
-          score:currentUserScore
+          finalScore:currentUserScore,
+          totalScore: (questions.length * 1000)
         })
       })
 
@@ -513,8 +539,17 @@ const ExamDetail = () => {
       }
     };
 
+    const handlePopState = (e) => {
+      console.log("Backing")
+      window.history.pushState(null, "", window.location.href);
+    }
+
+    const handleBlur = () => {
+      setWarning(true);
+    }
+
     window.addEventListener('keydown', function (event) {
-      if ((event.key === 'F5') || (event.ctrlKey && event.key === 'r')) {
+      if ((event.key === 'F5') || (event.ctrlKey && event.key === 'r') || (event.altKey && (event.key === "ArrowLeft" || event.key === "ArrowRight"))) {
         event.preventDefault();
       }
     });
@@ -525,9 +560,13 @@ const ExamDetail = () => {
     });
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('popstate', handlePopState)
+    document.addEventListener('blur', handleBlur)
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener('popstate', handlePopState)
+      document.removeEventListener('blur', handleBlur)
     };
   }, []);
 
@@ -550,15 +589,30 @@ const ExamDetail = () => {
     const uid = Cookies.get("uid");
 
     const getAndStoreUserData = async (uid) => {
-      const user = await getUser(uid);
-      const newUser = [...leaderboard,{id:uid,name:user.email,score:0}];
-      setLeaderboard(newUser);
-      addNewUserScoreMetrices(uid);
+      
+          const token = Cookies.get("tokenUser")
+          const user = await getUser(uid);
+          const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/addUserInLeaderboard/${exam_id}`,{
+          method:"PUT",
+          headers:{
+            "Content-Type":"application/json",
+            "userAPIKEY":token
+          },
+          body:JSON.stringify({
+            id:uid,
+            email:user.email
+          })
+
+        })
+        const parsed = await res.json();
+        setLeaderboard(parsed);
+        addNewUserScoreMetrices(uid);
+      
     }
 
     getAndStoreUserData(uid);
 
-  },[])
+  },[uid])
 
   return (
     <Box
@@ -642,7 +696,7 @@ const ExamDetail = () => {
       {<DangerDialog open={danger} setScores={setScores} setDanger={setDanger} />}
 
       
-      { leaderboardVisibility ? <LeaderBoard sendCurrentUserToParent={sendCurrentUserToParent} /> : ( <>
+      { leaderboardVisibility ? <LeaderBoard sendCurrentUserToParent={sendCurrentUserToParent} examId={exam_id} /> : ( <>
           
       {/* Main Content */}
       <Grid container spacing={2} style={{ flex: 1, padding: 16 }}>

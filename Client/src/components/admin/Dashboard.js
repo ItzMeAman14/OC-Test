@@ -98,7 +98,7 @@ export default function Dashboard() {
     { text: "Update Existing Exam", icon: <UpdateIcon /> },
     { text: "Send Message", icon: <MessageIcon /> },
     { text: "User Requests", icon: <PersonAddIcon /> },
-    { text: "User Management", icon: <ManageAccountsIcon /> },
+    { text: "Block Users", icon: <ManageAccountsIcon /> },
     { text: "User Scores", icon: <ScoreIcon /> },
   ]
 
@@ -112,7 +112,7 @@ export default function Dashboard() {
         return <SendMessage />
       case "User Requests":
         return <UserRequests />
-      case "User Management":
+      case "Block Users":
         return <UserManagement />
       case "User Scores":
         return <UserScores />

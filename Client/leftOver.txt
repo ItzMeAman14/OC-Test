@@ -2,8 +2,15 @@ In Edit Question:
 1: Testing
 2: Super Admin Page
 3: Connect to MongoDB Atlas
-4: Admin can see the result of students
-5: LeaderBoard -> (For Exam Only - Completed)
-6: Output Scroll bar is not working in Exam Detail. (Solution -> Fix the height of parent)
-7: Admin Scores Left - API Creation Left.
-8: Score Calculation Done -> Convert Float Score into Int in Exam Detail
+4: Output Scroll bar is not working in Exam Detail. (Solution -> Fix the height of parent)
+
+Name - Campus CodeLab
+Logo is stored in /public/ named as CCL.iso
+
+Deploy:
+Backend - Fly.io
+Frontend - Vercel.com
+
+Security :
+1: Encrypt the URLs in Exam Detail and Forget Password
+2: Only access the exam when clicked on attempt in Exam otherwise by typing url you cannot give exam when the exam is pending or true.

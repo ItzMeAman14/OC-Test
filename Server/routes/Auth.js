@@ -1,7 +1,7 @@
 const express = require("express")
 const authRouter = express.Router();
 const nodemailer = require("nodemailer");
-const { User } = require("../config");
+const { User, pendingUsers } = require("../config");
 const { generateOTP } = require("../Authentication/otp");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -41,24 +41,13 @@ authRouter.post("/signup", async (req, res) => {
             // Hashing password using bcrypt
             let hashedPassword = bcrypt.hashSync(req.body.password,10);
 
-            const user = new User({
+            const user = new pendingUsers({
                 email: req.body.email,
-                password: hashedPassword,
-                requestDate: new Date()
+                password: hashedPassword
             })
 
-            const admins = await User.find({ role: "admin" });
+            await user.save();
 
-            admins.forEach(async (admin) => {
-                await User.updateOne(
-                    { _id: admin._id },
-                    {
-                        "$push": {
-                            "pendingRequest": user
-                        }
-                    }
-                )
-            })
             res.json({ "message": "Request Sent to Admin" });
         }
     }
@@ -73,9 +62,7 @@ authRouter.post("/login", async (req, res) => {
         const user = await User.find({ email: req.body.email })
 
         if (user.length === 0) {
-            const requests = await User.find(
-                { role: "admin", "pendingRequest.email": req.body.email },
-                { pendingRequest: 1, _id: 0 })
+            const requests = await pendingUsers.find({ "email": req.body.email })
 
             if (requests.length !== 0) {
                 loginRequestCount++;
@@ -110,7 +97,7 @@ authRouter.post("/login", async (req, res) => {
 
                 // JWT Token
                 const token = jwt.sign(
-                    { userId: user._id },
+                    { userId: user[0]._id, role: user[0].role },
                     process.env.JWT_SECRET,
                     { expiresIn: '6h' }
                 );

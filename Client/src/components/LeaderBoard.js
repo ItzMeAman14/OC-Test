@@ -26,28 +26,46 @@ const LeaderBoard = (props) => {
 
   const [topUsers,setTopUsers] = useState([]);
 
-  useEffect(() => {
-    const uid = Cookies.get("uid");
+  const getLeaderboard = async () => {
+    try{
+      const uid = Cookies.get("uid");
+      const token = Cookies.get("tokenUser");
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getLeaderboard/${props.examId}`,{
+        method:"GET",
+        headers:{
+          "Content-Type":"application/json",
+          "userAPIKEY":token
+        }
+      })
 
-    leaderboard.sort((a,b) => b.score - a.score)
+      const parsed = await res.json();
 
-    const topusers = leaderboard.filter((user,index) => index < 3 )
-    setTopUsers(topusers);
-    setLeaderboard(leaderboard)
-
-    let currentUserIndex = null;
       
-    for(let i=0;i<leaderboard.length;i++){
-      if(leaderboard[i].id === uid){
-        currentUserIndex = i;
-        break;
+      const topusers = parsed.filter((user,index) => index < 3 )
+      setTopUsers(topusers);
+
+      let currentUserIndex = null;
+        
+      for(let i=0;i<parsed.length;i++){
+        if(parsed[i].id == uid){
+          currentUserIndex = i;
+          break;
+        }
       }
+      const user = parsed.filter((user) => user.id == uid)
+      const curUser = {...user[0],index:currentUserIndex}
+      setCurrentUser(curUser);
+      props.sendCurrentUserToParent(curUser);
+
+      setLeaderboard(parsed)
     }
-    const user = leaderboard.filter((user) => user.id === uid)
-    const curUser = {...user[0],index:currentUserIndex}
-    setCurrentUser(curUser);
-    props.sendCurrentUserToParent(curUser);
-    
+    catch(err){
+      console.error(err)
+    }
+  }
+
+  useEffect(() => {
+    getLeaderboard();
   },[])
 
   const getMedalColor = (index) => {
@@ -76,12 +94,12 @@ const LeaderBoard = (props) => {
                 height: "100%",
                 backgroundColor:
                   index === 0
-                    ? "rgba(255, 215, 0, 0.05)"
+                  ? "rgba(255, 215, 0, 0.05)"
                     : index === 1
-                      ? "rgba(192, 192, 192, 0.05)"
-                      : "rgba(205, 127, 50, 0.05)",
-              }}
-            >
+                    ? "rgba(192, 192, 192, 0.05)"
+                    : "rgba(205, 127, 50, 0.05)",
+                  }}
+                  >
               <Box
                 sx={{
                   position: "absolute",
@@ -114,13 +132,10 @@ const LeaderBoard = (props) => {
                   <PersonIcon fontSize="large" />
                 </Avatar>
                 <Typography variant="h6" gutterBottom>
-                  {user.name}
+                  {user.email}
                 </Typography>
                 <Typography variant="h4" sx={{ color: "primary.main", fontWeight: "bold", mb: 1 }}>
                   {user.score.toLocaleString()}
-                </Typography>
-                <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                  null assessments completed
                 </Typography>
                 
               </CardContent>
@@ -177,7 +192,7 @@ const LeaderBoard = (props) => {
                       <PersonIcon />
                     </Avatar>
                     <Typography variant="body2">
-                      {currentUser.name}
+                      {currentUser.email}
                         <Typography
                           component="span"
                           variant="caption"
@@ -199,14 +214,13 @@ const LeaderBoard = (props) => {
 
               <TableCell>
                 <Typography variant="body2" fontWeight="medium">
-                  {currentUser.score}
+                  {(currentUser.score)}
                 </Typography>
               </TableCell>
 
             </TableRow>
 
-            {leaderboard.map((user,index) => (
-              
+            { leaderboard.map((user,index) => (
               user.id !== currentUser.id && (
               <TableRow
                 key={user.id}
@@ -244,13 +258,13 @@ const LeaderBoard = (props) => {
                       <PersonIcon />
                     </Avatar>
                     <Typography variant="body2">
-                      {user.name}
+                      {user.email}
                     </Typography>
                   </Box>
                 </TableCell>
                 <TableCell>
                   <Typography variant="body2" fontWeight="medium">
-                    {user.score}
+                    {(user.score)}
                   </Typography>
                 </TableCell>
                 

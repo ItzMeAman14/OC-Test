@@ -13,6 +13,7 @@ const ScoreRouter = require("./routes/Scores");
 const authRouter = require("./routes/Auth");
 const UserRouter = require("./routes/Users");
 const RequestRouter = require("./routes/Requests");
+const LeaderboardRoutes = require("./routes/Leaderboard");
 
 // Templates
 const deleteMessageTemplate = require("./emailTemplates/messageTemplate");
@@ -49,6 +50,7 @@ app.use("/",ScoreRouter);
 app.use("/auth",authRouter)
 app.use("/",UserRouter)
 app.use('/',RequestRouter)
+app.use("/",LeaderboardRoutes);
 
 
 // Transporter For Sending Mail

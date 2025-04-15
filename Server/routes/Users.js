@@ -2,7 +2,7 @@ const express = require("express")
 const UserRouter = express.Router();
 const mongoose = require("mongoose");
 const { User } = require("../config");
-const authenticateToken = require("../middleware/auth");
+const { authenticateToken, authorizeRole } = require("../middleware/auth");
 const nodemailer = require("nodemailer")
 const blockTemplate = require("../emailTemplates/BlockTemplate")
 
@@ -71,7 +71,7 @@ UserRouter.get("/getUser",async(req,res) => {
     }
 })
 
-UserRouter.post("/filterRequestUser", async(req,res) => {
+UserRouter.post("/filterRequestUser", authorizeRole('admin') ,async(req,res) => {
     try{
         const users = await User.aggregate([
             {
@@ -123,7 +123,7 @@ UserRouter.post("/filterRequestUser", async(req,res) => {
     }
 })
 
-UserRouter.post("/filterUser",async(req,res) => {
+UserRouter.post("/filterUser", authorizeRole("admin") ,async(req,res) => {
     try{
         const users = await User.find(
             { role:"user" , email: { "$regex": req.body.user, "$options":'i' } }    
@@ -138,7 +138,7 @@ UserRouter.post("/filterUser",async(req,res) => {
 })
 
 
-UserRouter.put("/blockUser/:id", async (req, res) => {
+UserRouter.put("/blockUser/:id", authorizeRole('admin') ,async (req, res) => {
     try {
         const objectId = new mongoose.Types.ObjectId(req.params.id);
         const user = await User.find({ _id: objectId });

@@ -13,7 +13,6 @@ const authenticateToken = (req, res, next) => {
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
       req.user = decoded;
       next();
     } catch (err) {
@@ -23,4 +22,17 @@ const authenticateToken = (req, res, next) => {
     }
 };
 
-module.exports = authenticateToken
+
+const authorizeRole = (...allowedRoles) => {
+  return (req, res, next) => {
+    const userRole = req.user?.role;
+
+    if (!userRole || !allowedRoles.includes(userRole)) {
+      return res.status(403).json({ message: 'Forbidden: insufficient permissions' });
+    }
+
+    next();
+  };
+};
+
+module.exports = { authenticateToken , authorizeRole }
