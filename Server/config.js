@@ -5,7 +5,7 @@ const userSchema = require("./models/user");
 const pendingRequestsSchema = require('./models/pendingRequests');
 const LeaderBoardSchema = require("./models/Leaderboard");
 
-const connect = mongoose.connect("mongodb://localhost:27017/oc");
+const connect = mongoose.connect(process.env.MONGO_URL);
 
 connect.then(() => {
     console.log("Database Connected SuccessFully.");
