@@ -34,7 +34,7 @@ RequestRouter.get("/getRequestedUsers", authorizeRole('admin') , async (req, res
     }
   }
   catch (err) {
-    console.error(err);
+    
     res.json({ "message": "Some Error Occured" })
   }
 })
@@ -91,7 +91,7 @@ RequestRouter.get("/acceptRequest/:id", authorizeRole('admin') ,async (req, res)
     }
   }
   catch (err) {
-    console.error(err);
+    
     res.json({ "message": "Some Error Occured" })
   }
 })
@@ -152,7 +152,7 @@ RequestRouter.get("/acceptAllRequest", authorizeRole('admin') ,async (req, res) 
     res.json({ "message": "All Requests are Accepted." });
   }
   catch (err) {
-    console.error(err);
+    
     res.json({ "message": "Some Error Occured" });
   }
 })

@@ -28,7 +28,6 @@ UserRouter.get("/users",async(req,res) => {
         res.json(users);
     }
     catch(err){
-        console.error(err);
         res.json({"message":"Some Error Occured"})
     }
 })
@@ -41,7 +40,6 @@ UserRouter.get("/getUserById/:id",async(req,res) => {
         res.json({_id:users[0]._id,email:users[0].email});
     }
     catch(err){
-        console.error(err);
         res.json({"message":"Some Error Occured"})
     }
 })
@@ -66,7 +64,6 @@ UserRouter.get("/getUser",async(req,res) => {
         }
     }
     catch(err){
-        console.error(err);
         res.json({"message":"Some Error Occured"})
     }
 })
@@ -118,7 +115,6 @@ UserRouter.post("/filterRequestUser", authorizeRole('admin') ,async(req,res) => 
         res.json(users[0].pendingRequest);
     }
     catch(err){
-        console.error(err);
         res.json({"message":"Some Error Occured"})
     }
 })
@@ -132,7 +128,6 @@ UserRouter.post("/filterUser", authorizeRole("admin") ,async(req,res) => {
         res.json(users);
     }
     catch(err){
-        console.error(err);
         res.json({"message":"Some Error Occured"})
     }
 })
@@ -169,7 +164,7 @@ UserRouter.put("/blockUser/:id", authorizeRole('admin') ,async (req, res) => {
         // Send email
         transporter.sendMail(mailOptions, (error) => {
             if (error) {
-                console.error(error);
+                (error);
                 return res.status(500).json({ "message": 'Internal Server Error while sending email' });
             }
 
@@ -181,7 +176,6 @@ UserRouter.put("/blockUser/:id", authorizeRole('admin') ,async (req, res) => {
         });
 
     } catch (err) {
-        console.error(err);
         return res.status(500).json({ "message": "Some Error Occurred" });
     }
 });
@@ -195,7 +189,6 @@ UserRouter.get("/userExams/:id", async (req,res) => {
         res.json(user[0].exams);
     }
     catch(err){
-        console.error(err);
         res.json({"message":"Some Error Occured"})
     }
 })
@@ -230,7 +223,6 @@ UserRouter.put("/userExamPending/:id",async(req,res) => {
         }
     }
     catch(err){
-        console.error(err);
         res.json({"message":"Some Error Occured"})
     } 
 })

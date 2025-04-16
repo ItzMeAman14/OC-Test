@@ -31,7 +31,7 @@ ScoreRouter.get("/getuserScores/:id",async(req,res) => {
         }
     }
     catch(err){
-        console.error(err);
+        
         res.json({"message":"Some Error Occured"})
     }  
 })
@@ -75,7 +75,7 @@ ScoreRouter.put("/setuserScores/:id" ,async(req,res) => {
         }
     }
     catch(err){
-        console.error(err);
+        
         res.json({"message":"Some Error Occured"})
     }  
 })
@@ -114,7 +114,7 @@ ScoreRouter.get("/getFormattedScoreForAdmin", authorizeRole('admin') ,async(req,
 
   }
   catch(err){
-    console.error(err);
+    
     res.status(500).json({message:"Internal Server Error"})
   }
 })

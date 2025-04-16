@@ -52,7 +52,7 @@ authRouter.post("/signup", async (req, res) => {
         }
     }
     catch (err) {
-        console.error(err);
+        
         res.json({ "message": "Some error Occured" })
     }
 })
@@ -110,7 +110,7 @@ authRouter.post("/login", async (req, res) => {
         }
     }
     catch (err) {
-        console.error(err);
+        
         res.status(500).json({ "message": "Some error Occured" })
     }
 })
@@ -174,13 +174,13 @@ authRouter.post('/sendRecoverOTP', async (req, res) => {
                 return res.json({ otp, recoverId: token });
 
             } catch (err) {
-                console.error(err);
+                
                 return res.status(500).json({ message: 'Internal Server Error' });
             }
         }
 
     } catch (err) {
-        console.error(err);
+        
         return res.status(500).json({ "message": "Some error Occurred" });
     }
 });
@@ -198,7 +198,7 @@ authRouter.post('/reset-password', authenticateRecoveryToken, async (req, res) =
 
     }
     catch (err) {
-        console.error(err);
+        
         res.status(500).json({ "message": "Internal Server Error" })
     }
 })

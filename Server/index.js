@@ -145,14 +145,12 @@ app.post('/contact-us', (req, res) => {
         // Send email
         transporter.sendMail(mailOptions, (error) => {
         if (error) {
-            console.error(error);
             return res.status(500).json({"message":'Internal Server Error'});
         }
         res.status(200).json({"message":'Message sent successfully!'});
     });
     }
     catch(err){
-        console.error(err);
         res.status(500).json({ "message": 'Internal Server Error' });
     }
 });
@@ -178,7 +176,6 @@ cron.schedule("0 0 * * *", async () => {
             // Send email
             transporter.sendMail(mailOptions, (error) => {
             if (error) {
-                console.error(error);
                 return res.status(500).json({"message":'Internal Server Error'});
             }
             res.json({"message":"Messages Deleted Successfully"});

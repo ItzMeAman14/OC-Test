@@ -13,7 +13,7 @@ ExamRouter.get('/getAllExams',async (req,res) => {
         res.json(data);
     }
     catch(err){
-        console.error(err);
+        
         res.json({"message":"Some Error Occured"})
     }
 })
@@ -26,7 +26,7 @@ ExamRouter.get('/getExam/:id', async (req,res) => {
         res.json(data[0].exams);
     }
     catch(err){
-        console.error(err);
+        
         res.json({"message":"Some Error Occured"})
     }
 })
@@ -56,7 +56,7 @@ ExamRouter.post('/createExam', authorizeRole('admin') ,async (req,res) => {
         res.json({message:"Exam created Successfully"})
     }
     catch(err){
-        console.error(err);
+        
         res.json({"message":"Some Error Occured"})
     }
 })
@@ -87,7 +87,7 @@ ExamRouter.put("/updateExamName/:id", authorizeRole('admin') , async(req,res) =>
         res.json({"message":"Name Updated Successfully"})
     }
     catch(err){
-        console.error(err);
+        
         res.json({"message":"Some Error Occured"})
     }
 })
@@ -115,7 +115,7 @@ ExamRouter.delete("/deleteExam/:id", authorizeRole('admin') ,async(req,res) => {
         res.json({"message":"Exam Deleted Successfully"});
     }
     catch(err){
-        console.error(err);
+        
         res.json({"message":"Some Error Occured"})
     }
 })
@@ -146,7 +146,7 @@ ExamRouter.get("/noOfTestcases/:id" ,async(req,res) => {
         res.json(totalTestCases);
     }
     catch(err){
-        console.error(err);
+        
         res.json({"message":"Some Error Occured"})
     }
 })

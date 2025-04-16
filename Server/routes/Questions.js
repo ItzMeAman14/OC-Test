@@ -17,7 +17,7 @@ QuestionRouter.get("/getQuestion/:id", async(req,res) => {
             res.json(data[0].questions)
     }
     catch(err){
-        console.error(err);
+        
         res.json({"message":"Some Error Occured"})
     }
 })
@@ -55,7 +55,7 @@ QuestionRouter.post("/createQuestion/:id", authorizeRole('admin') ,async(req,res
     res.json({"message":"Question Added Successfully"})
     }
     catch(err){
-        console.error(err);
+        
         res.json({"message":"Some Error Occured"})
     }
 })
@@ -104,7 +104,7 @@ QuestionRouter.put("/updateQuestion/:id", authorizeRole('admin') ,async(req,res)
         res.json({message:"Question Updated Successfully"})
     }
     catch(err){
-        console.error(err);
+        
         res.json({"message":"Some Error Occured"})
     }
 })
@@ -141,7 +141,7 @@ QuestionRouter.delete("/deleteQuestion/:id", authorizeRole('admin') , async(req,
         res.json({message:"Question Deleted Successfully"})
     }
     catch(err){
-        console.error(err);
+        
         res.json({"message":"Some Error Occured"})
     }
 })
@@ -172,7 +172,7 @@ QuestionRouter.put("/passQuestion/:id" ,async(req,res) => {
         res.json({message:"Question Submitted Successfully"})
     }
     catch(err){
-        console.error(err);
+        
         res.json({"message":"Some Error Occured"})
     }
 })

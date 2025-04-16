@@ -15,7 +15,7 @@ msgRouter.post("/new", async(req,res) => {
         res.json({"message":"Message sent Successfully"})
     }
     catch(err){
-        console.error(err);
+        
         res.json({"message":"Some Error Occured"})
     }
 })
