@@ -26,7 +26,7 @@ const { messaging } = require("./config");
 require('dotenv').config();
 
 // Protecting Routes using CORS
-const allowedOrigins = ['http://localhost:3000'];
+const allowedOrigins = ['http://localhost:3000','https://campuscodelab.vercel.app/'];
 const options = {
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
