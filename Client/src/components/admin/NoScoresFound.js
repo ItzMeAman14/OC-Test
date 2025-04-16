@@ -1,21 +1,27 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Container } from '@mui/material';
+import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
 
 const NoScoresFound = () => {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '80vh',
-        backgroundColor: '#f4f6f8',
-      }}
-    >
-      <Typography variant="h6" color="text.secondary">
-        No scores found
-      </Typography>
-    </Box>
+    <Container maxWidth="sm">
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        minHeight="100vh"
+        textAlign="center"
+      >
+        <SentimentDissatisfiedIcon color="disabled" sx={{ fontSize: 80, mb: 2 }} />
+        <Typography variant="h5" component="h1" gutterBottom>
+          No Scores Available
+        </Typography>
+        <Typography variant="body1" color="textSecondary">
+          Scores are currently unavailable. Please check back later.
+        </Typography>
+      </Box>
+    </Container>
   );
 };
 

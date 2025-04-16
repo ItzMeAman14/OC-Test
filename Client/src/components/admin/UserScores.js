@@ -24,6 +24,7 @@ import {
 import { ExpandMore as ExpandMoreIcon, Search as SearchIcon, Description } from "@mui/icons-material"
 import Cookies from "js-cookie";
 import * as XLSX from "xlsx";
+import NoScoresFound from "./NoScoresFound";
 
 export default function UserScores() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -152,15 +153,18 @@ export default function UserScores() {
         })
 
         const parsed = await res.json();
-        setFilters(
+        if(parsed.length !== 0){
 
-          parsed.reduce((acc, exam) => {
-            acc[exam.id] = { status: "all", score: "all" }
-            return acc
-          }, {}),
-        )
-
-        setExamScores(parsed);
+          setFilters(
+            
+            parsed.reduce((acc, exam) => {
+              acc[exam.id] = { status: "all", score: "all" }
+              return acc
+            }, {}),
+          )
+          
+          setExamScores(parsed);
+        }
       }
       catch(err){
         console.error(err);
@@ -179,8 +183,13 @@ export default function UserScores() {
       <Typography variant="subtitle1" sx={{ mb: 2, color: "#555555" }}>
         Total Exams: {examScores.length}
       </Typography>
-
-      {examScores.map((exam) => (
+      {
+        examScores.length === 0
+        ? 
+        <NoScoresFound /> 
+        :
+      
+        examScores.map((exam) => (
         <Accordion
           key={exam.id}
           sx={{
