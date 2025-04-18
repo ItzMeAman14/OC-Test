@@ -108,7 +108,7 @@ function App() {
                   </>
                 } />
 
-                <Route exact path="/testing/:exam_id" element={
+                <Route exact path="/testing" element={
                   <>
                   <Navbar />
                   <Testing />

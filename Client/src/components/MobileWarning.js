@@ -1,46 +1,41 @@
-import React from 'react';
-import { Box, Typography } from '@mui/material';
-import WarningIcon from '@mui/icons-material/Warning';
+import React from "react";
+import { Box, Typography, Stack } from "@mui/material";
+import SmartphoneIcon from "@mui/icons-material/Smartphone";
+import LaptopMacIcon from "@mui/icons-material/LaptopMac";
 
 const MobileWarning = () => {
-
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          flexDirection: 'column', 
-          height: '100vh',
-          backgroundColor: '#e3f2fd', 
-          padding: 2,
-        }}
-      >
-        <Box
-          sx={{
-            textAlign: 'center',
-            padding: 3,
-            borderRadius: 2,
-            backgroundColor: '#1976d2',
-            color: 'white', 
-            boxShadow: 3,
-            width: '90%', 
-            maxWidth: 400,
-          }}
-        >
-          
-          <WarningIcon sx={{ fontSize: 60, marginBottom: 2 }} /> 
-          
-          <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
-            Warning: Not allowed on mobile screen!
-          </Typography>
-
-          <Typography variant="body1" sx={{ fontSize: '1rem' }}>
-            Please switch to a laptop or desktop screen for a better experience.
-          </Typography>
-        </Box>
-      </Box>
-    );
-  }
+  return (
+    <Box
+      sx={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 1300,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        bgcolor: "background.default",
+        px: 2,
+        textAlign: "center",
+        minHeight: "100vh",
+      }}
+    >
+      <Stack spacing={3} alignItems="center">
+        <SmartphoneIcon
+          sx={{ fontSize: 64, color: "error.main", transform: "rotate(45deg)" }}
+        />
+        <Typography variant="h4" fontWeight="bold">
+          Mobile Access Not Allowed
+        </Typography>
+        <Typography color="text.secondary">
+          This application is designed for laptop and desktop viewing only.
+        </Typography>
+        <Stack direction="row" spacing={1} alignItems="center" color="primary.main">
+          <LaptopMacIcon sx={{ fontSize: 20 }} />
+          <Typography>Please visit from your laptop</Typography>
+        </Stack>
+      </Stack>
+    </Box>
+  );
+};
 
 export default MobileWarning;

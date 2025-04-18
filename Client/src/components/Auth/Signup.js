@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Button, TextField, Typography, Box, Container } from "@mui/material";
 import { useToast } from '../context/ToastContext'; 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Signup = () => {
+  const navigate = useNavigate();
   const { showSuccess, showError, showWarning } = useToast()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -89,6 +90,7 @@ const Signup = () => {
           setConfirmPassword("");
           setOtp("");
           showSuccess(parsed.message);
+          navigate("/login");
         }
         else{
           showError(parsed.message);
