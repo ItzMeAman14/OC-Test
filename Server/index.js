@@ -26,15 +26,15 @@ const { messaging } = require("./config");
 require('dotenv').config();
 
 // Protecting Routes using CORS
-const allowedOrigins = ['http://localhost:3000','https://campuscodelab.vercel.app'];
+const allowedOrigins = ['http://localhost:3000', 'https://campuscodelab.vercel.app'];
 const options = {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
 };
 
 
@@ -43,14 +43,14 @@ app.use(express.json());
 
 
 // Routes
-app.use("/msg",msgRoute);
-app.use("/",ExamRouter);
-app.use("/",QuestionRouter);
-app.use("/",ScoreRouter);
-app.use("/auth",authRouter)
-app.use("/",UserRouter)
-app.use('/',RequestRouter)
-app.use("/",LeaderboardRoutes);
+app.use("/msg", msgRoute);
+app.use("/", ExamRouter);
+app.use("/", QuestionRouter);
+app.use("/", ScoreRouter);
+app.use("/auth", authRouter)
+app.use("/", UserRouter)
+app.use('/', RequestRouter)
+app.use("/", LeaderboardRoutes);
 
 
 // Transporter For Sending Mail
@@ -58,39 +58,51 @@ const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: process.env.EMAIL,
-        pass: process.env.TEMP_PASSWORD, 
+        pass: process.env.TEMP_PASSWORD,
     },
     tls: {
         rejectUnauthorized: false
     }
 });
 
+const jdoodleVersionIndex = {
+    python3: "3",
+    java: "4",
+    cpp: "0",
+    nodejs: null,
+    go: "3",
+    ruby: "3",
+    php: "3",
+    csharp: "4"
+};
+
+
 // API JDOODLE
-app.get("/credit", async(req,res) => {
-    try{
-        const response = await fetch('https://api.jdoodle.com/v1/credit-spent',{
-            method:"POST",
-            headers:{
-                'Content-Type':"application/json"
+app.get("/credit", async (req, res) => {
+    try {
+        const response = await fetch('https://api.jdoodle.com/v1/credit-spent', {
+            method: "POST",
+            headers: {
+                'Content-Type': "application/json"
             },
             body: JSON.stringify({
-                clientId:process.env.JDOODLE_API_ID,
-                clientSecret:process.env.JDOODLE_API_SECRET
+                clientId: process.env.JDOODLE_API_ID,
+                clientSecret: process.env.JDOODLE_API_SECRET
             })
         })
 
         const data = await response.text();
         let parseData;
-        try{
+        try {
             parseData = JSON.parse(data);
         }
-        catch(err){
-            res.status(500).json({error:'Error parsing response from API'})
+        catch (err) {
+            res.status(500).json({ error: 'Error parsing response from API' })
         }
         res.json(parseData);
     }
-    catch(err){
-        res.status(500).json({error:"Something went Wrong"});
+    catch (err) {
+        res.status(500).json({ error: "Something went Wrong" });
     }
 
 })
@@ -98,7 +110,7 @@ app.get("/credit", async(req,res) => {
 app.post('/execute', async (req, res) => {
     const { input, lang, userInputs } = req.body;
     let modifiedInput = userInputs.trim().split(",").join('\n');
-    
+    let versionIndex = jdoodleVersionIndex[lang];
     try {
         const response = await fetch('https://api.jdoodle.com/v1/execute', {
             method: 'POST',
@@ -109,19 +121,19 @@ app.post('/execute', async (req, res) => {
                 script: input,
                 language: lang,
                 stdin: modifiedInput,
-                versionIndex: '0',
+                versionIndex: versionIndex,
                 clientId: process.env.JDOODLE_API_ID,
                 clientSecret: process.env.JDOODLE_API_SECRET,
             }),
         });
-        
+
         const data = await response.text();
         let parseData;
-        try{
+        try {
             parseData = JSON.parse(data);
         }
-        catch(error){
-            return res.status(500).json({error: "Error parsing response from API"});
+        catch (error) {
+            return res.status(500).json({ error: "Error parsing response from API" });
         }
         res.json(parseData);
     } catch (error) {
@@ -132,25 +144,25 @@ app.post('/execute', async (req, res) => {
 
 // Contact 
 app.post('/contact-us', (req, res) => {
-    try{
+    try {
         const { name, email, message, subject } = req.body;
-        
+
         const mailOptions = {
             from: email,
             to: process.env.RECIEVE_MAIL_CONTACT,
             subject: `From AICOMP - ${subject}`,
-            html: contactUsTemplate(name,email,message)
+            html: contactUsTemplate(name, email, message)
         };
-    
+
         // Send email
         transporter.sendMail(mailOptions, (error) => {
-        if (error) {
-            return res.status(500).json({"message":'Internal Server Error'});
-        }
-        res.status(200).json({"message":'Message sent successfully!'});
-    });
+            if (error) {
+                return res.status(500).json({ "message": 'Internal Server Error' });
+            }
+            res.status(200).json({ "message": 'Message sent successfully!' });
+        });
     }
-    catch(err){
+    catch (err) {
         res.status(500).json({ "message": 'Internal Server Error' });
     }
 });
@@ -158,13 +170,13 @@ app.post('/contact-us', (req, res) => {
 
 // Cron Tab for Messages Deletion in 2 Days -- It checks every single day if the message is 2 days old
 cron.schedule("0 0 * * *", async () => {
-    try{
+    try {
         const messages = await messaging.find({});
-        
+
         const previousDate = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
 
-        if(messages.length !== 0){
-            await messaging.deleteMany({createdAt: { "$lt": previousDate }});
+        if (messages.length !== 0) {
+            await messaging.deleteMany({ createdAt: { "$lt": previousDate } });
 
             const mailOptions = {
                 from: 'AICOMP',
@@ -172,17 +184,17 @@ cron.schedule("0 0 * * *", async () => {
                 subject: 'Messages Deletion Updates',
                 html: deleteMessageTemplate()
             };
-        
+
             // Send email
             transporter.sendMail(mailOptions, (error) => {
-            if (error) {
-                return res.status(500).json({"message":'Internal Server Error'});
-            }
-            res.json({"message":"Messages Deleted Successfully"});
-        })
+                if (error) {
+                    return res.status(500).json({ "message": 'Internal Server Error' });
+                }
+                res.json({ "message": "Messages Deleted Successfully" });
+            })
         }
     }
-    catch(err){
+    catch (err) {
         res.status(500).json({ "message": 'Internal Server Error' });
         throw err;
     }

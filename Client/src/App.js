@@ -11,7 +11,7 @@ import Dashboard from "./components/admin/Dashboard";
 import Login from "./components/Auth/Login";
 import Messages from './components/Messages';
 import Contact from './components/Contact';
-import Analytics from './components/admin/Analytics';
+import Analytics from './components/Analytics';
 import Signup from './components/Auth/Signup';
 import ForgetPassword from './components/Auth/ForgetPassword';
 import ChangePassword from './components/Auth/ChangePassword';
@@ -20,7 +20,7 @@ import Testing from './components/Testing';
 
 // Context
 import { MessageProvider } from './components/context/MessageContext';
-import { AuthProvider } from "./components/context/AuthContext";
+import { AuthProvider, useAuth } from "./components/context/AuthContext";
 import { LeaderboardProvider } from "./components/context/Leaderboard";
 import { ToastProvider } from "./components/context/ToastContext";
 
@@ -56,6 +56,7 @@ function App() {
 
                 <Route exact path='/' element={
                   <>
+                    <Messages />
                     <Navbar />
                     <Home />
                   </>
@@ -71,6 +72,7 @@ function App() {
 
                 <Route exact path="/about" element={
                   <>
+                    <Messages />
                     <Navbar />
                     <About />
                   </>
@@ -103,6 +105,7 @@ function App() {
 
                 <Route exact path="/contact" element={
                   <>
+                    <Messages />
                     <Navbar />
                     <Contact />
                   </>
@@ -110,7 +113,7 @@ function App() {
 
                 <Route exact path="/testing" element={
                   <>
-                  <Navbar />
+                  {/* <Navbar /> */}
                   <Testing />
                   </>
                 } />

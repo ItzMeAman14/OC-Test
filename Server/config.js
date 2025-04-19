@@ -5,6 +5,8 @@ const userSchema = require("./models/user");
 const pendingRequestsSchema = require('./models/pendingRequests');
 const LeaderBoardSchema = require("./models/Leaderboard");
 
+require("dotenv").config()
+
 const connect = mongoose.connect(process.env.MONGO_URL);
 
 connect.then(() => {

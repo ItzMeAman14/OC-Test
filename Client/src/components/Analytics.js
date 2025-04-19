@@ -30,7 +30,7 @@ const Analytics = () => {
             });
             const parsed = await res.json();
             
-            if(parsed !== "No Scores Found"){
+            if(parsed.message !== "No Scores Found"){
                 setTestCasesPassed(parsed.testCasesPassed);
                 setTotalTestCases(parsed.totalTestCases);
                 setTimeTaken(parsed.timeTaken);
@@ -84,7 +84,7 @@ const Analytics = () => {
     };
 
     return (
-        <Box sx={{ padding: 2, height: "89vh" }}>
+        <Box sx={{ padding: 2, height: "90vh" }}>
             <Typography variant="h4" align="center" sx={{ marginBottom: 2 }}>
                 Coding Exam Analytics
             </Typography>

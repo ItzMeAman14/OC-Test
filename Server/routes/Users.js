@@ -1,7 +1,7 @@
 const express = require("express")
 const UserRouter = express.Router();
 const mongoose = require("mongoose");
-const { User } = require("../config");
+const { User, pendingUsers } = require("../config");
 const { authenticateToken, authorizeRole } = require("../middleware/auth");
 const nodemailer = require("nodemailer")
 const blockTemplate = require("../emailTemplates/BlockTemplate")
@@ -46,9 +46,7 @@ UserRouter.get("/getUserById/:id",async(req,res) => {
 
 UserRouter.get("/getUser",async(req,res) => {
     try{
-        const requests = await User.find(
-            {role:"admin", "pendingRequest.email": req.query.email }, 
-            { pendingRequest:1 ,_id:0})
+        const requests = await pendingUsers.find({ "email": req.query.email } )
 
         if(requests.length !== 0){
             return res.json({"request":true})

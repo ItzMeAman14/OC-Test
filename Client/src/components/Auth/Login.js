@@ -1,141 +1,214 @@
-import React, { useState } from 'react';
-import { TextField, Button, Box, Typography, Container, Paper } from '@mui/material';
-import { useToast } from '../context/ToastContext'; 
+import { useState } from "react";
+import {
+  Box,
+  Button,
+  TextField,
+  IconButton,
+  InputAdornment,
+  Typography,
+  Avatar,
+  Paper,
+} from "@mui/material";
+import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
+import { useToast } from '../context/ToastContext';
 import Cookies from "js-cookie";
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from "../context/AuthContext";
 
+
 const Login = () => {
+  const [showPassword, setShowPassword] = useState(false);
   const { showSuccess, showError, showWarning } = useToast()
-  const { setIsAuthenticatedUser ,setIsAuthenticatedAdmin } = useAuth()
+  const { setIsAuthenticatedUser, setIsAuthenticatedAdmin } = useAuth()
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
-  const handleSubmit = async(event) => {
-    event.preventDefault();
-    try{
-        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/auth/login`,{
-          method:"POST",
-          headers:{
-            "Content-Type":"application/json"
-          },
-          body:JSON.stringify({
-            email,
-            password
-          })
-        })
 
-        const parsed = await res.json()
-        if(res.ok){
-          if(parsed.role === "user"){
-            Cookies.set("uid",parsed.uid, { expires: 2 })
-            Cookies.set("tokenUser",parsed.token,{ expires: 1 })
-            setIsAuthenticatedUser(true);
-            navigate("/");
-          }
-          else{
-            Cookies.set("adminid",parsed.uid, { expires: 2 })
-            Cookies.set("tokenAdmin",parsed.token,{ expires: 1 })
-            setIsAuthenticatedAdmin(true);
-            navigate("/admin");
-          }
-          showSuccess(parsed.message); 
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email,
+          password
+        })
+      })
+
+      const parsed = await res.json()
+      if (res.ok) {
+        if (parsed.role === "user") {
+          Cookies.set("uid", parsed.uid, { expires: 2 })
+          Cookies.set("tokenUser", parsed.token, { expires: 1 })
+          setIsAuthenticatedUser(true);
+          navigate("/");
         }
-        else{
-          if(parsed.request){
-            showWarning("Request Already Sent to Admin");
-          }
-          else{
-            showError(parsed.message);
-          }
+        else {
+          Cookies.set("adminid", parsed.uid, { expires: 2 })
+          Cookies.set("tokenAdmin", parsed.token, { expires: 1 })
+          setIsAuthenticatedAdmin(true);
+          navigate("/admin");
         }
+        showSuccess(parsed.message);
+      }
+      else {
+        if (parsed.request) {
+          showWarning("Request Already Sent to Admin");
+        }
+        else {
+          showError(parsed.message);
+        }
+      }
     }
-    catch(err){
+    catch (err) {
       console.error(err);
-    }    
-    
+    }
+
   };
-  
+
   return (
-    <Container
-      component="main"
-      maxWidth={false}
+    <Box
       sx={{
-        height: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 0, 
-        backgroundImage: 'url(https://myultrasoundtutor.com/wp-content/uploads/bg-login.jpg)', // Background image URL
-        backgroundSize: 'cover',  
-        backgroundPosition: 'center', 
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed',
+        minHeight: "100vh",
+        bgcolor: "#F1F1F1",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        p: 3,
       }}
     >
-      <Paper elevation={6} sx={{ padding: 3, backgroundColor: 'rgba(255, 255, 255, 0.3)' }}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            borderRadius: 2,
-            padding: 2,
-          }}
-        >
-          <Typography variant="h5">Login</Typography>
+      <Paper
+        elevation={3}
+        sx={{
+          borderRadius: 2,
+          p: 4,
+          width: "100%",
+          maxWidth: 500,
+          bgcolor: "white",
+        }}
+      >
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2, width:"30vw" }}>
-            {/* Email Field */}
-            <TextField
-              label="Email"
-              type="email"
-              variant="outlined"
-              fullWidth
-              required
-              margin="normal"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+        <Box textAlign="center" mb={3}>
+          <Avatar
+            src="/CCL.ico"
+            alt="Logo"
+            sx={{
+              width: 130,
+              height: 130,
+              mx: "auto",
+              mb: 2,
+              bgcolor: "#e0e0e0",
+            }}
+          />
+          <Typography
+            variant="h5"
+            fontWeight="bold"
+            textAlign="center"
+            color="text.primary"
+            mb={3}
+          >
+            Welcome to CCL
+          </Typography>
+        </Box>
 
-            {/* Password Field */}
-            <TextField
-              label="Password"
-              type="password"
-              variant="outlined"
-              fullWidth
-              required
-              margin="normal"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          <TextField
+            fullWidth
+            required
+            type="email"
+            label="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            margin="normal"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <EmailOutlinedIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
 
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              sx={{ mt: 3 }}
+          <TextField
+            fullWidth
+            required
+            type={showPassword ? "text" : "password"}
+            label="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            margin="normal"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <LockOutlinedIcon />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {showPassword ? (
+                      <VisibilityOffOutlinedIcon />
+                    ) : (
+                      <VisibilityOutlinedIcon />
+                    )}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            sx={{
+              mt: 2,
+              bgcolor: "#333",
+              "&:hover": {
+                bgcolor: "#222",
+              },
+            }}
+          >
+            Login
+          </Button>
+
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginTop: "20px",
+            fontSize: "18px"
+          }}>
+            <Link
+              to="/signup"
+              style={{
+                color: "#8E9196",
+                textDecoration: "none",
+              }}
             >
-              Login
-            </Button>
-
-
-            <Box sx={{display:'flex',width:'100%',marginTop:2,justifyContent:"space-between"}}>
-
-              <Typography variant="body1">Don't have an account? 
-                <Link to="/signup">Signup</Link>
-              </Typography>
-
-              <Link to="/forget-password">Forget Password</Link>
-            
-            </Box>
-
-          </Box>
+              Don't have an account: Signup
+            </Link>
+            <Link
+              to="/forget-password"
+              style={{
+                color: "#8E9196",
+                textDecoration: "none",
+              }}
+            >
+              Forget Password
+            </Link>
+          </div>
         </Box>
       </Paper>
-    </Container>
+    </Box>
   );
 };
 

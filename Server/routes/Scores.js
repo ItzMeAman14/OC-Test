@@ -22,16 +22,15 @@ ScoreRouter.get("/getuserScores/:id",async(req,res) => {
             _id: 0
           }
         );
-          
-        if(scores){
+        if(scores.length !== 0){
             res.json(scores[0].exams[0].score);
         }
         else{
-            res.json({"message":"User not Found"});
+            res.json({"message":"No Scores Found"});
         }
     }
     catch(err){
-        
+        console.error(err)
         res.json({"message":"Some Error Occured"})
     }  
 })

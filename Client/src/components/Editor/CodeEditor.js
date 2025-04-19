@@ -3,6 +3,18 @@ import React, { useEffect, useRef } from 'react';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { Select, MenuItem, FormControl, Button, Box } from '@mui/material';
 import handleKeyPress from "../TextEditorFunctions/SpecialCharAutoComplete";
+import { Autocomplete, TextField } from '@mui/material';
+
+const languageOptions = [
+  { label: 'Python 3', value: 'python3' },
+  { label: 'Java', value: 'java' },
+  { label: 'C++', value: 'cpp' },
+  { label: 'JavaScript', value: 'nodejs' },
+  { label: 'Go', value: 'go' },
+  { label: 'Ruby', value: 'ruby' },
+  { label: 'PHP', value: 'php' },
+  { label: 'C#', value: 'csharp' }
+];
 
 const CodeEditor = ({ 
   code, 
@@ -102,6 +114,49 @@ const CodeEditor = ({
   return (
     <div style={editorContainerStyle}>
       <div style={headerStyle}>
+  <Autocomplete
+    disablePortal
+    options={languageOptions}
+    getOptionLabel={(option) => option.label}
+    value={languageOptions.find((opt) => opt.value === language) || null}
+    onChange={(e, newValue) => setLanguage(newValue?.value || '')}
+    sx={{
+      width: 200,
+      backgroundColor: '#444',
+      borderRadius: '4px',
+      '& .MuiInputBase-root': {
+        height: '60px',
+        color: 'white'
+      },
+      '& .MuiOutlinedInput-notchedOutline': {
+        borderColor: '#666'
+      },
+      '& .MuiSvgIcon-root': {
+        color: 'white'
+      },
+      '& .MuiAutocomplete-popupIndicator': {
+        color: 'white'
+      },
+      '& .MuiInputLabel-root': {
+        color: 'white'
+      },
+      '& .MuiAutocomplete-paper': {
+        backgroundColor: '#333',
+        color: 'white'
+      }
+    }}
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="Language"
+        variant="outlined"
+        InputLabelProps={{ style: { color: 'white' } }}
+      />
+    )}
+  />
+</div>
+
+      {/* <div style={headerStyle}>
         <FormControl variant="filled" size="small">
           <Select
             value={language}
@@ -127,7 +182,7 @@ const CodeEditor = ({
             <MenuItem value="cpp">C++</MenuItem>
           </Select>
         </FormControl>
-      </div>
+      </div> */}
       
       <div style={editorStyle}>
         <textarea

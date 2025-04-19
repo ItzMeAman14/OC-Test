@@ -345,7 +345,7 @@ const ExamDetail = () => {
       })
 
       let givenTime = Math.floor(3600 / 60); // in minutes
-      let timeTaken = Math.floor((3600 - timeLeft) / 60);  // in minutes
+      let timeTaken = Math.floor((3600 - timeLeft));  // in seconds
       let totalTestCases = await getTotalTestCases();
 
       const token = Cookies.get("tokenUser");

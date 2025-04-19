@@ -1,133 +1,189 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Box, Card, CardContent, Typography, CircularProgress, Grid, Button } from '@mui/material';
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  Typography,
+  Grid,
+  Card,
+  CardHeader,
+  CardContent,
+  Button,
+  CircularProgress,
+} from "@mui/material";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import CheckIcon from "@mui/icons-material/Check";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
+import { useToast } from './context/ToastContext';
 
-function Exam() {
-  const [data, setData] = useState(null);
+const Exam = () => {
+  const navigate = useNavigate();
+  const { showError } = useToast();
+  const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     getUserExams();
   }, []);
 
-
   async function getUserExams() {
     try {
       const id = Cookies.get("uid");
       const token = Cookies.get("tokenUser");
+
       setLoading(true);
-      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/userExams/${id}`,{
-        method:"GET",
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/userExams/${id}`, {
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
-          'userAPIKEY': token,
-        }
+          "Content-Type": "application/json",
+          userAPIKEY: token,
+        },
       });
+
       const data = await res.json();
-      
-      setLoading(false);
-      setData(data);
+      setExams(data);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching exams:", err);
+    } finally {
       setLoading(false);
     }
   }
 
+
   const setUserExamPending = async (examId) => {
-    try{
+    try {
       const id = Cookies.get("uid");
       const token = Cookies.get("tokenUser");
       setLoading(true);
-      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/userExamPending/${examId}?user_id=${id}`,{
-        method:"PUT",
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/userExamPending/${examId}?user_id=${id}`, {
+        method: "PUT",
         headers: {
           'Content-Type': 'application/json',
           'userAPIKEY': token,
         }
       });
       const parsed = await res.json();
+      if (res.ok) {
+        navigate(`/exams/${examId}`)
+      }
+      else {
+        showError("Some Error Occured")
+      }
       setLoading(false);
     }
-    catch(err){
+    catch (err) {
       console.error(err);
     }
   }
 
   return (
-    <Box sx={{ padding: 4, backgroundColor: '#f4f6f8' }}>
-      <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: 'bold', color: '#333' }}>
-        Exams Page
-      </Typography>
+    <Box sx={{ minHeight: "90vh", bgcolor: "#f7f7f7", p: 4 }}>
+      <Box sx={{ maxWidth: "1000px", mx: "auto" }}>
+        <Typography variant="h4" fontWeight="bold" gutterBottom color="text.primary">
+          Available Exams
+        </Typography>
 
-      <Grid container spacing={4} justifyContent="center">
         {loading ? (
-          <Box display="flex" justifyContent="center" alignItems="center" height="80vh">
-            <CircularProgress size={60} color="primary" />
+          <Box display="flex" justifyContent="center" mt={6}>
+            <CircularProgress />
           </Box>
         ) : (
-          data &&
-          data.map((exam) => (
-            <Grid item key={exam._id} xs={12} sm={6} md={4} lg={3}>
-              <Card
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: '100%',
-                  boxShadow: 3,
-                  borderRadius: 2,
-                  '&:hover': {
-                    boxShadow: 6, 
-                    transform: 'scale(1.05)',
-                    transition: 'transform 0.3s, box-shadow 0.3s',
-                  },
-                }}
-              >
-                <CardContent
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    flex: 1,
-                    paddingBottom: '16px',
-                  }}
-                >
-                  <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
-                    {exam.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" paragraph sx={{ marginBottom: 2 }}>
-                    Time to attempt the exam is 2 hours. If you open any extra tabs or try to cheat, the test will automatically submit.
-                  </Typography>
+          <Grid container spacing={3}>
+            {exams.map((exam) => (
+              <Grid item xs={12} md={6} key={exam._id}>
+                <Card elevation={3}>
+                  <CardHeader
+                    title={
+                      <Typography variant="h6" color="text.primary">
+                        {exam.name}
+                      </Typography>
+                    }
+                    sx={{ bgcolor: "#fafafa", borderBottom: "1px solid #eee" }}
+                  />
+                  <CardContent>
+                    <Grid container spacing={2}>
+                      <Grid item xs={6}>
+                        <Typography variant="subtitle2" color="text.secondary">
+                          Questions
+                        </Typography>
+                        <Typography color="text.primary">
+                          {exam.questions.length}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="subtitle2" color="text.secondary">
+                          Duration
+                        </Typography>
+                        <Typography color="text.primary">1 hour</Typography>
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Typography variant="subtitle2" color="text.secondary">
+                          Total Marks
+                        </Typography>
+                        <Typography color="text.primary">
+                          {exam.questions.length * 1000}
+                        </Typography>
+                      </Grid>
+                    </Grid>
 
-                  {/* Aligning the Button to the Bottom */}
-                  <Box sx={{ marginTop: 'auto' }}>
-                    {/* Buttons */}
-                    {exam.attempted === 'true' || exam.attempted === 'pending' ? (
-                      <Box display="flex" justifyContent="space-between">
-                        <Button variant="contained" color="primary" disabled>
-                          Attempted
-                        </Button>
-                        <Link to={`/score/${exam.exam_id}`}>
-                          <Button variant="contained" color="primary">
+                    <Box display="flex" gap={2} mt={3}>
+                      { exam.attempted === "true" || exam.attempted === "pending" ? (
+                        <>
+                          <Button
+                            variant="outlined"
+                            fullWidth
+                            disabled
+                            startIcon={<CheckIcon />}
+                          >
+                            Attempted
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            fullWidth
+                            startIcon={<VisibilityIcon />}
+                            onClick={() => navigate(`/score/${exam.exam_id}`)}
+                          >
                             View Score
                           </Button>
-                        </Link>
-                      </Box>
-                    ) : (
-                      <Link to={`/exams/${exam.exam_id}`} style={{ textDecoration: 'none' }}>
-                        <Button variant="contained" onClick={() => {setUserExamPending(exam.exam_id) }} color="primary" fullWidth>
+                        </> ) :
+                      // ) : exam.attempted === "pending" ? (
+                      //   <Button
+                      //     variant="outlined"
+                      //     fullWidth
+                      //     disabled
+                      //     startIcon={<VisibilityIcon />}
+                      //   >
+                      //     Calculating Score
+                      //   </Button>
+                      // ) : (
+                      (
+                        <Button
+                          variant="contained"
+                          fullWidth
+                          startIcon={<PlayArrowIcon />}
+                          onClick={() => setUserExamPending(exam.exam_id)}
+                          sx={{
+                            bgcolor: "grey.900",
+                            color: "white",
+                            "&:hover": {
+                              bgcolor: "grey.800",
+                            },
+                          }}
+                        >
                           Attempt
                         </Button>
-                      </Link>
-                    )}
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))
+                      ) }
+                    </Box>
+
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
         )}
-      </Grid>
+      </Box>
     </Box>
   );
-}
+};
 
 export default Exam;

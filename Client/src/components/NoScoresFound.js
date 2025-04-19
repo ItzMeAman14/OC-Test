@@ -10,7 +10,7 @@ const NoScoresFound = () => {
         flexDirection="column"
         alignItems="center"
         justifyContent="center"
-        minHeight="100vh"
+        minHeight="80vh"
         textAlign="center"
       >
         <SentimentDissatisfiedIcon color="disabled" sx={{ fontSize: 80, mb: 2 }} />

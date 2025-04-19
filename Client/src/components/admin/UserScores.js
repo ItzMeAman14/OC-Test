@@ -24,7 +24,7 @@ import {
 import { ExpandMore as ExpandMoreIcon, Search as SearchIcon, Description } from "@mui/icons-material"
 import Cookies from "js-cookie";
 import * as XLSX from "xlsx";
-import NoScoresFound from "./NoScoresFound";
+import NoScoresFound from "../NoScoresFound";
 
 export default function UserScores() {
   const [searchTerm, setSearchTerm] = useState("")

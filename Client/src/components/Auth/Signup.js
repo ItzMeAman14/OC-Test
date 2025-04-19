@@ -1,25 +1,41 @@
-import React, { useState, useEffect } from "react";
-import { Button, TextField, Typography, Box, Container } from "@mui/material";
-import { useToast } from '../context/ToastContext'; 
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import {
+  Box,
+  Button,
+  TextField,
+  IconButton,
+  InputAdornment,
+  Typography,
+  Paper,
+  Avatar,
+  Grid
+} from '@mui/material';
+import EmailIcon from '@mui/icons-material/EmailOutlined';
+import LockIcon from '@mui/icons-material/LockOutlined';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
+import Visibility from '@mui/icons-material/VisibilityOutlined';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { useToast } from "../context/ToastContext"; 
+import { useNavigate } from 'react-router-dom';
 
 const Signup = () => {
   const navigate = useNavigate();
   const { showSuccess, showError, showWarning } = useToast()
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpBackend, setOtpBackend] = useState("");
-  const [showOtpField, setShowOtpField] = useState(false);
-  const [error, setError] = useState("");
-  const [isSendAgainEnabled, setIsSendAgainEnabled] = useState(false);
-  const [timer, setTimer] = useState(5); 
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showOtp, setShowOtp] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpBackend,setOtpBackend] = useState('')
+  const [resendDisabled, setResendDisabled] = useState(false);
+  const [countdown, setCountdown] = useState(5);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  
-  const handleRegister = async() => {
+  const handleRegister = async(e) => {
+    e.preventDefault()
     if (password !== confirmPassword) {
-      setError("Passwords do not match!");
+      showError("Passwords do not match!");
       return;
     }
 
@@ -35,9 +51,8 @@ const Signup = () => {
         showWarning("Request Already Sent to Admin");
       }
       else{
-        setShowOtpField(true);
+        setShowOtp(true);
         getOTP();
-
     }
     }
     catch(err){
@@ -61,6 +76,8 @@ const Signup = () => {
       
       const parsedOTP = await otp.json();
       setOtpBackend(parsedOTP.otp);
+      setResendDisabled(true);
+      setCountdown(5);
       showSuccess("OTP sent to your mail");
     }
     catch(err){
@@ -84,7 +101,7 @@ const Signup = () => {
 
         const parsed = await res.json();
         if(res.ok){
-          setShowOtpField(false);
+          setShowOtp(false);
           setEmail("");
           setPassword("");
           setConfirmPassword("");
@@ -105,150 +122,182 @@ const Signup = () => {
     }
   };
 
-  const handleSendAgain = () => {
-    setIsSendAgainEnabled(false);
-    setTimer(5); 
-
-    getOTP();
-
-    let countdown = setInterval(() => {
-      setTimer((prev) => {
-        if (prev === 1) {
-          clearInterval(countdown);
-          setIsSendAgainEnabled(true); 
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
 
   useEffect(() => {
-    if (showOtpField) {
-      setIsSendAgainEnabled(false);
-      setTimer(5);
-
-      let countdown = setInterval(() => {
-        setTimer((prev) => {
-          if (prev === 1) {
-            clearInterval(countdown);
-            setIsSendAgainEnabled(true); 
-          }
-          return prev - 1;
-        });
+    let timer;
+    if (resendDisabled && countdown > 0) {
+      timer = setTimeout(() => {
+        setCountdown((prev) => prev - 1);
       }, 1000);
+    } else if (countdown === 0) {
+      setResendDisabled(false);
     }
-  }, [showOtpField]);
+    return () => clearTimeout(timer);
+  }, [resendDisabled, countdown]);
 
   return (
     <Box
-      sx={{
-        height: "100vh",
-        backgroundImage: "url('https://img.freepik.com/free-vector/hand-drawn-school-supplies-pattern-background_23-2150855728.jpg')", // Replace with your background image URL
-        backgroundSize: "contain",
-        backgroundPosition: "center",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
+      minHeight="100vh"
+      bgcolor="#f1f1f1"
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      p={3}
     >
-      <Container maxWidth="sm">
-        <Box
-          sx={{
-            backgroundColor: "rgba(255, 255, 255, 0.8)",
-            padding: 4,
-            borderRadius: 2,
-            boxShadow: 3,
-          }}
-        >
-          <Typography variant="h4" align="center" sx={{ mb: 3 }}>
-            Signup
-          </Typography>
-          <TextField
-            label="Email"
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            value={email}
-            required
-            onChange={(e) => setEmail(e.target.value)}
+      <Paper
+        elevation={3}
+        sx={{
+          width: "100%",
+          maxWidth: 500,
+          p: 4,
+          borderRadius: 2,
+        }}
+      >
+        <Box textAlign="center" mb={3}>
+          <Avatar
+            src="/CCL.ico"
+            alt="Logo"
+            sx={{
+              width: 130,
+              height: 130,
+              mx: "auto",
+              mb: 2,
+              bgcolor: "#e0e0e0",
+            }}
           />
-          <TextField
-            label="Password"
-            type="password"
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <TextField
-            label="Confirm Password"
-            type="password"
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-
-          {error && (
-            <Typography color="error" variant="body2" mt={1}>
-              {error}
-            </Typography>
-          )}
-
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            onClick={handleRegister}
-            sx={{ mt: 2 }}
+          <Typography
+            variant="h5"
+            fontWeight="bold"
+            textAlign="center"
+            color="text.primary"
+            mb={3}
           >
-            Register
-          </Button>
-
-          <Typography variant="body1" sx={{marginLeft:12,marginTop:2}}>Already have an account? 
-              <Link to="/login">Login</Link>
+            Register at CCL
           </Typography>
-
-          {showOtpField && (
-            <>
-              <Typography variant="h6" sx={{ mt: 3 }}>
-                Enter OTP sent to your email:
-              </Typography>
-              <TextField
-                label="OTP"
-                variant="outlined"
-                fullWidth
-                margin="normal"
-                inputProps={{ maxLength: 6 }}
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                fullWidth
-                sx={{ mt: 2 }}
-                onClick={handleVerifyOtp}
-              >
-                Verify OTP
-              </Button>
-              <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
-                <Button
-                  variant="outlined"
-                  color="secondary"
-                  disabled={!isSendAgainEnabled}
-                  onClick={handleSendAgain}
-                >
-                  Send Again {isSendAgainEnabled ? "" : `(${timer}s)`}
-                </Button>
-
-              </Box>
-            </>
-          )}
         </Box>
-      </Container>
+
+        <form onSubmit={handleRegister}>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                required
+                type="email"
+                label="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                required
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockOpenIcon />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                required
+                label="Confirm Password"
+                type={showConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockIcon />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
+                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+
+            {!showOtp && (
+              <Grid item xs={12}>
+                <Button
+                  fullWidth
+                  type="submit"
+                  variant="contained"
+                  sx={{ bgcolor: "#000", color: "#fff", "&:hover": { bgcolor: "#333" } }}
+                >
+                  Register
+                </Button>
+              </Grid>
+            )}
+
+            {showOtp && (
+              <>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    type="text"
+                    label="Enter OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                  />
+                </Grid>
+
+                <Grid item xs={12} container spacing={2}>
+                  <Grid item xs={6}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      onClick={handleVerifyOtp}
+                      sx={{ bgcolor: "#000", color: "#fff", "&:hover": { bgcolor: "#333" } }}
+                    >
+                      Verify OTP
+                    </Button>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      disabled={resendDisabled}
+                      onClick={getOTP}
+                    >
+                      {resendDisabled ? `Resend in ${countdown}s` : "Send Again"}
+                    </Button>
+                  </Grid>
+                </Grid>
+              </>
+            )}
+          </Grid>
+        </form>
+      </Paper>
     </Box>
   );
 };

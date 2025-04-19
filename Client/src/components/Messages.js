@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, Typography, Box, List, ListItem, ListItemText, Divider, IconButton } from '@mui/material';
 import MessageIcon from '@mui/icons-material/Message';
 import { useMessages } from "./context/MessageContext";
+import { useAuth } from './context/AuthContext';
 
 function MessageModal() {
+  const  { isAuthenticatedUser } = useAuth();
   const { messages } = useMessages();
   const [open, setOpen] = useState(false);
 
@@ -18,8 +20,9 @@ function MessageModal() {
 
   return (
     <div>
+      { isAuthenticatedUser && 
       <IconButton 
-        onClick={handleClickOpen} 
+      onClick={handleClickOpen} 
         sx={{
           position: 'fixed',
           bottom: 20,
@@ -34,9 +37,10 @@ function MessageModal() {
             backgroundColor: '#333333',
           }
         }}
-      >
+        >
         <MessageIcon />
       </IconButton>
+      }
 
       <Dialog
         open={open}
@@ -93,7 +97,7 @@ function MessageModal() {
                     color: 'gray',
                   }}
                 >
-                  Note: All messages will be deleted after 2 day.
+                  Note: All messages will be deleted after 1 day.
                 </Typography>
               </Box>
               

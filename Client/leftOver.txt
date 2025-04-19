@@ -1,15 +1,9 @@
-In Edit Question:
+In Frontend:
 1: Testing
-2: Super Admin Page
-3: Connect to MongoDB Atlas
-4: Output Scroll bar is not working in Exam Detail. (Solution -> Fix the height of parent)
+2: Output Scroll bar is not working in Exam Detail. (Solution -> Fix the height of parent)
 
-Name - Campus CodeLab
-Logo is stored in /public/ named as CCL.iso
-
-Deploy:
-Backend - Fly.io
-Frontend - Vercel.com
+Change the name from AICOMP to CCL in Frontend everywhere
+Use logo in mail.
 
 Security :
 1: Encrypt the URLs in Exam Detail and Forget Password
