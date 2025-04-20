@@ -16,7 +16,7 @@ import LockOpenIcon from '@mui/icons-material/LockOpen';
 import Visibility from '@mui/icons-material/VisibilityOutlined';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useToast } from "../context/ToastContext"; 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -172,7 +172,7 @@ const Signup = () => {
             color="text.primary"
             mb={3}
           >
-            Register at CCL
+            Register at {process.env.REACT_APP_NAME}
           </Typography>
         </Box>
 
@@ -247,6 +247,7 @@ const Signup = () => {
             </Grid>
 
             {!showOtp && (
+              <>
               <Grid item xs={12}>
                 <Button
                   fullWidth
@@ -257,6 +258,24 @@ const Signup = () => {
                   Register
                 </Button>
               </Grid>
+
+              <div style={{
+                width:"100%",
+                marginLeft:"90px",
+                marginTop: "20px",
+                fontSize: "18px"
+              }}>
+                <Link
+                  to="/login"
+                  style={{
+                    color: "#8E9196",
+                    textDecoration: "none",
+                  }}
+                >
+                  Already have an account: Login
+                </Link>
+              </div>
+            </>
             )}
 
             {showOtp && (

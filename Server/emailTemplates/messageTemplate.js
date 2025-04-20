@@ -1,11 +1,10 @@
-
 const deleteMessageTemplate = () => {
-        let message = `
-            <p>We regret to inform you that all messages sent by admins associated with your account have been <span class="important">deleted</span> after 1 day, as per our system's message retention policy.</p>
-            <p>If you believe this action was taken in error or need further assistance, please contact our support team.</p>
-        `;
-        let buttonText = 'Contact Support';
-        let buttonLink = 'mailto:support@aicomp.com';
+    let message = `
+        <p>We regret to inform you that all messages sent by admins associated with your account have been <span class="important">deleted</span> after 1 day, as per our system's message retention policy.</p>
+        <p>If you believe this action was taken in error or need further assistance, please contact our support team.</p>
+    `;
+    let buttonText = 'Contact Support';
+    let buttonLink = 'mailto:support@ccl.com';
 
     return `
         <html>
@@ -58,18 +57,25 @@ const deleteMessageTemplate = () => {
                         color: #999;
                         margin-top: 20px;
                     }
+                    .footer a {
+                        color: #007bff;
+                        text-decoration: none;
+                    }
                 </style>
             </head>
             <body>
                 <div class="email-container">
-                    <div class="email-header">Your Message Status has Changed</div>
+                    <div class="email-header">
+                        <img src="${process.env.LOGO}" alt="Logo" style="max-width: 100px; margin-bottom: 20px;" />
+                        Your Message Status has Changed
+                    </div>
                     <div class="email-body">
-                        <p>Hello Sir,</strong>,</p>
+                        <p>Hello Sir,</p>
                         ${message}
                         <p>If you have any further questions, don't hesitate to <a href="${buttonLink}" class="action-button">${buttonText}</a>.</p>
                     </div>
                     <div class="footer">
-                        <p>This is an automated email notification from AICOMP. Please do not reply to this email.</p>
+                        <p>This is an automated email notification from CCL. Please do not reply to this email.</p>
                     </div>
                 </div>
             </body>

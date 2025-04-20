@@ -23,7 +23,7 @@ const Navbar = () => {
       <Toolbar>
         {/* Logo/Brand */}
         <Typography variant="h6" component={Link} to="/" style={{ flexGrow: 1, color: 'white', fontWeight: 'bold',textDecoration:"none" }}>
-          AICOMP
+          {process.env.REACT_APP_NAME}
         </Typography>
 
         {/* Navigation Links */}

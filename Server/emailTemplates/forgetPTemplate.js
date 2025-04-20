@@ -1,4 +1,3 @@
-
 const forgetPTemplate = (otp) => {
     return `
         <html>
@@ -46,14 +45,17 @@ const forgetPTemplate = (otp) => {
             </head>
             <body>
                 <div class="email-container">
-                    <div class="email-header">Account Recovery - OTP Code</div>
+                    <div class="email-header">
+                        <img src="${process.env.LOGO}" alt="Logo" style="max-width: 100px; margin-bottom: 20px;" />
+                        Account Recovery - OTP Code
+                    </div>
                     <p>Hi there,</p>
                     <p>We received a request to recover your account. To proceed with the account recovery, please use the One-Time Password (OTP) below:</p>
                     <div class="otp-code">${otp}</div>
                     <p>This OTP is valid for 10 minutes. Please do not share it with anyone.</p>
                     <p>If you did not request an OTP, please ignore this email or contact our support team.</p>
                     <div class="footer">
-                        <p>If you have any questions, <a href="mailto:support@aicomp.com">contact us</a>.</p>
+                        <p>If you have any questions, <a href="mailto:support@ccl.com">contact us</a>.</p>
                     </div>
                 </div>
             </body>

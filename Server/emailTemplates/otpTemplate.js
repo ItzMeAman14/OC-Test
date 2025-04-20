@@ -1,4 +1,3 @@
-
 const otpTemplate = (otp) => {
     return `
         <html>
@@ -23,6 +22,7 @@ const otpTemplate = (otp) => {
                         font-weight: bold;
                         color: #5d5d5d;
                         margin-bottom: 20px;
+                        text-align: center;
                     }
                     .otp-code {
                         font-size: 28px;
@@ -31,6 +31,7 @@ const otpTemplate = (otp) => {
                         background-color: #f0f9ff;
                         padding: 10px 20px;
                         border-radius: 4px;
+                        margin-bottom: 20px;
                     }
                     .footer {
                         font-size: 12px;
@@ -45,14 +46,17 @@ const otpTemplate = (otp) => {
             </head>
             <body>
                 <div class="email-container">
-                    <div class="email-header">Welcome to AICOMP!</div>
+                    <div class="email-header">
+                        <img src="${process.env.LOGO}" alt="CCL Logo" style="max-width: 100px; margin-bottom: 20px;" />
+                        Welcome to CCL!
+                    </div>
                     <p>Hi there,</p>
-                    <p>Thank you for signing up with AICOMP! To complete your registration, please use the One-Time Password (OTP) below:</p>
+                    <p>Thank you for signing up with CCL! To complete your registration, please use the One-Time Password (OTP) below:</p>
                     <div class="otp-code">${otp}</div>
                     <p>We never share your email with anyone. Your privacy is our priority!</p>
                     <div class="footer">
                         <p>If you did not request this, please ignore this email.</p>
-                        <p>For support or inquiries, <a href="mailto:support@aicomp.com">Contact us</a>.</p>
+                        <p>For support or inquiries, <a href="mailto:support@ccl.com">Contact us</a>.</p>
                     </div>
                 </div>
             </body>

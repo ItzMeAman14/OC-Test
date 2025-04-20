@@ -1,4 +1,3 @@
-const keywords = []
 
 export default function handleKeyPress(event,input,setInput) {
     const { selectionStart, selectionEnd } = event.target;

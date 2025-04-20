@@ -1,4 +1,3 @@
-
 const blockTemplate = (email, status) => {
     let message = '';
     let buttonText = '';
@@ -10,7 +9,7 @@ const blockTemplate = (email, status) => {
             <p>If you believe this is a mistake, you can reach out to admin for further assistance.</p>
         `;
         buttonText = 'Contact Support';
-        buttonLink = 'mailto:support@aicomp.com';
+        buttonLink = 'mailto:support@ccl.com';
     } 
     else {
         message = `
@@ -18,7 +17,7 @@ const blockTemplate = (email, status) => {
             <p>You can now log in to your account and continue your activities. If you encounter any issues, feel free to reach out to us.</p>
         `;
         buttonText = 'Contact Support';
-        buttonLink = 'mailto:support@aicomp.com';
+        buttonLink = 'mailto:support@ccl.com';
     }
 
     return `
@@ -76,14 +75,17 @@ const blockTemplate = (email, status) => {
             </head>
             <body>
                 <div class="email-container">
-                    <div class="email-header">Your Account Status has Changed</div>
+                    <div class="email-header">
+                        <img src="${process.env.LOGO}" alt="Logo" style="max-width: 100px; margin-bottom: 20px;" />
+                        Your Account Status has Changed
+                    </div>
                     <div class="email-body">
                         <p>Dear <strong>${email}</strong>,</p>
                         ${message}
                         <p>If you have any further questions, don't hesitate to <a href="${buttonLink}" class="action-button">${buttonText}</a>.</p>
                     </div>
                     <div class="footer">
-                        <p>This is an automated email notification from AICOMP. Please do not reply to this email.</p>
+                        <p>This is an automated email notification from CCL. Please do not reply to this email.</p>
                     </div>
                 </div>
             </body>

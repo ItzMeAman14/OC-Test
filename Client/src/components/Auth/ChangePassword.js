@@ -1,157 +1,160 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, Typography, Container, Paper, IconButton, InputAdornment } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material'; 
+import {
+  Avatar,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  TextField,
+  InputAdornment,
+  IconButton,
+  Box,
+  Stack
+} from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useToast } from '../context/ToastContext'; 
 import { useNavigate, useParams } from 'react-router-dom';
 import Cookies from "js-cookie";
+import CryptoJS from 'crypto-js';
 
 const ChangePassword = () => {
-    const { showSuccess, showError } = useToast()
-    const navigate = useNavigate();
-    const { email } = useParams();
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { showSuccess, showError } = useToast()
+  const navigate = useNavigate();
+  const { email } = useParams();
+  
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    const handleClickShowPassword = () => setShowPassword((prevState) => !prevState);
-    const handleClickShowConfirmPassword = () => setShowConfirmPassword((prevState) => !prevState);
-
-
-    const submitNewPassword = async (e) => {
-        e.preventDefault();
-        try {
-            if(password === confirmPassword){
-                const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/auth/reset-password`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "recoverToken":Cookies.get("recoverId"),
-                    },
-                    body: JSON.stringify({
-                        email,
-                        password
-                })
+  const handleChangePassword = async () => {
+    try {
+        if(newPassword === confirmPassword){
+            const decryptedMail = CryptoJS.AES.decrypt(email,process.env.REACT_APP_CRYPTO_KEY).toString(CryptoJS.enc.Utf8);
+            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/auth/reset-password`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "recoverToken":Cookies.get("recoverId"),
+                },
+                body: JSON.stringify({
+                    decryptedMail,
+                    password:newPassword
             })
+        })
 
-            const parsed = await res.json();
-            if(res.ok){
-                setPassword("");
-                setConfirmPassword("");
-                Cookies.remove('recoverID');
-                navigate("/login");
-                showSuccess(parsed.message);
-            }
-            else{
-                showError(parsed.message);
-            }
+        const parsed = await res.json();
+        if(res.ok){
+            setNewPassword("");
+            setConfirmPassword("");
+            Cookies.remove('recoverID');
+            navigate("/login");
+            showSuccess(parsed.message);
         }
         else{
-            showError('Password Not Matched');
-        }
-        }
-        catch (err) {
-            console.error(err);
+            showError(parsed.message);
         }
     }
+    else{
+        showError('Password Not Matched');
+    }
+    }
+    catch (err) {
+        console.error(err);
+    }
+  }
 
-    return (
-        <Container
-            component="main"
-            maxWidth={false}
-            sx={{
-                height: '100vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: 0,
-                backgroundImage: 'url(https://myultrasoundtutor.com/wp-content/uploads/bg-login.jpg)', // Background image URL
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                backgroundAttachment: 'fixed',
-            }}
-        >
-            <Paper elevation={6} sx={{ padding: 3, backgroundColor: 'rgba(255, 255, 255, 0.3)' }}>
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        borderRadius: 2,
-                        padding: 2,
-                    }}
-                >
-                    <Typography variant="h5">Recover Account</Typography>
+  return (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        backgroundColor: '#f1f1f1',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Card sx={{ width: 500, p: 4 }}>
+        <CardContent>
+          <Box textAlign="center" mb={3}>
+            <Avatar
+              src="/CCL.ico"
+              alt="Logo"
+              sx={{
+                width: 130,
+                height: 130,
+                mx: "auto",
+                mb: 2,
+                bgcolor: "#e0e0e0",
+              }}
+            />
+            <Typography
+              variant="h5"
+              fontWeight="bold"
+              textAlign="center"
+              color="text.primary"
+              mb={3}
+            >
+              Recover Account
+            </Typography>
+          </Box>
 
-                    <Box component="form" onSubmit={submitNewPassword} sx={{ mt: 2, width: "30vw" }}>
+          <Stack spacing={2} mt={4}>
+            <TextField
+              fullWidth
+              type={showNewPassword ? 'text' : 'password'}
+              label="New Password"
+              variant="outlined"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowNewPassword(!showNewPassword)} edge="end">
+                      {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-                        {/* New Password Field */}
-                        <TextField
-                            label="New Password"
-                            type={showPassword ? "text" : "password"}
-                            variant="outlined"
-                            fullWidth
-                            required
-                            margin="normal"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            aria-label="toggle password visibility"
-                                            onClick={handleClickShowPassword}
-                                            edge="end"
-                                        >
-                                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
+            <TextField
+              fullWidth
+              type={showConfirmPassword ? 'text' : 'password'}
+              label="Confirm Password"
+              variant="outlined"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
+                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-                        {/* Confirm Password Field */}
-                        <TextField
-                            label="Confirm Password"
-                            type={showConfirmPassword ? "text" : "password"}
-                            variant="outlined"
-                            fullWidth
-                            required
-                            margin="normal"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            aria-label="toggle confirm password visibility"
-                                            onClick={handleClickShowConfirmPassword}
-                                            edge="end"
-                                        >
-                                            {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
-
-                        {/* Submit Button */}
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            fullWidth
-                            sx={{ mt: 3 }}
-                        >
-                            Change Password
-                        </Button>
-
-                    </Box>
-                </Box>
-
-            </Paper>
-        </Container>
-    );
+            <Button
+                onClick={handleChangePassword}
+                variant="contained"
+                fullWidth
+                sx={{
+                  mt: 2,
+                  bgcolor: "#333",
+                  "&:hover": {
+                    bgcolor: "#222",
+                  },
+                }}
+              >
+                Change Password
+            </Button>
+          </Stack>
+        </CardContent>
+      </Card>
+    </Box>
+  );
 };
 
 export default ChangePassword;

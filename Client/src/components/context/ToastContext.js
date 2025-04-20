@@ -27,7 +27,7 @@ const Toast = ({ id, type, message, onClose }) => {
   }, [id, onClose])
 
   const toastStyles = {
-    backgroundColor: type === "success" && "#4caf50" || type === "error" && "#f44336" || type === "warning" && "#f7a50e",
+    backgroundColor: ((type === "success") && "#4caf50") || ((type === "error") && "#f44336") || ((type === "warning") && "#f7a50e"),
     color: "white",
     padding: "12px 16px",
     borderRadius: "4px",
@@ -74,7 +74,7 @@ const Toast = ({ id, type, message, onClose }) => {
 
   return (
     <div style={toastStyles}>
-      <div style={iconStyles}>{type === "success" && "✓" || type === "error" && "✕" || type === "warning" && "⚠️" }</div>
+      <div style={iconStyles}>{((type === "success") && "✓") || ((type === "error") && "✕") || ((type === "warning") && "⚠️") }</div>
       <div style={contentStyles}>{message}</div>
       <button style={closeButtonStyles} onClick={() => onClose(id)}>
         ×

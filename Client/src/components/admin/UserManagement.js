@@ -118,26 +118,6 @@ export default function UserManagement() {
       getUsers();
   }, []);
 
-
-  const handleToggleStatus = (id) => {
-    setLoadingUserId(id)
-
-    const user = users.find((user) => user.id === id)
-    const newStatus = !user.active
-
-    setTimeout(() => {
-      setUsers(users.map((user) => (user.id === id ? { ...user, active: newStatus } : user)))
-
-      setLoadingUserId(null)
-
-      setSnackbar({
-        open: true,
-        message: `User ${newStatus ? "activated" : "blocked"} successfully`,
-        severity: "success",
-      })
-    }, 1500)
-  }
-
   const handleCloseSnackbar = () => {
     setSnackbar({
       ...snackbar,

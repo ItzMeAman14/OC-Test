@@ -153,7 +153,7 @@ UserRouter.put("/blockUser/:id", authorizeRole('admin') ,async (req, res) => {
 
         // Prepare email
         const mailOptions = {
-            from: "AICOMP <no-reply@aicomp.com>",
+            from: "CCL <no-reply@ccl.com>",
             to: user[0].email,
             subject: 'Block Status Updated',
             html: blockTemplate(user[0].email, userBlockStatus)

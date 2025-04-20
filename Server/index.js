@@ -4,6 +4,7 @@ const app = express()
 const cors = require('cors');
 const cron = require("node-cron");
 const nodemailer = require("nodemailer");
+const path = require("path")
 
 // Routes
 const msgRoute = require('./routes/messages');
@@ -40,7 +41,7 @@ const options = {
 
 app.use(cors(options));
 app.use(express.json());
-
+app.use('/static', express.static(path.join(__dirname, 'public')));
 
 // Routes
 app.use("/msg", msgRoute);
@@ -150,7 +151,7 @@ app.post('/contact-us', (req, res) => {
         const mailOptions = {
             from: email,
             to: process.env.RECIEVE_MAIL_CONTACT,
-            subject: `From AICOMP - ${subject}`,
+            subject: `From CCL - ${subject}`,
             html: contactUsTemplate(name, email, message)
         };
 
@@ -179,7 +180,7 @@ cron.schedule("0 0 * * *", async () => {
             await messaging.deleteMany({ createdAt: { "$lt": previousDate } });
 
             const mailOptions = {
-                from: 'AICOMP',
+                from: 'CCL',
                 to: process.env.RECIEVE_MAIL_CONTACT,
                 subject: 'Messages Deletion Updates',
                 html: deleteMessageTemplate()

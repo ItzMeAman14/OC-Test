@@ -113,7 +113,7 @@ const Login = () => {
             color="text.primary"
             mb={3}
           >
-            Welcome to CCL
+            Welcome to {process.env.REACT_APP_NAME}
           </Typography>
         </Box>
 

@@ -137,7 +137,7 @@ export default function UserScores() {
       XLSX.utils.book_append_sheet(wb, ws, exam.name);
     });
 
-    XLSX.writeFile(wb, 'AICOMP_ExamSheet.xlsx');
+    XLSX.writeFile(wb, 'CCL_ExamSheet.xlsx');
 
   }
 

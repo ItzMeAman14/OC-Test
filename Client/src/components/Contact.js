@@ -147,7 +147,7 @@ const About = () => {
                   <EmailIcon sx={{ fontSize: 28, color: "primary.main", mr: 2 }} />
                   <Box>
                     <Typography variant="subtitle2">Email Us</Typography>
-                    <Typography variant="body2">support@aicomp.com</Typography>
+                    <Typography variant="body2">support@ccl.com</Typography>
                   </Box>
                 </CardContent>
               </Card>

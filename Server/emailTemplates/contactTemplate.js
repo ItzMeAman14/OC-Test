@@ -1,4 +1,3 @@
-
 const contactUsTemplate = (name, email, message) => {
     return `
         <html>
@@ -17,6 +16,16 @@ const contactUsTemplate = (name, email, message) => {
                         padding: 30px;
                         max-width: 600px;
                         margin: auto;
+                        text-align: center;
+                    }
+                    .logo {
+                        width: 120px;
+                        height: auto;
+                        border-radius: 8px;
+                        margin-bottom: 20px;
+                        display: block;
+                        margin-left: auto;
+                        margin-right: auto;
                     }
                     .email-header {
                         font-size: 24px;
@@ -28,6 +37,14 @@ const contactUsTemplate = (name, email, message) => {
                         font-size: 16px;
                         color: #333;
                         line-height: 1.5;
+                        text-align: left;
+                    }
+                    .message {
+                        background-color: #f9f9f9;
+                        padding: 15px;
+                        border-radius: 4px;
+                        border: 1px solid #ddd;
+                        margin-top: 10px;
                     }
                     .footer {
                         font-size: 12px;
@@ -38,17 +55,12 @@ const contactUsTemplate = (name, email, message) => {
                         color: #007bff;
                         text-decoration: none;
                     }
-                    .message {
-                        background-color: #f9f9f9;
-                        padding: 15px;
-                        border-radius: 4px;
-                        border: 1px solid #ddd;
-                    }
                 </style>
             </head>
             <body>
                 <div class="email-container">
-                    <div class="email-header">Message from AICOMP</div>
+                    <img src="${process.env.LOGO}" alt="CCL Logo" class="logo" />
+                    <div class="email-header">Message from CCL</div>
                     <div class="email-body">
                         <p><strong>Name:</strong> ${name}</p>
                         <p><strong>Email:</strong> ${email}</p>
@@ -58,7 +70,7 @@ const contactUsTemplate = (name, email, message) => {
                         </div>
                     </div>
                     <div class="footer">
-                        <p>This is an automated email notification from AICOMP. Please do not reply to this email.</p>
+                        <p>This is an automated email notification from CCL. Please do not reply to this email.</p>
                     </div>
                 </div>
             </body>

@@ -69,7 +69,7 @@ RequestRouter.get("/acceptRequest/:id", authorizeRole('admin') ,async (req, res)
 
       // Send mail to User about Request Accept
       const mailOptions = {
-        from: "AICOMP <no-reply@aicomp.com>",
+        from: "CCL <no-reply@ccl.com>",
         to: newUser.email,
         subject: 'Login Request Accepted',
         html: acceptTemplate(newUser.email)
@@ -124,7 +124,7 @@ RequestRouter.get("/acceptAllRequest", authorizeRole('admin') ,async (req, res) 
 
       // Send mail to Users about Request Accept
       const mailOptions = {
-        from: "AICOMP <no-reply@aicomp.com>",
+        from: "CCL <no-reply@ccl.com>",
         to: request.email,
         subject: 'Login Request Accepted',
         html: acceptTemplate(request.email)

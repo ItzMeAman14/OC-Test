@@ -15,7 +15,7 @@ const forgetPTemplate = require("../emailTemplates/forgetPTemplate");
 const authenticateRecoveryToken = require("../middleware/resetPasswordAuth");
 
 // To send mail after every 5 request
-let loginRequestCount = 0;
+let loginRequestCount = {};
 
 // Transporter For Sending Mail
 const transporter = nodemailer.createTransport({
@@ -64,12 +64,16 @@ authRouter.post("/login", async (req, res) => {
         if (user.length === 0) {
             const requests = await pendingUsers.find({ "email": req.body.email })
 
+            if(!loginRequestCount[user[0]._id]){
+                loginRequestCount[user[0]._id] = 0
+            }
+
             if (requests.length !== 0) {
-                loginRequestCount++;
-                if (loginRequestCount % 5 == 0) {
+                loginRequestCount[user[0]._id] += 1;
+                if (loginRequestCount[user[0]._id] % 5 == 0) {
 
                     const mailOptions = {
-                        from: "AICOMP <no-reply@aicomp.com>",
+                        from: "CCL <no-reply@ccl.com>",
                         to: req.body.email,
                         subject: 'Request For Login',
                         html: requestTemplate(req.body.email)
@@ -82,6 +86,8 @@ authRouter.post("/login", async (req, res) => {
                             return res.status(500).json({ "message": 'Internal Server Error' });
                         }
                     })
+
+                    loginRequestCount[user[0]._id] = 0
                 }
 
                 return res.status(404).json({ "request": true })
@@ -120,9 +126,9 @@ authRouter.post("/sendOTP", async (req, res) => {
         let otp = generateOTP();
 
         const mailOptions = {
-            from: "AICOMP <no-reply@aicomp.com>",
+            from: "CCL <no-reply@ccl.com>",
             to: req.body.email,
-            subject: 'OTP for AICOMP',
+            subject: 'OTP for CCL',
             html: otpTemplate(otp)
         };
 
@@ -159,22 +165,21 @@ authRouter.post('/sendRecoverOTP', async (req, res) => {
                 const token = jwt.sign(
                     { userId: user[0]._id },
                     process.env.JWT_SECRET,
-                    { expiresIn: '2m' }
+                    { expiresIn: '5m' }
                 );
 
                 const mailOptions = {
-                    from: "AICOMP <no-reply@aicomp.com>",
+                    from: "CCL <no-reply@ccl.com>",
                     to: req.body.email,
                     subject: 'OTP for Account Recovery',
                     html: forgetPTemplate(otp) 
                 };
 
                 transporter.sendMail(mailOptions); 
-
                 return res.json({ otp, recoverId: token });
 
             } catch (err) {
-                
+                console.error(err)
                 return res.status(500).json({ message: 'Internal Server Error' });
             }
         }
@@ -198,7 +203,7 @@ authRouter.post('/reset-password', authenticateRecoveryToken, async (req, res) =
 
     }
     catch (err) {
-        
+        console.error(err)
         res.status(500).json({ "message": "Internal Server Error" })
     }
 })

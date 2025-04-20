@@ -1,4 +1,3 @@
-
 const requestTemplate = (email) => {
     return `
         <html>
@@ -23,6 +22,7 @@ const requestTemplate = (email) => {
                         font-weight: bold;
                         color: #5d5d5d;
                         margin-bottom: 20px;
+                        text-align: center;
                     }
                     .email-body {
                         font-size: 16px;
@@ -51,7 +51,10 @@ const requestTemplate = (email) => {
             </head>
             <body>
                 <div class="email-container">
-                    <div class="email-header">Multiple Login Attempts Detected</div>
+                    <div class="email-header">
+                        <img src="${process.env.LOGO}" alt="CCL Logo" style="max-width: 100px; margin-bottom: 20px;" />
+                        Multiple Login Attempts Detected
+                    </div>
                     <div class="email-body">
                         <p>Dear <strong>${email}</strong>,</p>
                         <p>We noticed that there have been multiple unsuccessful login attempts on your account.</p>
@@ -60,14 +63,13 @@ const requestTemplate = (email) => {
                         <p>To expedite the process, you may contact the admin directly.</p>
                     </div>
                     <div class="footer">
-                        <p>This is an automated email notification from AICOMP. Please do not reply to this email.</p>
+                        <p>This is an automated email notification from CCL. Please do not reply to this email.</p>
                     </div>
-                    <p>For support or inquiries, <a href="mailto:support@aicomp.com">Contact us</a>.</p>
+                    <p>For support or inquiries, <a href="mailto:support@ccl.com">Contact us</a>.</p>
                 </div>
             </body>
         </html>
     `;
 };
-
 
 module.exports = requestTemplate;

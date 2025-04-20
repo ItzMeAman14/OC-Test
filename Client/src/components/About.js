@@ -23,7 +23,7 @@ const About = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Typography variant="h4" component="h4" gutterBottom>
-        About AICOMP Compiler
+        About {process.env.REACT_APP_NAME}
       </Typography>
 
       <Grid container spacing={4}>
@@ -187,7 +187,7 @@ const About = () => {
       <Paper elevation={2} sx={{ p: 4, my: 4 }}>
 
               <Typography variant="h6" gutterBottom>
-                How to Use the AICOMP Compiler:
+                How to Use the {process.env.REACT_APP_NAME}:
               </Typography>
       
               <List>
@@ -227,7 +227,7 @@ const About = () => {
                 <ListItem>
                   <ListItemText
                     primary="Array Input"
-                    secondary="To input an array, write the values without commas (e.g., for an array of numbers: 1 2 3 4). The AICOMP Compiler will automatically interpret the space-separated values as elements of the array."
+                    secondary={`To input an array, write the values without commas (e.g., for an array of numbers: 1 2 3 4). The ${process.env.REACT_APP_NAME} will automatically interpret the space-separated values as elements of the array.`}
                   />
                 </ListItem>
                 <ListItem>
