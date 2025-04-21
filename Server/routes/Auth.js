@@ -64,13 +64,13 @@ authRouter.post("/login", async (req, res) => {
         if (user.length === 0) {
             const requests = await pendingUsers.find({ "email": req.body.email })
 
-            if(!loginRequestCount[user[0]._id]){
-                loginRequestCount[user[0]._id] = 0
+            if(!loginRequestCount[requests[0]._id]){
+                loginRequestCount[requests[0]._id] = 0
             }
 
             if (requests.length !== 0) {
-                loginRequestCount[user[0]._id] += 1;
-                if (loginRequestCount[user[0]._id] % 5 == 0) {
+                loginRequestCount[requests[0]._id] += 1;
+                if (loginRequestCount[requests[0]._id] % 5 == 0) {
 
                     const mailOptions = {
                         from: "CCL <no-reply@ccl.com>",
@@ -87,7 +87,7 @@ authRouter.post("/login", async (req, res) => {
                         }
                     })
 
-                    loginRequestCount[user[0]._id] = 0
+                    loginRequestCount[requests[0]._id] = 0
                 }
 
                 return res.status(404).json({ "request": true })
@@ -116,7 +116,7 @@ authRouter.post("/login", async (req, res) => {
         }
     }
     catch (err) {
-        
+        console.error(err)
         res.status(500).json({ "message": "Some error Occured" })
     }
 })
