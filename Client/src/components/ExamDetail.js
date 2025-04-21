@@ -329,6 +329,30 @@ const ExamDetail = () => {
   };
 
 
+  const removeUserFromLeaderboard = async (userId) => {
+    try{
+      const token = Cookies.get("tokenUser");
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/setuserScores/${exam_id}`,{
+        method:"PUT",
+        headers:{
+          "Content-Type":"application/json",
+          "userAPIKEY": token
+        },
+        body:JSON.stringify({
+          id:userId
+        })
+      })
+
+      const parsed = await res.json();
+      if(res.ok){
+        setLeaderboard(parsed);
+      }
+
+    }
+    catch(err){
+      console.error(err)
+    }
+  }
 
   const setScores = async () => {
     try {
@@ -369,6 +393,7 @@ const ExamDetail = () => {
 
       const parsed = await res.json();
       if (res.ok) {
+        removeUserFromLeaderboard(uid);
         getAllQuestions();
         showSuccess(parsed.message);
       }

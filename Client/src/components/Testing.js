@@ -1,159 +1,147 @@
 import React, { useState } from 'react';
 import {
-  Avatar,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  TextField,
-  InputAdornment,
-  IconButton,
   Box,
-  Stack
+  Button,
+  Grid,
+  MenuItem,
+  Select,
+  TextField,
+  Typography,
+  useMediaQuery
 } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { useToast } from './context/ToastContext'; 
-import { useNavigate, useParams } from 'react-router-dom';
-import Cookies from "js-cookie";
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
-const RecoverAccount = () => {
-  const { showSuccess, showError } = useToast()
-  const navigate = useNavigate();
-  const { email } = useParams();
-  
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+const languages = [
+  { value: 'javascript', label: 'JavaScript' },
+  { value: 'python', label: 'Python' },
+  { value: 'java', label: 'Java' },
+  { value: 'cpp', label: 'C++' }
+];
 
-  const handleChangePassword = async (e) => {
-    e.preventDefault();
-    try {
-        if(newPassword === confirmPassword){
-            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/auth/reset-password`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "recoverToken":Cookies.get("recoverId"),
-                },
-                body: JSON.stringify({
-                    email,
-                    newPassword
-            })
-        })
+const CodeEditor = () => {
+  const [selectedLanguage, setSelectedLanguage] = useState('javascript');
+  const [code, setCode] = useState('');
+  const [input, setInput] = useState('');
+  const [output, setOutput] = useState('');
+  const [activeSection, setActiveSection] = useState('editor');
 
-        const parsed = await res.json();
-        if(res.ok){
-            setNewPassword("");
-            setConfirmPassword("");
-            Cookies.remove('recoverID');
-            navigate("/login");
-            showSuccess(parsed.message);
-        }
-        else{
-            showError(parsed.message);
-        }
-    }
-    else{
-        showError('Password Not Matched');
-    }
-    }
-    catch (err) {
-        console.error(err);
-    }
-  }
+  const isMobile = useMediaQuery('(max-width:768px)');
+
+  const handleRunCode = () => {
+    setOutput(`Language: ${selectedLanguage}\n\nCode:\n${code}\n\nInput:\n${input}`);
+    setActiveSection('output');
+  };
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        backgroundColor: '#f1f1f1',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <Card sx={{ width: 500, p: 4 }}>
-        <CardContent>
-          <Box textAlign="center" mb={3}>
-            <Avatar
-              src="/CCL.ico"
-              alt="Logo"
-              sx={{
-                width: 130,
-                height: 130,
-                mx: "auto",
-                mb: 2,
-                bgcolor: "#e0e0e0",
-              }}
-            />
-            <Typography
-              variant="h5"
-              fontWeight="bold"
-              textAlign="center"
-              color="text.primary"
-              mb={3}
-            >
-              Recover Account
-            </Typography>
+    <Box sx={{ height: '90vh', p: 2, bgcolor: '#fff' }}>
+      <Box sx={{ height: '100%', maxWidth: '1200px', mx: 'auto' }}>
+        {isMobile && (
+          <Box sx={{ display: 'flex', mb: 2 }}>
+            {['editor', 'input', 'output'].map((section) => (
+              <Button
+                key={section}
+                variant={activeSection === section ? 'contained' : 'outlined'}
+                onClick={() => setActiveSection(section)}
+                fullWidth
+                sx={{ textTransform: 'none', mx: 0.5 }}
+              >
+                {section.charAt(0).toUpperCase() + section.slice(1)}
+              </Button>
+            ))}
           </Box>
+        )}
 
-          <Stack spacing={2} mt={4}>
-            <TextField
+        <Grid container spacing={2} sx={{ height: '100%' }}>
+          {/* Left Panel - Editor */}
+          <Grid
+            item
+            xs={12}
+            md={6}
+            sx={{ display: isMobile && activeSection !== 'editor' ? 'none' : 'flex', flexDirection: 'column', gap: 2 }}
+          >
+            <Select
               fullWidth
-              type={showNewPassword ? 'text' : 'password'}
-              label="New Password"
-              variant="outlined"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => setShowNewPassword(!showNewPassword)} edge="end">
-                      {showNewPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
+              value={selectedLanguage}
+              onChange={(e) => setSelectedLanguage(e.target.value)}
+              sx={{ bgcolor: '#000', color: '#fff' }}
+            >
+              {languages.map((lang) => (
+                <MenuItem key={lang.value} value={lang.value}>
+                  {lang.label}
+                </MenuItem>
+              ))}
+            </Select>
 
             <TextField
-              fullWidth
-              type={showConfirmPassword ? 'text' : 'password'}
-              label="Confirm Password"
-              variant="outlined"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
-                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
+              multiline
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="Write your code here..."
+              minRows={10}
+              maxRows={20}
+              sx={{
+                flex: 1,
+                fontFamily: 'monospace',
+                bgcolor: '#f5f5f5'
               }}
             />
 
             <Button
-            onClick={handleChangePassword}
-            variant="contained"
-            fullWidth
-            sx={{
-              mt: 2,
-              bgcolor: "#333",
-              "&:hover": {
-                bgcolor: "#222",
-              },
-            }}
+              onClick={handleRunCode}
+              variant="contained"
+              color="primary"
+              startIcon={<PlayArrowIcon />}
+              fullWidth
+            >
+              Run Code
+            </Button>
+          </Grid>
+
+          {/* Right Panel - Input & Output */}
+          <Grid
+            item
+            xs={12}
+            md={6}
+            sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
           >
-            Change Password
-          </Button>
-          </Stack>
-        </CardContent>
-      </Card>
+            <Box sx={{ display: isMobile && activeSection !== 'input' ? 'none' : 'block', flex: 1 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Input
+              </Typography>
+              <TextField
+                multiline
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Enter input here..."
+                fullWidth
+                minRows={5}
+                maxRows={20}
+                sx={{ bgcolor: '#f5f5f5' }}
+              />
+            </Box>
+
+            <Box sx={{ display: isMobile && activeSection !== 'output' ? 'none' : 'block', flex: 1 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Output
+              </Typography>
+              <TextField
+                multiline
+                value={output}
+                placeholder="Output will appear here..."
+                fullWidth
+                InputProps={{
+                  readOnly: true
+                }}
+                minRows={5}
+                maxRows={20}
+                sx={{ bgcolor: '#f5f5f5' }}
+              />
+            </Box>
+          </Grid>
+        </Grid>
+      </Box>
     </Box>
   );
 };
 
-export default RecoverAccount;
+export default CodeEditor;

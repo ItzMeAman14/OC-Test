@@ -77,4 +77,31 @@ LeaderboardRoutes.put("/addUserInLeaderboard/:id",async(req,res) => {
     }
 })
 
+
+LeaderboardRoutes.put("/removeUserInLeaderboard/:id",async(req,res) => {
+    try{
+        const examId = new mongoose.Types.ObjectId(req.params.id);
+        const userId = new mongoose.Types.ObjectId(req.body.id);
+
+        const user = await leaderboard.updateOne(
+            { examId: examId },
+            {
+                "$pull": {
+                "users": { id: userId }
+                }
+            }
+        );
+
+        const exams = await leaderboard.find({examId:examId}, { users: 1, _id: 0 })
+        
+        const users = sortLeaderboard(exams[0].users)
+        res.status(200).json(users);
+
+    }
+    catch(err){
+        console.error(err)
+        res.status(500).json({message:"Internal Server Error"})
+    }
+})
+
 module.exports = LeaderboardRoutes

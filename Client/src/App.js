@@ -113,7 +113,7 @@ function App() {
 
                 <Route exact path="/testing" element={
                   <>
-                  {/* <Navbar /> */}
+                  <Navbar />
                   <Testing />
                   </>
                 } />
