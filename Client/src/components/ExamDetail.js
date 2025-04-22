@@ -332,7 +332,7 @@ const ExamDetail = () => {
   const removeUserFromLeaderboard = async (userId) => {
     try{
       const token = Cookies.get("tokenUser");
-      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/setuserScores/${exam_id}`,{
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/removeUserInLeaderboard/${exam_id}`,{
         method:"PUT",
         headers:{
           "Content-Type":"application/json",
