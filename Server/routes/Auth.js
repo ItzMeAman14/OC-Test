@@ -92,7 +92,9 @@ authRouter.post("/login", async (req, res) => {
 
                 return res.status(404).json({ "request": true })
             }
-            res.status(404).json({ "message": "User not Found" })
+            else{
+                return res.status(404).json({ "message": "User not Found" })
+            }
         }
         else {
             if (user[0].blocked) {
