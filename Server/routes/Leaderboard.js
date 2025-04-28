@@ -5,7 +5,7 @@ const { leaderboard } = require("../config");
 
 const sortLeaderboard = (exams) => {
     const sortedExams = exams.sort((a, b) => b.score - a.score);
-    return sortedExams
+    return sortedExams;
 }
 
 LeaderboardRoutes.get("/getLeaderboard/:id",async(req,res) => {
@@ -50,7 +50,26 @@ LeaderboardRoutes.put("/addUserInLeaderboard/:id",async(req,res) => {
         const examId = new mongoose.Types.ObjectId(req.params.id);
         const userId = new mongoose.Types.ObjectId(req.body.id);
 
-        const user = await leaderboard.updateOne(
+        const exam = await leaderboard.findOne({examId:examId});
+        
+        if(!exam){
+            const NewExamLeaderboard =  new leaderboard({
+                examId:examId,
+                users:[{
+                    id:userId,
+                    email: req.body.email,
+                    score:0
+                }]
+            })
+
+            const exams = await NewExamLeaderboard.save();
+            const users = sortLeaderboard(exams.users);
+            res.status(200).json(users);
+        }
+        else{
+
+            
+            const user = await leaderboard.updateOne(
             { 
                 examId: examId, 
                 "users.id": { $ne: userId }
@@ -65,14 +84,14 @@ LeaderboardRoutes.put("/addUserInLeaderboard/:id",async(req,res) => {
                 }
             }
         );
-
-        const exams = await leaderboard.find({examId:examId}, { users: 1, _id: 0 })
-        
-        const users = sortLeaderboard(exams[0].users)
-        res.status(200).json(users);
+            const exams = await leaderboard.find({examId:examId}, { users: 1, _id: 0 })
+            const users = sortLeaderboard(exams[0].users)
+            res.status(200).json(users);
+        }
 
     }
     catch(err){
+        console.error(err);
         res.status(500).json({message:"Internal Server Error"})
     }
 })

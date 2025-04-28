@@ -565,7 +565,6 @@ const ExamDetail = () => {
     };
 
     const handlePopState = (e) => {
-      console.log("Backing")
       window.history.pushState(null, "", window.location.href);
     }
 

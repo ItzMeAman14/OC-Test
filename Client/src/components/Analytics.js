@@ -12,10 +12,19 @@ const Analytics = () => {
     const { id } = useParams();
     const [testCasesPassed, setTestCasesPassed] = useState(0);
     const [totalTestCases, setTotalTestCases] = useState(0);
-    const [timeTaken, setTimeTaken] = useState(0);
+    const [timeTaken, setTimeTaken] = useState({});
     const [givenTime, setGivenTime] = useState(0); 
     const [numOfSubmissions, setNumOfSubmissions] = useState(0);
     const [noScores,setNoScores] = useState(false);
+
+
+    const formatTime = (timeInSec) => {
+        const min = Math.round(timeInSec / 60);
+        const sec = timeInSec % 60;
+
+        return {min,sec};
+    }
+
 
     const getScores = useCallback( async() => {
         try {
@@ -29,11 +38,10 @@ const Analytics = () => {
                   },
             });
             const parsed = await res.json();
-            
             if(parsed.message !== "No Scores Found"){
                 setTestCasesPassed(parsed.testCasesPassed);
                 setTotalTestCases(parsed.totalTestCases);
-                setTimeTaken(parsed.timeTaken);
+                setTimeTaken(formatTime(parsed.timeTaken));
                 setGivenTime(parsed.givenTime);
                 setNumOfSubmissions(parsed.numOfSubmissions);
             }
@@ -54,9 +62,9 @@ const Analytics = () => {
     const passRate = ((testCasesPassed / totalTestCases) * 100).toFixed(2);
 
     // Use givenTime for efficiency analysis
-    const efficiency = timeTaken <= givenTime * 0.5
+    const efficiency = (timeTaken.min + Math.round(timeTaken.sec / 60)) <= givenTime * 0.5
         ? 'Efficient' 
-        : timeTaken <= givenTime * 0.7
+        : (timeTaken.min + Math.round(timeTaken.sec / 60)) <= givenTime * 0.7
         ? 'Average' 
         : 'Slow';
 
@@ -111,7 +119,7 @@ const Analytics = () => {
                     <Card sx={{ marginBottom: 2 }}>
                         <CardContent>
                             <Typography variant="h6">Time Efficiency</Typography>
-                            <Typography variant="body1">{`Time Taken: ${timeTaken} minutes`}</Typography>
+                            <Typography variant="body1">{`Time Taken: ${timeTaken.min} minutes ${timeTaken.sec} seconds`}</Typography>
                             <Typography variant="body1">{`Given Time: ${givenTime} minutes`}</Typography>
                             <Typography
                                 variant="body1"

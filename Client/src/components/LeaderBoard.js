@@ -39,7 +39,6 @@ const LeaderBoard = (props) => {
       })
 
       const parsed = await res.json();
-
       
       const topusers = parsed.filter((user,index) => index < 3 )
       setTopUsers(topusers);
@@ -220,7 +219,7 @@ const LeaderBoard = (props) => {
 
             </TableRow>
 
-            { leaderboard.map((user,index) => (
+            { leaderboard.length !==  0 && leaderboard.map((user,index) => (
               user.id !== currentUser.id && (
               <TableRow
                 key={user.id}
