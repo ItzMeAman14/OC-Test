@@ -64,11 +64,11 @@ authRouter.post("/login", async (req, res) => {
         if (user.length === 0) {
             const requests = await pendingUsers.find({ "email": req.body.email })
 
-            if(!loginRequestCount[requests[0]._id]){
-                loginRequestCount[requests[0]._id] = 0
-            }
-
+            
             if (requests.length !== 0) {
+                if(!loginRequestCount[requests[0]._id]){
+                    loginRequestCount[requests[0]._id] = 0
+                }
                 loginRequestCount[requests[0]._id] += 1;
                 if (loginRequestCount[requests[0]._id] % 5 == 0) {
 
