@@ -98,7 +98,7 @@ ScoreRouter.get("/getFormattedScoreForAdmin", authorizeRole('admin') ,async(req,
           // Checking Exam Id and User Exam Id
           if((users[i].exams[j].exam_id).equals(exam._id)){
             status = users[i].exams[j].attempted
-            totalScore = users[i].exams[j].score.totalScore
+            totalScore = users[i].exams[j].score.totalScore ?? null
             scoreToset = users[i].exams[j].score.finalScore ?? null
             break
           }
@@ -113,7 +113,7 @@ ScoreRouter.get("/getFormattedScoreForAdmin", authorizeRole('admin') ,async(req,
 
   }
   catch(err){
-    
+    console.error(err);
     res.status(500).json({message:"Internal Server Error"})
   }
 })

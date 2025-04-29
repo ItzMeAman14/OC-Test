@@ -16,6 +16,8 @@ import {
   ListItemText,
   IconButton,
   Divider,
+  TableCell,
+  TableRow,
   Paper,
   Stack,
 } from "@mui/material"
@@ -27,10 +29,12 @@ import {
 } from "@mui/icons-material"
 import Cookies from "js-cookie";
 import { useToast } from '../context/ToastContext'; 
+import Loader from "../Loader";
 
 export default function UpdateExistingExam() {
   const { showSuccess, showError } = useToast();
   const [exams, setExams] = useState([])
+  const [loading, setLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false)
   const [currentExamId, setCurrentExamId] = useState(null)
   const [currentQuestionId, setCurrentQuestionId] = useState(null)
@@ -114,6 +118,7 @@ export default function UpdateExistingExam() {
   const confirmDelete = async () => {
     if (deleteConfirmDialog.type === "exam") {
       try{
+        setLoading(true);
         const token = Cookies.get("tokenAdmin");
         const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/deleteExam/${deleteConfirmDialog.id}`,{
           method:"DELETE",
@@ -130,6 +135,7 @@ export default function UpdateExistingExam() {
         else{
           showError(data.message)
         }
+        setLoading(false)
       }
       catch(err){
         console.error(err);
@@ -137,6 +143,7 @@ export default function UpdateExistingExam() {
       
     } else if (deleteConfirmDialog.type === "question") {
       try{
+        setLoading(true);
         const token = Cookies.get("tokenAdmin");
         const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/deleteQuestion/${deleteConfirmDialog.id}`,{
           method:"DELETE",
@@ -154,6 +161,7 @@ export default function UpdateExistingExam() {
         else{
           showError("Some Error Occured");
         }
+        setLoading(false)
       }
       catch(err){
         console.error(err);
@@ -213,6 +221,7 @@ export default function UpdateExistingExam() {
   const handleSave = async () => {
     if (editMode === "exam" && currentExamId) {
       try{
+        setLoading(true);
         const token = Cookies.get("tokenAdmin");
         const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/updateExamName/${currentExamId}`,{
           method:"PUT",
@@ -232,12 +241,14 @@ export default function UpdateExistingExam() {
         else{
           showError(data.message)
         }
+        setLoading(false)
       }
       catch(err){
       console.error(err);
       }
     } else if (editMode === "question" && currentExamId && currentQuestionId) {
       try{
+        setLoading(true);
         const token = Cookies.get("tokenAdmin");
         const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/updateQuestion/${currentQuestionId}`,{
           method:"PUT",
@@ -262,6 +273,7 @@ export default function UpdateExistingExam() {
         else{
           showError("Some Error Occured")
         }
+        setLoading(false);
   
       }
       catch(err){
@@ -285,6 +297,7 @@ export default function UpdateExistingExam() {
     }
 
     try{
+      setLoading(true);
       const token = Cookies.get("tokenAdmin");
       const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/createQuestion/${addQuestionDialog.examId}`,{
         method:"POST",
@@ -305,6 +318,7 @@ export default function UpdateExistingExam() {
       else{
         showError(data.message);
       }
+      setLoading(false)
     }
     catch(err){
       console.error(err);
@@ -317,6 +331,7 @@ export default function UpdateExistingExam() {
   
     const getAllExams = async() => {
       try{
+        setLoading(true)
         const token = Cookies.get("tokenAdmin");
         const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getAllExams`,{
           method:"GET",
@@ -327,7 +342,7 @@ export default function UpdateExistingExam() {
         });
         const data = await res.json();      
         setExams(data);
-  
+        setLoading(false);
       }
       catch(err){
         console.error(err);
@@ -348,7 +363,9 @@ export default function UpdateExistingExam() {
         Total Exams: {exams.length}
       </Typography>
 
-      {exams.map((exam) => (
+      { loading && <Loader /> }
+
+      { exams.length !== 0 && exams.map((exam) => (
         <Accordion key={exam._id} sx={{ mb: 2, bgcolor: "#f8f8f8", border: "1px solid #e0e0e0" }}>
           <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: "#555555" }} />}>
             <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>

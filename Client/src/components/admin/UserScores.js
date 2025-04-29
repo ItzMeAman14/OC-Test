@@ -25,8 +25,10 @@ import { ExpandMore as ExpandMoreIcon, Search as SearchIcon, Description } from 
 import Cookies from "js-cookie";
 import * as XLSX from "xlsx";
 import NoScoresFound from "../NoScoresFound";
+import Loader from "../Loader";
 
 export default function UserScores() {
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("")
   const [examScores, setExamScores ] = useState([]);
   
@@ -79,16 +81,16 @@ export default function UserScores() {
 
     return users.filter((user) => {
       // Only filter users who have completed the exam
-
+      const UserScore = scoreFormatInPercentage(user.score,examId);
       switch (scoreFilter) {
         case "excellent":
-          return user.score >= 80
+          return UserScore >= 80
         case "good":
-          return user.score >= 60 && user.score < 80
+          return UserScore >= 60 && UserScore < 80
         case "average":
-          return user.score >= 40 && user.score < 60
+          return UserScore >= 40 && UserScore < 60
         case "poor":
-          return user.score < 40
+          return UserScore < 40
         default:
           return true
       }
@@ -143,6 +145,7 @@ export default function UserScores() {
 
   const getAllUsersScore = async () => {
       try{
+        setLoading(true)
         const token = Cookies.get("tokenAdmin")
         const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getFormattedScoreForAdmin`,{
           method: "GET",
@@ -162,8 +165,8 @@ export default function UserScores() {
               return acc
             }, {}),
           )
-          
           setExamScores(parsed);
+          setLoading(false);
         }
       }
       catch(err){
@@ -183,6 +186,7 @@ export default function UserScores() {
       <Typography variant="subtitle1" sx={{ mb: 2, color: "#555555" }}>
         Total Exams: {examScores.length}
       </Typography>
+      { loading && <Loader /> }
       {
         examScores.length === 0
         ? 

@@ -18,8 +18,10 @@ import {
 } from "@mui/material"
 import { Search as SearchIcon } from "@mui/icons-material"
 import Cookies from "js-cookie";
+import Loader from "../Loader";
 
 export default function UserManagement() {
+  const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("")
   const [loadingUserId, setLoadingUserId] = useState(null)
@@ -69,7 +71,7 @@ export default function UserManagement() {
       const filterUser = async (e) => {
           try {
               setSearchTerm(e.target.value);
-              // setLoading(true);
+              setLoading(true);
               const token = Cookies.get("tokenAdmin");
               const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/filterUser`, {
                   method: "POST",
@@ -85,7 +87,7 @@ export default function UserManagement() {
               const parsed = await res.json();
   
               setUsers(parsed);
-              // setLoading(false);
+              setLoading(false);
           }
           catch (err) {
               console.error(err);
@@ -94,7 +96,7 @@ export default function UserManagement() {
   
   const getUsers = async () => {
     try {
-        // setLoading(true);
+        setLoading(true);
         const token = Cookies.get("tokenAdmin");
         const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/users`, {
             method: "GET",
@@ -107,7 +109,7 @@ export default function UserManagement() {
         const parsed = await res.json();
 
         setUsers(parsed);
-        // setLoading(false);
+        setLoading(false);
     }
     catch (err) {
         console.error(err);
@@ -179,6 +181,12 @@ export default function UserManagement() {
             </TableRow>
           </TableHead>
           <TableBody>
+            { loading && 
+              ( <TableRow>
+                <TableCell colSpan={4} align="center" sx={{ color: "#777777" }}>
+                  <Loader />
+                </TableCell>
+              </TableRow> ) }
             {users.map((user,index) => (
               <TableRow key={user._id} sx={{ "&:nth-of-type(odd)": { backgroundColor: "#fafafa" } }}>
                 <TableCell sx={{ color: "#333333" }}>{index + 1}</TableCell>
