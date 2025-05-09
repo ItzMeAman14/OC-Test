@@ -1,8 +1,7 @@
 In Frontend:
 1: Testing
 2: Output Scroll bar is not working in Exam Detail. (Solution -> Fix the height of parent)
-3: Admin Score Problem showing NAN
-4: After submission showing undefined in getTotalTestCases();
+3: After submission showing undefined in getTotalTestCases();
 
 Security :
 1: Only access the exam when clicked on attempt in Exam otherwise by typing url you cannot give exam when the exam is pending or true.

@@ -23,7 +23,12 @@ ScoreRouter.get("/getuserScores/:id",async(req,res) => {
           }
         );
         if(scores.length !== 0){
+          if(scores[0].exams[0].attempted === "pending" || scores[0].exams[0].attempted === "false"){
+            res.json({noScores:true})
+          }
+          else{
             res.json(scores[0].exams[0].score);
+          }
         }
         else{
             res.json({"message":"No Scores Found"});
@@ -31,7 +36,7 @@ ScoreRouter.get("/getuserScores/:id",async(req,res) => {
     }
     catch(err){
         console.error(err)
-        res.json({"message":"Some Error Occured"})
+        res.json({noScores:true})
     }  
 })
 

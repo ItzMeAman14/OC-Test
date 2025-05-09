@@ -38,7 +38,7 @@ const Analytics = () => {
                   },
             });
             const parsed = await res.json();
-            if(parsed.message !== "No Scores Found"){
+            if(parsed.message !== "No Scores Found" && !parsed.noScores){
                 setTestCasesPassed(parsed.testCasesPassed);
                 setTotalTestCases(parsed.totalTestCases);
                 setTimeTaken(formatTime(parsed.timeTaken));

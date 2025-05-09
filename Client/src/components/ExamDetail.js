@@ -559,8 +559,8 @@ const ExamDetail = () => {
 
     const handleVisibilityChange = () => {
       if (document.hidden && !warning) {
-        // setWarning(true);
-        // setWarningCount(prevCount => prevCount + 1);
+        setWarning(true);
+        setWarningCount(prevCount => prevCount + 1);
       }
     };
 
